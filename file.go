@@ -3,6 +3,7 @@ package go_spit
 import (
 	"compress/gzip"
 	"fmt"
+	"github.com/Zapharaos/go-spit/internal/logger"
 	"io"
 	"os"
 	"strings"
@@ -121,13 +122,17 @@ func (opt FileWriteOptions) writeToFile(writeFunc func(io.Writer) error) (*FileW
 	tempPath := tempFile.Name()
 
 	defer func() {
-		_ = tempFile.Close()
+		if closeErr := tempFile.Close(); closeErr != nil {
+			logger.L().Warn("failed to close temp file", logger.String("filePath", tempPath), logger.Error(closeErr))
+		}
 	}()
 
 	// Check if file already exists when we don't want to overwrite (shouldn't happen with  temp files)
 	if !opt.OverwriteFile {
-		if _, err := os.Stat(tempPath); err == nil {
-			_ = os.Remove(tempPath)
+		if _, err = os.Stat(tempPath); err == nil {
+			if removeErr := os.Remove(tempPath); removeErr != nil {
+				logger.L().Warn("failed to remove temp file during cleanup", logger.String("filePath", tempPath), logger.Error(removeErr))
+			}
 			return nil, fmt.Errorf("temp file already exists: %s", tempPath)
 		}
 	}
@@ -139,7 +144,9 @@ func (opt FileWriteOptions) writeToFile(writeFunc func(io.Writer) error) (*FileW
 	if opt.UseGzip {
 		gzipWriter = gzip.NewWriter(tempFile)
 		defer func() {
-			_ = gzipWriter.Close()
+			if closeErr := gzipWriter.Close(); closeErr != nil {
+				logger.L().Warn("failed to close gzip writer", logger.Error(closeErr))
+			}
 		}()
 		writer = gzipWriter
 	}
@@ -163,6 +170,7 @@ func (fwr FileWriteResult) RemoveFile() error {
 	}
 
 	if err := os.Remove(fwr.FilePath); err != nil && !os.IsNotExist(err) {
+		logger.L().Warn("failed to remove export file", logger.String("filePath", fwr.FilePath), logger.Error(err))
 		return fmt.Errorf("failed to remove export file: %w", err)
 	}
 
