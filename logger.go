@@ -1,4 +1,4 @@
-package logger
+package go_spit
 
 import (
 	"fmt"

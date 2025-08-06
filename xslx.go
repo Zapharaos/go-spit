@@ -2,7 +2,6 @@ package go_spit
 
 import (
 	"fmt"
-	"github.com/Zapharaos/go-spit/internal/logger"
 	"github.com/xuri/excelize/v2"
 	"io"
 	"time"
@@ -42,7 +41,7 @@ func (xlsx XLSX) WriteDataToFile(options FileWriteOptions) (*FileWriteResult, er
 
 		// Write data to the file
 		if err := xlsx.writeData(); err != nil {
-			logger.L().Warn("Failed to close Excel file", logger.Error(err))
+			L().Warn("Failed to close Excel file", Error(err))
 		}
 
 		// Write to the writer
@@ -112,18 +111,18 @@ func (xlsx XLSX) writeHeaders() int {
 		for i, column := range xlsx.Columns {
 			cellRef, err := excelize.CoordinatesToCellName(i+1, 1)
 			if err != nil {
-				logger.L().Warn("Failed to get cell reference for header", logger.Error(err))
+				L().Warn("Failed to get cell reference for header", Error(err))
 				continue
 			}
 
 			if err = xlsx.File.SetCellValue(xlsx.SheetName, cellRef, column.Label); err != nil {
-				logger.L().Warn("Failed to set header cell value", logger.Error(err))
+				L().Warn("Failed to set header cell value", Error(err))
 			}
 		}
 
 		// Apply header styling
 		if err := xlsx.styleHeaders(len(xlsx.Columns), 1); err != nil {
-			logger.L().Warn("Failed to apply header styling", logger.Error(err))
+			L().Warn("Failed to apply header styling", Error(err))
 		}
 		return 1
 	}
@@ -133,7 +132,7 @@ func (xlsx XLSX) writeHeaders() int {
 	// Apply header styling to all rows
 	totalColumns := xlsx.Columns.GetTotalColumnCount()
 	if err := xlsx.styleHeaders(totalColumns, maxDepth); err != nil {
-		logger.L().Warn("Failed to apply header styling", logger.Error(err))
+		L().Warn("Failed to apply header styling", Error(err))
 	}
 
 	return maxDepth
@@ -146,7 +145,7 @@ func (xlsx XLSX) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol 
 	for _, column := range columns {
 		cellRef, err := excelize.CoordinatesToCellName(currentCol, currentRow)
 		if err != nil {
-			logger.L().Warn("Failed to get cell reference for header", logger.Error(err))
+			L().Warn("Failed to get cell reference for header", Error(err))
 			if column.HasSubColumns() {
 				currentCol = xlsx.writeHeaderRow(column.Columns, currentRow, maxDepth, currentCol)
 			} else {
@@ -156,7 +155,7 @@ func (xlsx XLSX) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol 
 		}
 
 		if err = xlsx.File.SetCellValue(xlsx.SheetName, cellRef, column.Label); err != nil {
-			logger.L().Warn("Failed to set header cell value", logger.Error(err))
+			L().Warn("Failed to set header cell value", Error(err))
 		}
 
 		if column.HasSubColumns() {
@@ -166,7 +165,7 @@ func (xlsx XLSX) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol 
 			endCellRef, err := excelize.CoordinatesToCellName(endCol, currentRow)
 			if err == nil && endCol > currentCol {
 				if err = xlsx.File.MergeCell(xlsx.SheetName, cellRef, endCellRef); err != nil {
-					logger.L().Warn("Failed to merge header cells horizontally", logger.Error(err))
+					L().Warn("Failed to merge header cells horizontally", Error(err))
 				}
 			}
 
@@ -181,7 +180,7 @@ func (xlsx XLSX) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol 
 				endCellRef, err := excelize.CoordinatesToCellName(currentCol, maxDepth)
 				if err == nil {
 					if err = xlsx.File.MergeCell(xlsx.SheetName, cellRef, endCellRef); err != nil {
-						logger.L().Warn("Failed to merge header cells vertically", logger.Error(err))
+						L().Warn("Failed to merge header cells vertically", Error(err))
 					}
 				}
 			}

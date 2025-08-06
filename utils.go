@@ -2,7 +2,6 @@ package go_spit
 
 import (
 	"fmt"
-	"github.com/Zapharaos/go-spit/internal/logger"
 	"strings"
 	"time"
 )
@@ -33,7 +32,7 @@ func formatValue(value interface{}, format string) (interface{}, error) {
 		if err == nil {
 			return date.Format(format), nil
 		}
-		logger.L().Error("Failed to parse date string:", logger.Any("value", v), logger.Error(err))
+		L().Error("Failed to parse date string:", Any("value", v), Error(err))
 		return nil, err
 	}
 	return value, nil
