@@ -7,7 +7,7 @@ import (
 
 // autoFitColumns attempts to auto-fit column widths
 func (xlsx XLSX) autoFitColumns() error {
-	for i := 1; i <= xlsx.Columns.GetTotalColumnCount(); i++ {
+	for i := 1; i <= xlsx.Columns.getTotalColumnCount(); i++ {
 		colName, err := excelize.ColumnNumberToName(i)
 		if err != nil {
 			continue
@@ -24,16 +24,16 @@ func (xlsx XLSX) autoFitColumns() error {
 // applyCellStyles applies styling to all data cells after merging operations are complete
 func (xlsx XLSX) applyCellStyles() error {
 	// Calculate the starting row for data (accounting for header)
-	dataStartRow := xlsx.Table.GetDataStartRow()
+	dataStartRow := xlsx.Table.getDataStartRow()
 
 	// Get flattened columns to match the data cell layout
-	flatColumns := xlsx.Columns.GetFlattenedColumns()
+	flatColumns := xlsx.Columns.getFlattenedColumns()
 
 	// Apply styles to each data row
 	for rowIndex := dataStartRow; rowIndex < dataStartRow+len(xlsx.Data); rowIndex++ {
 		colIndex := 1
 
-		dataRowIndex := xlsx.Table.GetDataIndexFromRowIndex(rowIndex)
+		dataRowIndex := xlsx.Table.getDataIndexFromRowIndex(rowIndex)
 
 		// Check if row has configured a style
 		var rowStyle *StyleConfig
@@ -55,8 +55,8 @@ func (xlsx XLSX) applyCellStyles() error {
 				// Use column style, but check for merged cells and use parent style if needed
 				style = column.Style
 
-				cellRef, err := excelize.CoordinatesToCellName(colIndex, rowIndex)
-				if err == nil && xlsx.isCellMergedHorizontally(cellRef) {
+				// Use the XLSX struct directly as it now implements CellOperations
+				if xlsx.IsCellMergedHorizontally(colIndex, rowIndex) {
 					// If the cell is merged horizontally, try to find an unmerged parent column style
 					// This is necessary to avoid applying styles to merged cells that span multiple columns
 					// In this case it's alright if the merging is vertical since it's the same column

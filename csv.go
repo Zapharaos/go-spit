@@ -46,7 +46,7 @@ func (csv CSV) writeData() error {
 	}
 
 	// Get flattened columns for data processing
-	flatColumns := csv.Columns.GetFlattenedColumns()
+	flatColumns := csv.Columns.getFlattenedColumns()
 
 	// Write multi-level headers if requested
 	if csv.WriteHeader && len(csv.Columns) > 0 {
@@ -106,9 +106,9 @@ func (csv CSV) fillHeaderLevel(headerRow []string, targetLevel int, currentLevel
 	for _, column := range csv.Columns {
 		if currentLevel == targetLevel {
 			// This is the level we want to fill
-			if column.HasSubColumns() {
+			if column.hasSubColumns() {
 				// For parent columns, write the label and span across all sub-columns
-				colSpan := column.GetColumnCount()
+				colSpan := column.getColumnCount()
 				headerRow[colIndex] = column.Label
 				// Fill the span with empty strings or the same label (depending on preference)
 				for i := 1; i < colSpan; i++ {
@@ -124,7 +124,7 @@ func (csv CSV) fillHeaderLevel(headerRow []string, targetLevel int, currentLevel
 			}
 		} else if currentLevel < targetLevel {
 			// We need to go deeper
-			if column.HasSubColumns() {
+			if column.hasSubColumns() {
 				colIndex = csv.fillHeaderLevel(headerRow, targetLevel, currentLevel+1, colIndex)
 			} else {
 				// Leaf column but we're looking for a deeper level - leave empty

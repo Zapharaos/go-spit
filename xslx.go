@@ -16,7 +16,7 @@ type XLSX struct {
 
 // GetColumnsLabel returns the label of the columns (XLSX-specific method)
 func (xlsx XLSX) GetColumnsLabel() []string {
-	return xlsx.Columns.GetColumnsLabels()
+	return xlsx.Columns.getColumnsLabels()
 }
 
 // WriteDataToFile writes data to file using the generic file writer
@@ -78,7 +78,7 @@ func (xlsx XLSX) writeData() error {
 	for _, item := range xlsx.Data {
 		colIndex := 1
 		// Use flattened columns to write data cells since data should only be written to leaf columns
-		flatColumns := xlsx.Columns.GetFlattenedColumns()
+		flatColumns := xlsx.Columns.getFlattenedColumns()
 		for _, column := range flatColumns {
 			err = xlsx.writeCell(item, column, colIndex, currentRow)
 			if err != nil {
@@ -89,30 +89,10 @@ func (xlsx XLSX) writeData() error {
 		currentRow++
 	}
 
-	/*// Apply vertical merging for mergeable columns
-	if err = c.applyColumnVerticalMerging(); err != nil {
-		logger.L().Warn("Failed to apply vertical column merging", logger.Error(err))
+	// Apply table merging
+	if err = xlsx.Table.processTableCellMerging(xlsx); err != nil {
+		L().Warn("Failed to apply column merging", Error(err))
 	}
-
-	// Apply horizontal merging for mergeable columns (now handles both flat and nested columns recursively)
-	if err = c.applyColumnHorizontalMerging(); err != nil {
-		logger.L().Warn("Failed to apply horizontal column merging", logger.Error(err))
-	}
-
-	// Apply column borders
-	if err = c.applyColumnBorders(); err != nil {
-		logger.L().Warn("Failed to apply column borders", logger.Error(err))
-	}
-
-	// Apply row configurations : potential merging
-	if err = c.applyRowConfigs(); err != nil {
-		logger.L().Warn("Failed to apply row configurations", logger.Error(err))
-	}
-
-	// Apply cell configurations
-	if err = c.applyCellConfigs(); err != nil {
-		logger.L().Warn("Failed to apply cell configurations", logger.Error(err))
-	}*/
 
 	// Apply cell styles after all operations are complete
 	if err = xlsx.applyCellStyles(); err != nil {
@@ -134,7 +114,7 @@ func (xlsx XLSX) writeHeaders() int {
 	}
 
 	// Calculate the maximum depth to determine how many header rows we need
-	maxDepth := xlsx.Columns.GetMaxDepth()
+	maxDepth := xlsx.Columns.getMaxDepth()
 	if maxDepth == 1 {
 		// Simple single-level headers
 		for i, column := range xlsx.Columns {
@@ -159,7 +139,7 @@ func (xlsx XLSX) writeHeaders() int {
 	xlsx.writeHeaderRow(xlsx.Columns, 1, maxDepth, 1)
 
 	// Apply header styling to all rows
-	totalColumns := xlsx.Columns.GetTotalColumnCount()
+	totalColumns := xlsx.Columns.getTotalColumnCount()
 	if err := xlsx.styleHeaders(totalColumns, maxDepth); err != nil {
 		L().Warn("Failed to apply header styling", Error(err))
 	}
@@ -175,7 +155,7 @@ func (xlsx XLSX) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol 
 		cellRef, err := excelize.CoordinatesToCellName(currentCol, currentRow)
 		if err != nil {
 			L().Warn("Failed to get cell reference for header", Error(err))
-			if column.HasSubColumns() {
+			if column.hasSubColumns() {
 				currentCol = xlsx.writeHeaderRow(column.Columns, currentRow, maxDepth, currentCol)
 			} else {
 				currentCol++
@@ -187,9 +167,9 @@ func (xlsx XLSX) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol 
 			L().Warn("Failed to set header cell value", Error(err))
 		}
 
-		if column.HasSubColumns() {
+		if column.hasSubColumns() {
 			// This column has sub-columns, so we need to merge horizontally across them
-			columnSpan := column.GetColumnCount()
+			columnSpan := column.getColumnCount()
 			endCol := currentCol + columnSpan - 1
 			endCellRef, err := excelize.CoordinatesToCellName(endCol, currentRow)
 			if err == nil && endCol > currentCol {
@@ -265,9 +245,9 @@ func (xlsx XLSX) writeCell(item Data, column Column, colIndex, rowIndex int) err
 	}
 
 	// Process the value based on column format
-	processedValue, err := xlsx.processValue(value, column.Format)
+	processedValue, err := xlsx.processValueForCell(value, column.Format)
 	if err != nil {
-		return fmt.Errorf("error processing value for column %s: %w", column.Name)
+		return fmt.Errorf("error processing value for column %s: %w", column.Name, err)
 	}
 
 	cellRef, err := excelize.CoordinatesToCellName(colIndex, rowIndex)
@@ -282,8 +262,8 @@ func (xlsx XLSX) writeCell(item Data, column Column, colIndex, rowIndex int) err
 	return nil
 }
 
-// processValue processes a value for XLSX output based on its type and format
-func (xlsx XLSX) processValue(value interface{}, format string) (interface{}, error) {
+// processValueForCell processes a value for XLSX output based on its type and format
+func (xlsx XLSX) processValueForCell(value interface{}, format string) (interface{}, error) {
 	switch v := value.(type) {
 	case []interface{}:
 		if xlsx.ListSeparator != "" {
@@ -327,8 +307,8 @@ func (xlsx XLSX) processValue(value interface{}, format string) (interface{}, er
 	}
 }
 
-// getColumnLetter returns the Excel column letter for a given column index (1-based)
-func (xlsx XLSX) getColumnLetter(colIndex int) string {
+// getColumnLetterForCell returns the Excel column letter for a given column index (1-based)
+func (xlsx XLSX) getColumnLetterForCell(colIndex int) string {
 	colLetter, err := excelize.ColumnNumberToName(colIndex)
 	if err != nil {
 		return "A" // Fallback to column A if conversion fails

@@ -7,7 +7,7 @@ import (
 // applyRowConfigs applies row-specific configurations for all configured rows
 func (xlsx XLSX) applyCellConfigs() error {
 	// Calculate the starting row for data (accounting for header)
-	headerShift := xlsx.GetDataStartRow()
+	headerShift := xlsx.getDataStartRow()
 
 	for _, rowConfigs := range xlsx.CellConfigs {
 		for _, cellConfig := range rowConfigs {

@@ -5,78 +5,92 @@ import (
 	"strings"
 )
 
-// TODO : make functions private
-
+// Table represents a structured data table with configuration for export operations.
+// It contains the actual data, column definitions, and various configuration options
+// that control how the table should be rendered in different export formats.
 type Table struct {
-	Data          DataSlice
-	Columns       Columns
-	RowConfigs    RowConfigs  // Optional row configurations
-	CellConfigs   CellConfigs // Optional cell configurations
-	WriteHeader   bool
-	Limit         int64
-	ListSeparator string
+	Data          DataSlice   // The actual data rows to be exported
+	Columns       Columns     // Column definitions including hierarchy and formatting
+	RowConfigs    RowConfigs  // Optional row-specific configurations (styling, merging, borders)
+	CellConfigs   CellConfigs // Optional cell-specific configurations for fine-grained control
+	WriteHeader   bool        // Whether to generate headers from column definitions
+	Limit         int64       // Maximum number of data rows to export (0 = no limit)
+	ListSeparator string      // Separator used when rendering slice/array values as strings
 }
 
-func (t Table) GetDataStartRow() int {
+// getDataStartRow calculates the starting row number for data based on header configuration.
+// The calculation accounts for multi-level headers by determining the maximum depth
+// of the column hierarchy and reserving that many rows for header content.
+func (t *Table) getDataStartRow() int {
 	dataStartRow := 1
 	if t.WriteHeader && len(t.Columns) > 0 {
 		// Calculate the maximum depth of the column hierarchy
-		maxDepth := t.Columns.GetMaxDepth()
+		// Each level of nesting requires its own header row
+		maxDepth := t.Columns.getMaxDepth()
 		dataStartRow = maxDepth + 1
 	}
 	return dataStartRow
 }
 
-func (t Table) GetDataIndexFromRowIndex(rowIndex int) int {
+// getDataIndexFromRowIndex converts a row index to the corresponding data slice index.
+// This conversion is necessary because the Data slice is 0-based, but export formats
+// typically use 1-based row numbering.
+func (t *Table) getDataIndexFromRowIndex(rowIndex int) int {
 	if t.WriteHeader {
-		// Adjust row index to match the rowConfigs map
-		headerShift := t.GetDataStartRow()
+		// Adjust row index to account for header rows
+		headerShift := t.getDataStartRow()
 		return rowIndex - headerShift
 	}
 	return rowIndex
 }
 
-// Column represents a generic column configuration for exports
+// Column represents a single column definition for table exports.
+// Columns can be nested to create hierarchical structures, allowing for
+// complex header layouts and grouped data organization.
 type Column struct {
-	Name    string
-	Label   string
-	Format  string
-	Merge   *MergeConfig
-	Border  BorderConfig
-	Style   *StyleConfig
-	Columns Columns
+	Name    string       // Field name in the data source (for leaf columns)
+	Label   string       // Display label for headers
+	Format  string       // Format specification for value processing (e.g., date format)
+	Merge   *MergeConfig // Optional merge configuration for this column
+	Border  BorderConfig // Border styling configuration
+	Style   *StyleConfig // Text and cell styling configuration
+	Columns Columns      // Sub-columns for hierarchical structures
 }
 
-// HasSubColumns checks if this column has sub-columns
-func (c Column) HasSubColumns() bool {
+// hasSubColumns checks if this column contains nested sub-columns.
+func (c Column) hasSubColumns() bool {
 	return len(c.Columns) > 0
 }
 
-// GetColumnCount returns the number of actual columns this Column represents
-func (c Column) GetColumnCount() int {
-	if c.HasSubColumns() {
+// getColumnCount returns the total number of leaf columns represented by this column.
+// For leaf columns, this returns 1. For parent columns, it recursively counts
+// all leaf columns within the hierarchy.
+func (c Column) getColumnCount() int {
+	if c.hasSubColumns() {
+		// Recursively count all leaf columns in sub-columns
 		total := 0
 		for _, subCol := range c.Columns {
-			total += subCol.GetColumnCount()
+			total += subCol.getColumnCount()
 		}
 		return total
 	}
-	return 1
+	return 1 // Leaf column represents exactly one data column
 }
 
+// Columns represents a collection of column definitions.
 type Columns []Column
 
-// GetTotalColumnCount calculates the total number of columns considering sub-columns
-func (c Columns) GetTotalColumnCount() int {
+// getTotalColumnCount calculates the total number of leaf columns in the collection.
+func (c Columns) getTotalColumnCount() int {
 	total := 0
 	for _, column := range c {
-		total += column.GetColumnCount()
+		total += column.getColumnCount()
 	}
 	return total
 }
 
-// GetColumnsLabels returns the labels from a slice of columns
-func (c Columns) GetColumnsLabels() []string {
+// getColumnsLabels returns the display labels from all columns in the collection.
+func (c Columns) getColumnsLabels() []string {
 	labels := make([]string, 0, len(c))
 	for _, column := range c {
 		labels = append(labels, column.Label)
@@ -84,25 +98,30 @@ func (c Columns) GetColumnsLabels() []string {
 	return labels
 }
 
-// GetFlattenedColumns returns a flattened list of all leaf columns (columns without sub-columns)
-func (c Columns) GetFlattenedColumns() []Column {
+// getFlattenedColumns returns a flattened list of all leaf columns.
+// This traverses the entire column hierarchy and extracts only the columns
+// that actually contain data (those without sub-columns).
+func (c Columns) getFlattenedColumns() []Column {
 	var flattened []Column
 	for _, column := range c {
-		if column.HasSubColumns() {
-			flattened = append(flattened, column.Columns.GetFlattenedColumns()...)
+		if column.hasSubColumns() {
+			// Recursively flatten sub-columns
+			flattened = append(flattened, column.Columns.getFlattenedColumns()...)
 		} else {
+			// Add leaf column directly
 			flattened = append(flattened, column)
 		}
 	}
 	return flattened
 }
 
-// GetMaxDepth returns the maximum depth of the column hierarchy
-func (c Columns) GetMaxDepth() int {
+// getMaxDepth returns the maximum depth of the column hierarchy.
+func (c Columns) getMaxDepth() int {
 	maxDepth := 1
 	for _, column := range c {
-		if column.HasSubColumns() {
-			depth := 1 + column.Columns.GetMaxDepth()
+		if column.hasSubColumns() {
+			// Recursively calculate depth including this level
+			depth := 1 + column.Columns.getMaxDepth()
 			if depth > maxDepth {
 				maxDepth = depth
 			}
@@ -111,185 +130,202 @@ func (c Columns) GetMaxDepth() int {
 	return maxDepth
 }
 
-// GetParentColumnByIndex traverses the column hierarchy and returns the parent column for the given colIndex
-func (c Columns) GetParentColumnByIndex(colIndex int) *Column {
+// getParentColumnByIndex traverses the column hierarchy to find the parent column
+// for a given column index.
+func (c Columns) getParentColumnByIndex(colIndex int) *Column {
+	// Use a helper function to maintain state during recursive traversal
 	var helper func(cols Columns, targetIdx int, parent *Column, currentIdx *int) *Column
 	helper = func(cols Columns, targetIdx int, parent *Column, currentIdx *int) *Column {
 		for i := 0; i < len(cols); i++ {
 			col := &cols[i]
-			if col.HasSubColumns() {
+			if col.hasSubColumns() {
+				// Recursively search in sub-columns with this column as parent
 				result := helper(col.Columns, targetIdx, col, currentIdx)
 				if result != nil {
-					return result
+					return result // Found the target in sub-columns
 				}
 			} else {
+				// Check if this leaf column matches the target index
 				if *currentIdx == targetIdx {
-					return parent
+					return parent // Return the parent of the matching column
 				}
-				*currentIdx++
+				*currentIdx++ // Move to next leaf column
 			}
 		}
-		return nil
+		return nil // Target not found in this branch
 	}
+
 	idx := 0
 	return helper(c, colIndex, nil, &idx)
 }
 
-// GetColumnIndex returns the index of the target column in the hierarchy
-func (c Columns) GetColumnIndex(target *Column) int {
+// getColumnIndex returns the index of a specific column within the hierarchy.
+func (c Columns) getColumnIndex(target *Column) int {
 	currentIndex := 1
 
+	// Recursive helper function to traverse the hierarchy
 	var findIndex func(cols Columns, target *Column, currentIdx *int) bool
 	findIndex = func(cols Columns, target *Column, currentIdx *int) bool {
 		for i := range cols {
 			col := &cols[i]
 			if col == target {
-				return true
+				return true // Found the target column
 			}
 
-			if col.HasSubColumns() {
+			if col.hasSubColumns() {
+				// Search recursively in sub-columns
 				if findIndex(col.Columns, target, currentIdx) {
 					return true
 				}
 			} else {
+				// Move to next position for leaf columns
 				*currentIdx++
 			}
 		}
-		return false
+		return false // Target not found in this branch
 	}
 
 	if findIndex(c, target, &currentIndex) {
 		return currentIndex
 	}
 
-	return 0
+	return 0 // Column not found
 }
 
-type RowConfigs map[int]RowConfig // Maps row index to RowConfig
+// RowConfigs maps row indices to their specific configurations.
+type RowConfigs map[int]RowConfig
 
-// RowConfig represents configuration for a specific row in the export
+// RowConfig represents configuration options for a specific row in the export.
+// This allows fine-grained control over individual rows, overriding default
+// column-based settings when needed.
 type RowConfig struct {
-	RowIndex int           // The index of the row (1-based)
-	Border   *BorderConfig // Border for the row
-	Merge    *MergeConfig  // Merge config for the row
-	Style    *StyleConfig  // Style configuration for the row
+	RowIndex int           // The 0-based index of the row this configuration applies to
+	Border   *BorderConfig // Optional border configuration for the entire row
+	Merge    *MergeConfig  // Optional merge configuration that overrides column settings
+	Style    *StyleConfig  // Optional style configuration for the entire row
 }
 
-type CellConfigs map[int]CellConfigsByRow // Maps col index to CellConfigsByRow
-type CellConfigsByRow map[int]CellConfig  // Maps row index to CellConfig
+// CellConfigs provides cell-level configuration mapping.
+// The outer map keys are column indices, inner map keys are row indices.
+type CellConfigs map[int]CellConfigsByRow
 
+// CellConfigsByRow maps row indices to cell configurations for a specific column.
+type CellConfigsByRow map[int]CellConfig
+
+// CellConfig represents configuration options for a specific cell.
+// This provides the finest level of control, allowing individual cells
+// to override both column and row settings.
 type CellConfig struct {
-	RowIndex  int
-	ColIndex  int
-	Border    *BorderConfig
-	Style     *StyleConfig
-	Mergeable bool
+	RowIndex  int           // The 0-based row index of this cell
+	ColIndex  int           // The 0-based column index of this cell
+	Border    *BorderConfig // Optional border configuration for this cell
+	Style     *StyleConfig  // Optional style configuration for this cell
+	Mergeable bool          // Whether this cell can participate in merge operations
 }
 
-// columnMergeInfo holds information about a column that's part of a merge group
-type columnMerge struct {
-	column   Column
-	startCol int
-	endCol   int
-	value    string
-}
-
-// MergeCondition defines possible conditions for merging cells
-// e.g. identical, empty, custom, etc.
+// MergeCondition defines the conditions under which cells should be merged.
+// These conditions are evaluated when determining whether adjacent cells
+// should be combined into a single merged cell.
 type MergeCondition string
 
 const (
+	// MergeConditionIdentical merges cells when their values are identical and non-empty
 	MergeConditionIdentical MergeCondition = "identical"
-	MergeConditionEmpty     MergeCondition = "empty"
+
+	// MergeConditionEmpty merges cells when both values are empty or nil
+	MergeConditionEmpty MergeCondition = "empty"
 )
 
-// MergeConfig holds merge conditions for a column
-// If Conditions is empty, no merging is applied
-// If not, merge is applied for listed conditions
-// Example: MergeConfig{Conditions: []MergeCondition{MergeConditionIdentical, MergeConditionEmpty}}
+// MergeConfig holds merge conditions for columns and rows.
+// It defines when and how cells should be merged based on their content.
+// Empty conditions arrays mean no merging will be applied.
 type MergeConfig struct {
-	Vertical   []MergeCondition `json:"vertical,omitempty"`   // Vertical merge conditions (between rows)
-	Horizontal []MergeCondition `json:"horizontal,omitempty"` // Horizontal merge conditions (between columns)
+	Vertical   []MergeCondition `json:"vertical,omitempty"`   // Conditions for merging cells vertically (between rows)
+	Horizontal []MergeCondition `json:"horizontal,omitempty"` // Conditions for merging cells horizontally (between columns)
 }
 
-// areMergeConditionsCompatible checks if two sets of merge conditions are compatible
+// areMergeConditionsCompatible checks if two sets of merge conditions share at least one common condition.
+// This is used to determine if two cells or ranges can be merged together based on their configurations.
 func areMergeConditionsCompatible(conditions1, conditions2 []MergeCondition) bool {
 	for _, cond1 := range conditions1 {
 		for _, cond2 := range conditions2 {
 			if cond1 == cond2 {
-				return true
+				return true // Found a matching condition
 			}
 		}
 	}
-	return false
+	return false // No compatible conditions found
 }
 
-// evaluateMergeConditions determines if values should be merged based on merge conditions
-// This unified function handles all merge scenarios: cell-to-cell, horizontal, and vertical
+// evaluateMergeConditions determines if two values should be merged based on the specified conditions.
 func evaluateMergeConditions(value1, value2 interface{}, conditions []MergeCondition) bool {
 	if len(conditions) == 0 {
-		return false
+		return false // No conditions specified - don't merge
 	}
 
-	// Convert values to strings for comparison
+	// Convert values to strings for consistent comparison
 	val1Str := strings.TrimSpace(fmt.Sprintf("%v", value1))
 	val2Str := strings.TrimSpace(fmt.Sprintf("%v", value2))
 
-	// Check for empty values
+	// Determine if values are considered empty
 	isEmpty1 := val1Str == "" || val1Str == "<nil>"
 	isEmpty2 := val2Str == "" || val2Str == "<nil>"
 
+	// Evaluate each condition to see if any match
 	for _, condition := range conditions {
 		switch condition {
 		case MergeConditionIdentical:
+			// Merge if values are identical and both are non-empty
 			if val1Str == val2Str && !isEmpty1 && !isEmpty2 {
 				return true
 			}
 		case MergeConditionEmpty:
+			// Merge if both values are empty
 			if isEmpty1 && isEmpty2 {
 				return true
 			}
 		}
 	}
-	return false
+	return false // No conditions matched
 }
 
-// BorderStyle represents the style of a border
+// BorderStyle represents the visual style of cell borders.
+// These constants correspond to common border styles available in spreadsheet applications.
 type BorderStyle int
 
 const (
-	BorderStyleNone   BorderStyle = 0
-	BorderStyleThin   BorderStyle = 1
-	BorderStyleMedium BorderStyle = 2
-	BorderStyleDashed BorderStyle = 3
-	BorderStyleDotted BorderStyle = 4
-	BorderStyleThick  BorderStyle = 5
-	BorderStyleDouble BorderStyle = 6
+	BorderStyleNone   BorderStyle = 0 // No border
+	BorderStyleThin   BorderStyle = 1 // Thin solid line
+	BorderStyleMedium BorderStyle = 2 // Medium thickness solid line
+	BorderStyleDashed BorderStyle = 3 // Dashed line
+	BorderStyleDotted BorderStyle = 4 // Dotted line
+	BorderStyleThick  BorderStyle = 5 // Thick solid line
+	BorderStyleDouble BorderStyle = 6 // Double line
 )
 
-// BorderSide represents configuration for one side of a border
+// BorderSide represents the configuration for one side of a cell border.
 type BorderSide struct {
-	Style BorderStyle
+	Style BorderStyle // The visual style to apply to this border side
 }
 
-// BorderConfig represents border configuration for a column
+// BorderConfig represents complete border configuration for a cell, row, or column.
 type BorderConfig struct {
-	Left   *BorderSide
-	Right  *BorderSide
-	Top    *BorderSide
-	Bottom *BorderSide
-	Inner  *BorderConfig
+	Left   *BorderSide   // Left border configuration
+	Right  *BorderSide   // Right border configuration
+	Top    *BorderSide   // Top border configuration
+	Bottom *BorderSide   // Bottom border configuration
+	Inner  *BorderConfig // Inner borders for ranges (used in some contexts)
 }
 
-// HasBorders checks if any borders are configured
-func (bc BorderConfig) HasBorders() bool {
+// hasBorders checks if any borders are configured in this BorderConfig.
+func (bc BorderConfig) hasBorders() bool {
 	return (bc.Left != nil && bc.Left.Style != BorderStyleNone) ||
 		(bc.Right != nil && bc.Right.Style != BorderStyleNone) ||
 		(bc.Top != nil && bc.Top.Style != BorderStyleNone) ||
 		(bc.Bottom != nil && bc.Bottom.Style != BorderStyleNone)
 }
 
-// SetInner sets the inner border configuration to the same style for all sides
+// SetInner creates inner border configuration with the same style for all sides.
 func (bc BorderConfig) SetInner(style BorderStyle) BorderConfig {
 	side := &BorderSide{Style: style}
 	bc.Inner = &BorderConfig{
@@ -301,7 +337,7 @@ func (bc BorderConfig) SetInner(style BorderStyle) BorderConfig {
 	return bc
 }
 
-// NewBorderConfig creates a BorderConfig with the same style applied to all sides
+// NewBorderConfig creates a BorderConfig with the same style applied to all sides.
 func NewBorderConfig(style BorderStyle) BorderConfig {
 	side := &BorderSide{Style: style}
 	return BorderConfig{
@@ -312,34 +348,35 @@ func NewBorderConfig(style BorderStyle) BorderConfig {
 	}
 }
 
+// StyleConfig represents comprehensive styling configuration for cells.
 type StyleConfig struct {
-	Bold            bool
-	Italic          bool
-	Underline       string
-	TextColor       string
-	BackgroundColor string
-	FontSize        float64
-	FontFamily      string
-	Alignment       CellAlignment
+	Bold            bool          // Whether text should be bold
+	Italic          bool          // Whether text should be italic
+	Underline       string        // Underline style (format-specific values)
+	TextColor       string        // Text color (usually hex format: "#RRGGBB")
+	BackgroundColor string        // Cell background color (usually hex format: "#RRGGBB")
+	FontSize        float64       // Font size in points
+	FontFamily      string        // Font family name (e.g., "Arial", "Times New Roman")
+	Alignment       CellAlignment // Text alignment within the cell
 }
 
-// CellAlignment represents the alignment options for cell content
+// CellAlignment represents the alignment options for cell content.
 type CellAlignment int
 
 const (
-	AlignmentNone CellAlignment = iota
-	AlignmentLeft
-	AlignmentCenter
-	AlignmentRight
-	AlignmentTop
-	AlignmentMiddle
-	AlignmentBottom
-	AlignmentCenterMiddle
-	AlignmentLeftMiddle
-	AlignmentRightMiddle
+	AlignmentNone         CellAlignment = iota // Use default alignment
+	AlignmentLeft                              // Left-aligned text, top-aligned vertically
+	AlignmentCenter                            // Center-aligned text, top-aligned vertically
+	AlignmentRight                             // Right-aligned text, top-aligned vertically
+	AlignmentTop                               // Left-aligned text, top-aligned vertically
+	AlignmentMiddle                            // Left-aligned text, center-aligned vertically
+	AlignmentBottom                            // Left-aligned text, bottom-aligned vertically
+	AlignmentCenterMiddle                      // Center-aligned text, center-aligned vertically
+	AlignmentLeftMiddle                        // Left-aligned text, center-aligned vertically
+	AlignmentRightMiddle                       // Right-aligned text, center-aligned vertically
 )
 
-// getAlignmentValues converts CellAlignment enum to horizontal and vertical alignment strings
+// getAlignmentValues converts CellAlignment enum to horizontal and vertical alignment strings.
 func (ca CellAlignment) getAlignmentValues() (horizontal, vertical string) {
 	switch ca {
 	case AlignmentLeft:
@@ -361,6 +398,6 @@ func (ca CellAlignment) getAlignmentValues() (horizontal, vertical string) {
 	case AlignmentRightMiddle:
 		return "right", "center"
 	default:
-		return "left", "top" // Default alignment
+		return "left", "top" // Default alignment for unspecified cases
 	}
 }
