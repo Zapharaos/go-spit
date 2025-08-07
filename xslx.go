@@ -9,15 +9,9 @@ import (
 
 // XLSX contains XLSX-specific export parameters
 type XLSX struct {
-	File          *excelize.File
-	Data          DataSlice
-	Columns       Columns
-	RowConfigs    RowConfigs  // Optional row configurations
-	CellConfigs   CellConfigs // Optional cell configurations
-	Limit         int64
-	ListSeparator string
-	WriteHeader   bool
-	SheetName     string
+	File      *excelize.File
+	SheetName string
+	Table
 }
 
 // GetColumnsLabel returns the label of the columns (XLSX-specific method)
@@ -93,6 +87,41 @@ func (xlsx XLSX) writeData() error {
 			colIndex++
 		}
 		currentRow++
+	}
+
+	/*// Apply vertical merging for mergeable columns
+	if err = c.applyColumnVerticalMerging(); err != nil {
+		logger.L().Warn("Failed to apply vertical column merging", logger.Error(err))
+	}
+
+	// Apply horizontal merging for mergeable columns (now handles both flat and nested columns recursively)
+	if err = c.applyColumnHorizontalMerging(); err != nil {
+		logger.L().Warn("Failed to apply horizontal column merging", logger.Error(err))
+	}
+
+	// Apply column borders
+	if err = c.applyColumnBorders(); err != nil {
+		logger.L().Warn("Failed to apply column borders", logger.Error(err))
+	}
+
+	// Apply row configurations : potential merging
+	if err = c.applyRowConfigs(); err != nil {
+		logger.L().Warn("Failed to apply row configurations", logger.Error(err))
+	}
+
+	// Apply cell configurations
+	if err = c.applyCellConfigs(); err != nil {
+		logger.L().Warn("Failed to apply cell configurations", logger.Error(err))
+	}*/
+
+	// Apply cell styles after all operations are complete
+	if err = xlsx.applyCellStyles(); err != nil {
+		L().Warn("Failed to apply cell styles", Error(err))
+	}
+
+	// Auto-fit columns
+	if err = xlsx.autoFitColumns(); err != nil {
+		L().Warn("Failed to auto-fit columns", Error(err))
 	}
 
 	return nil
@@ -296,4 +325,13 @@ func (xlsx XLSX) processValue(value interface{}, format string) (interface{}, er
 		}
 		return fmt.Sprintf("%v", value), nil
 	}
+}
+
+// getColumnLetter returns the Excel column letter for a given column index (1-based)
+func (xlsx XLSX) getColumnLetter(colIndex int) string {
+	colLetter, err := excelize.ColumnNumberToName(colIndex)
+	if err != nil {
+		return "A" // Fallback to column A if conversion fails
+	}
+	return colLetter
 }

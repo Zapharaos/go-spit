@@ -9,12 +9,9 @@ import (
 
 // CSV contains CSV-specific export parameters
 type CSV struct {
-	Writer        *stdcsv.Writer
-	Columns       Columns
-	Separator     string
-	Limit         int64
-	ListSeparator string
-	WriteHeader   bool
+	Writer    *stdcsv.Writer
+	Separator string
+	Table
 }
 
 // GetColumnsLabel returns the label of the columns (CSV-specific method)
@@ -23,7 +20,7 @@ func (csv CSV) GetColumnsLabel() []string {
 }
 
 // WriteDataToFile writes generic data to file using the generic file writer
-func (csv CSV) WriteDataToFile(data DataSlice, options FileWriteOptions) (*FileWriteResult, error) {
+func (csv CSV) WriteDataToFile(options FileWriteOptions) (*FileWriteResult, error) {
 	// Ensure extension is set for CSV files
 	if options.Extension == "" {
 		options.Extension = FormatCSV.String()
@@ -31,14 +28,14 @@ func (csv CSV) WriteDataToFile(data DataSlice, options FileWriteOptions) (*FileW
 
 	writeFunc := func(writer io.Writer) error {
 		csv.Writer = stdcsv.NewWriter(writer)
-		return csv.writeData(data)
+		return csv.writeData()
 	}
 
 	return options.writeToFile(writeFunc)
 }
 
 // writeData writes the provided data to the CSV writer
-func (csv CSV) writeData(data DataSlice) error {
+func (csv CSV) writeData() error {
 	if len(csv.Separator) == 1 {
 		csv.Writer.Comma, _ = utf8.DecodeRune([]byte(csv.Separator))
 		if csv.Writer.Comma == utf8.RuneError {
@@ -59,7 +56,7 @@ func (csv CSV) writeData(data DataSlice) error {
 	}
 
 	// Write data rows
-	for _, item := range data {
+	for _, item := range csv.Data {
 		record := make([]string, 0, len(flatColumns))
 		for _, column := range flatColumns {
 			value, err := item.Lookup(column.Name)

@@ -5,7 +5,36 @@ import (
 	"strings"
 )
 
-type Columns []Column
+// TODO : make functions private
+
+type Table struct {
+	Data          DataSlice
+	Columns       Columns
+	RowConfigs    RowConfigs  // Optional row configurations
+	CellConfigs   CellConfigs // Optional cell configurations
+	WriteHeader   bool
+	Limit         int64
+	ListSeparator string
+}
+
+func (t Table) GetDataStartRow() int {
+	dataStartRow := 1
+	if t.WriteHeader && len(t.Columns) > 0 {
+		// Calculate the maximum depth of the column hierarchy
+		maxDepth := t.Columns.GetMaxDepth()
+		dataStartRow = maxDepth + 1
+	}
+	return dataStartRow
+}
+
+func (t Table) GetDataIndexFromRowIndex(rowIndex int) int {
+	if t.WriteHeader {
+		// Adjust row index to match the rowConfigs map
+		headerShift := t.GetDataStartRow()
+		return rowIndex - headerShift
+	}
+	return rowIndex
+}
 
 // Column represents a generic column configuration for exports
 type Column struct {
@@ -34,6 +63,8 @@ func (c Column) GetColumnCount() int {
 	}
 	return 1
 }
+
+type Columns []Column
 
 // GetTotalColumnCount calculates the total number of columns considering sub-columns
 func (c Columns) GetTotalColumnCount() int {
@@ -104,6 +135,36 @@ func (c Columns) GetParentColumnByIndex(colIndex int) *Column {
 	return helper(c, colIndex, nil, &idx)
 }
 
+// GetColumnIndex returns the index of the target column in the hierarchy
+func (c Columns) GetColumnIndex(target *Column) int {
+	currentIndex := 1
+
+	var findIndex func(cols Columns, target *Column, currentIdx *int) bool
+	findIndex = func(cols Columns, target *Column, currentIdx *int) bool {
+		for i := range cols {
+			col := &cols[i]
+			if col == target {
+				return true
+			}
+
+			if col.HasSubColumns() {
+				if findIndex(col.Columns, target, currentIdx) {
+					return true
+				}
+			} else {
+				*currentIdx++
+			}
+		}
+		return false
+	}
+
+	if findIndex(c, target, &currentIndex) {
+		return currentIndex
+	}
+
+	return 0
+}
+
 type RowConfigs map[int]RowConfig // Maps row index to RowConfig
 
 // RowConfig represents configuration for a specific row in the export
@@ -125,6 +186,14 @@ type CellConfig struct {
 	Mergeable bool
 }
 
+// columnMergeInfo holds information about a column that's part of a merge group
+type columnMerge struct {
+	column   Column
+	startCol int
+	endCol   int
+	value    string
+}
+
 // MergeCondition defines possible conditions for merging cells
 // e.g. identical, empty, custom, etc.
 type MergeCondition string
@@ -143,8 +212,8 @@ type MergeConfig struct {
 	Horizontal []MergeCondition `json:"horizontal,omitempty"` // Horizontal merge conditions (between columns)
 }
 
-// AreMergeConditionsCompatible checks if two sets of merge conditions are compatible
-func AreMergeConditionsCompatible(conditions1, conditions2 []MergeCondition) bool {
+// areMergeConditionsCompatible checks if two sets of merge conditions are compatible
+func areMergeConditionsCompatible(conditions1, conditions2 []MergeCondition) bool {
 	for _, cond1 := range conditions1 {
 		for _, cond2 := range conditions2 {
 			if cond1 == cond2 {
@@ -155,9 +224,9 @@ func AreMergeConditionsCompatible(conditions1, conditions2 []MergeCondition) boo
 	return false
 }
 
-// EvaluateMergeConditions determines if values should be merged based on merge conditions
+// evaluateMergeConditions determines if values should be merged based on merge conditions
 // This unified function handles all merge scenarios: cell-to-cell, horizontal, and vertical
-func EvaluateMergeConditions(value1, value2 interface{}, conditions []MergeCondition) bool {
+func evaluateMergeConditions(value1, value2 interface{}, conditions []MergeCondition) bool {
 	if len(conditions) == 0 {
 		return false
 	}
@@ -269,3 +338,29 @@ const (
 	AlignmentLeftMiddle
 	AlignmentRightMiddle
 )
+
+// getAlignmentValues converts CellAlignment enum to horizontal and vertical alignment strings
+func (ca CellAlignment) getAlignmentValues() (horizontal, vertical string) {
+	switch ca {
+	case AlignmentLeft:
+		return "left", "top"
+	case AlignmentCenter:
+		return "center", "top"
+	case AlignmentRight:
+		return "right", "top"
+	case AlignmentTop:
+		return "left", "top"
+	case AlignmentMiddle:
+		return "left", "center"
+	case AlignmentBottom:
+		return "left", "bottom"
+	case AlignmentCenterMiddle:
+		return "center", "center"
+	case AlignmentLeftMiddle:
+		return "left", "center"
+	case AlignmentRightMiddle:
+		return "right", "center"
+	default:
+		return "left", "top" // Default alignment
+	}
+}
