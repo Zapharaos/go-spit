@@ -1,18 +1,20 @@
-package go_spit
+package utils
 
 import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/Zapharaos/go-spit/internal/logger"
 )
 
-// convertSliceToString Take a slice []interface{}, format and returns the elements separated by custom separator.
-func convertSliceToString(slice []interface{}, format string, separator string) (string, error) {
+// ConvertSliceToString Take a slice []interface{}, format and returns the elements separated by custom separator.
+func ConvertSliceToString(slice []interface{}, format string, separator string) (string, error) {
 	var strValues []string
 	for _, elem := range slice {
 		if format != "" {
 			var err error
-			elem, err = formatValue(elem, format)
+			elem, err = FormatValue(elem, format)
 			if err != nil {
 				return "", err
 			}
@@ -22,8 +24,8 @@ func convertSliceToString(slice []interface{}, format string, separator string) 
 	return strings.Join(strValues, separator), nil
 }
 
-// formatValue Apply the specified format to a given value.
-func formatValue(value interface{}, format string) (interface{}, error) {
+// FormatValue Apply the specified format to a given value.
+func FormatValue(value interface{}, format string) (interface{}, error) {
 	switch v := value.(type) {
 	case time.Time:
 		return v.Format(format), nil
@@ -32,7 +34,7 @@ func formatValue(value interface{}, format string) (interface{}, error) {
 		if err == nil {
 			return date.Format(format), nil
 		}
-		L().Error("Failed to parse date string:", Any("value", v), Error(err))
+		logger.L().Error("Failed to parse date string:", logger.Any("value", v), logger.Error(err))
 		return nil, err
 	}
 	return value, nil
