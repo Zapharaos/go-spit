@@ -105,6 +105,15 @@ func (xlsx *XLSX) writeData() error {
 		currentRow++
 	}
 
+	// Render additional data like merging and styles
+	if err := t.ProcessMerging(xlsx.Spreadsheet); err != nil {
+		logger.L().Warn("Failed to render merging data to Excel file", logger.Error(err))
+	}
+
+	if err := t.RenderStyles(xlsx.Spreadsheet); err != nil {
+		logger.L().Warn("Failed to render styles to Excel file", logger.Error(err))
+	}
+
 	// Auto-fit columns
 	if err := xlsx.autoFitColumns(); err != nil {
 		logger.L().Warn("Failed to auto-fit columns", logger.Error(err))
@@ -132,67 +141,37 @@ func (xlsx *XLSX) writeHeaders() int {
 				logger.L().Warn("Failed to set header cell value", logger.Error(err))
 			}
 		}
-
-		if err := xlsx.styleHeaders(nbColumns, 1); err != nil {
-			logger.L().Warn("Failed to apply header styling", logger.Error(err))
-		}
 		return 1
 	}
 
 	xlsx.writeHeaderRow(t.Columns, 1, maxDepth, 1)
-
-	totalColumns := t.Columns.GetTotalColumnCount()
-	if err := xlsx.styleHeaders(totalColumns, maxDepth); err != nil {
-		logger.L().Warn("Failed to apply header styling", logger.Error(err))
-	}
-
 	return maxDepth
 }
 
-// writeHeaderRow writes a specific header row, handling merging and alignment
+// writeHeaderRow writes a specific header row, handling hierarchical structure
 func (xlsx *XLSX) writeHeaderRow(columns table.Columns, currentRow, maxDepth, startCol int) int {
 	currentCol := startCol
 
 	for _, column := range columns {
+		// Write the header cell value
 		if err := xlsx.Spreadsheet.SetCellValue(currentCol, currentRow, column.Label); err != nil {
 			logger.L().Warn("Failed to set header cell value", logger.Error(err))
 		}
 
 		if column.HasSubColumns() {
-			columnSpan := column.GetColumnCount()
-			endCol := currentCol + columnSpan - 1
-			if endCol > currentCol {
-				if err := xlsx.Spreadsheet.MergeCells(currentCol, currentRow, endCol, currentRow); err != nil {
-					logger.L().Warn("Failed to merge header cells horizontally", logger.Error(err))
-				}
-			}
-
+			// Process sub-columns recursively for hierarchical headers
 			if currentRow < maxDepth {
 				xlsx.writeHeaderRow(column.Columns, currentRow+1, maxDepth, currentCol)
 			}
-			currentCol += columnSpan
+			// Move to next column position after all sub-columns
+			currentCol += column.GetColumnCount()
 		} else {
-			if currentRow < maxDepth {
-				if err := xlsx.Spreadsheet.MergeCells(currentCol, currentRow, currentCol, maxDepth); err != nil {
-					logger.L().Warn("Failed to merge header cells vertically", logger.Error(err))
-				}
-			}
+			// Simple leaf column - move to next position
 			currentCol++
 		}
 	}
 
 	return currentCol
-}
-
-// styleHeaders applies styling to multi-level headers
-func (xlsx *XLSX) styleHeaders(col, rows int) error {
-	headerStyle := table.StyleConfig{
-		Bold:            true,
-		BackgroundColor: "#E0E0E0",
-		Alignment:       table.AlignmentCenter,
-	}
-
-	return xlsx.Spreadsheet.ApplyRangeStyle(1, 1, col, rows, headerStyle)
 }
 
 // writeCell writes a single cell item
