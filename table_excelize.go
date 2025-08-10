@@ -29,12 +29,12 @@ func NewTableExcelize(file *excelize.File, sheetName string, table *Table) *Tabl
 	}
 }
 
-// GetTable returns the underlying Table struct for direct access/manipulation.
+// getTable returns the underlying Table struct for direct access/manipulation.
 func (e *TableExcelize) getTable() *Table {
 	return e.Table
 }
 
-// GetCellValue returns the value of a cell at the given column and row (1-based indices).
+// getCellValue returns the value of a cell at the given column and row (1-based indices).
 // Converts coordinates to Excel cell reference and retrieves the value from the sheet.
 func (e *TableExcelize) getCellValue(col, row int) (string, error) {
 	cellRef, err := excelize.CoordinatesToCellName(col, row)
@@ -44,7 +44,7 @@ func (e *TableExcelize) getCellValue(col, row int) (string, error) {
 	return e.File.GetCellValue(e.SheetName, cellRef)
 }
 
-// SetCellValue sets the value of a cell at the given column and row.
+// setCellValue sets the value of a cell at the given column and row.
 // Converts coordinates to Excel cell reference and sets the value in the sheet.
 func (e *TableExcelize) setCellValue(col, row int, value interface{}) error {
 	cellRef, err := excelize.CoordinatesToCellName(col, row)
@@ -54,7 +54,7 @@ func (e *TableExcelize) setCellValue(col, row int, value interface{}) error {
 	return e.File.SetCellValue(e.SheetName, cellRef, value)
 }
 
-// MergeCells merges a rectangular range of cells from start to end coordinates.
+// mergeCells merges a rectangular range of cells from start to end coordinates.
 // Converts coordinates to Excel cell references and merges the specified range.
 func (e *TableExcelize) mergeCells(startCol, startRow, endCol, endRow int) error {
 	startCell, err1 := excelize.CoordinatesToCellName(startCol, startRow)
@@ -65,7 +65,7 @@ func (e *TableExcelize) mergeCells(startCol, startRow, endCol, endRow int) error
 	return e.File.MergeCell(e.SheetName, startCell, endCell)
 }
 
-// IsCellMerged checks if a cell at the given column and row is merged with others.
+// isCellMerged checks if a cell at the given column and row is merged with others.
 // Returns true if the cell is part of a merged range, false otherwise.
 func (e *TableExcelize) isCellMerged(col, row int) bool {
 	cellRef, err := excelize.CoordinatesToCellName(col, row)
@@ -85,7 +85,7 @@ func (e *TableExcelize) isCellMerged(col, row int) bool {
 	return false
 }
 
-// IsCellMergedHorizontally checks if a cell at the given column and row is merged horizontally.
+// isCellMergedHorizontally checks if a cell at the given column and row is merged horizontally.
 // Returns true if the cell is part of a horizontally merged range, false otherwise.
 func (e *TableExcelize) isCellMergedHorizontally(col, row int) bool {
 	cellRef, err := excelize.CoordinatesToCellName(col, row)
@@ -107,19 +107,45 @@ func (e *TableExcelize) isCellMergedHorizontally(col, row int) bool {
 	return false
 }
 
-// ApplyBorderToCell applies a border to a specific side of a cell at the given column and row.
+// applyBorderToCell applies a border to a specific side of a cell at the given column and row.
 // The border style is defined by the Border parameter.
 func (e *TableExcelize) applyBorderToCell(col, row int, side string, border *Border) error {
 	cellRef, err := excelize.CoordinatesToCellName(col, row)
 	if err != nil {
 		return err
 	}
-	return e.applyCellBorder(cellRef, side, border)
+	if border == nil || border.Style == BorderStyleNone {
+		return nil
+	}
+
+	// Create the style with border
+	style := &excelize.Style{}
+	excelBorderStyle := convertBorderStyleToExcelize(border.Style)
+
+	switch side {
+	case "left":
+		style.Border = []excelize.Border{{Type: "left", Color: "000000", Style: excelBorderStyle}}
+	case "right":
+		style.Border = []excelize.Border{{Type: "right", Color: "000000", Style: excelBorderStyle}}
+	case "top":
+		style.Border = []excelize.Border{{Type: "top", Color: "000000", Style: excelBorderStyle}}
+	case "bottom":
+		style.Border = []excelize.Border{{Type: "bottom", Color: "000000", Style: excelBorderStyle}}
+	default:
+		return fmt.Errorf("unsupported border side: %s", side)
+	}
+
+	styleID, err := e.File.NewStyle(style)
+	if err != nil {
+		return err
+	}
+
+	return e.File.SetCellStyle(e.SheetName, cellRef, cellRef, styleID)
 }
 
-// ApplyBorderToRange applies borders to a range of cells defined by start and end coordinates.
+// applyBordersToRange applies borders to a range of cells defined by start and end coordinates.
 // Each side of the range can have a different border style, as specified in the Borders parameter.
-func (e *TableExcelize) applyBorderToRange(startCol, startRow, endCol, endRow int, borders Borders) error {
+func (e *TableExcelize) applyBordersToRange(startCol, startRow, endCol, endRow int, borders Borders) error {
 	for row := startRow; row <= endRow; row++ {
 		for col := startCol; col <= endCol; col++ {
 			if col == startCol && borders.Left != nil {
@@ -147,7 +173,7 @@ func (e *TableExcelize) applyBorderToRange(startCol, startRow, endCol, endRow in
 	return nil
 }
 
-// HasExistingBorder checks if a cell at the given column and row has any existing border applied.
+// hasExistingBorder checks if a cell at the given column and row has any existing border applied.
 // Returns true if there is a border style applied, false otherwise.
 func (e *TableExcelize) hasExistingBorder(col, row int, side string) bool {
 	cellRef, err := excelize.CoordinatesToCellName(col, row)
@@ -162,17 +188,23 @@ func (e *TableExcelize) hasExistingBorder(col, row int, side string) bool {
 	return styleID > 0
 }
 
-// ApplyStyleToCell applies a style to a cell at the given column and row.
+// applyStyleToCell applies a style to a cell at the given column and row.
 // The style properties are defined in the style parameter.
 func (e *TableExcelize) applyStyleToCell(col, row int, style Style) error {
 	cellRef, err := excelize.CoordinatesToCellName(col, row)
 	if err != nil {
 		return err
 	}
-	return e.applyCellStyle(cellRef, style)
+
+	excelStyle := convertStyleToExcelizeStyle(style)
+	styleID, err := e.File.NewStyle(excelStyle)
+	if err != nil {
+		return err
+	}
+	return e.File.SetCellStyle(e.SheetName, cellRef, cellRef, styleID)
 }
 
-// ApplyStyleToRange applies a style to a range of cells defined by start and end coordinates.
+// applyStyleToRange applies a style to a range of cells defined by start and end coordinates.
 // The style properties are defined in the style parameter.
 func (e *TableExcelize) applyStyleToRange(startCol, startRow, endCol, endRow int, style Style) error {
 	startCell, err1 := excelize.CoordinatesToCellName(startCol, startRow)
@@ -190,13 +222,13 @@ func (e *TableExcelize) applyStyleToRange(startCol, startRow, endCol, endRow int
 	return e.File.SetCellStyle(e.SheetName, startCell, endCell, styleID)
 }
 
-// GetColumnLetter returns the Excel-style column letter (A, B, C, ...) for a given column number.
+// getColumnLetter returns the Excel-style column letter (A, B, C, ...) for a given column number.
 func (e *TableExcelize) getColumnLetter(col int) string {
 	letter, _ := excelize.ColumnNumberToName(col)
 	return letter
 }
 
-// ProcessValue processes and formats a value according to its type and the specified format.
+// processValue processes and formats a value according to its type and the specified format.
 // Supports basic types, time.Time, and slices. Formats value for Excel export.
 func (e *TableExcelize) processValue(value interface{}, format string) (interface{}, error) {
 	switch v := value.(type) {
@@ -240,49 +272,6 @@ func (e *TableExcelize) processValue(value interface{}, format string) (interfac
 		}
 		return fmt.Sprintf("%v", value), nil
 	}
-}
-
-// applyCellBorder applies a border to a cell reference for a specific side (left, right, top, bottom).
-// The border style is determined by the Border parameter.
-func (e *TableExcelize) applyCellBorder(cellRef, borderType string, border *Border) error {
-	if border == nil || border.Style == BorderStyleNone {
-		return nil
-	}
-
-	excelBorderStyle := convertBorderStyleToExcelize(border.Style)
-
-	// Create the style with border
-	style := &excelize.Style{}
-
-	switch borderType {
-	case "left":
-		style.Border = []excelize.Border{{Type: "left", Color: "000000", Style: excelBorderStyle}}
-	case "right":
-		style.Border = []excelize.Border{{Type: "right", Color: "000000", Style: excelBorderStyle}}
-	case "top":
-		style.Border = []excelize.Border{{Type: "top", Color: "000000", Style: excelBorderStyle}}
-	case "bottom":
-		style.Border = []excelize.Border{{Type: "bottom", Color: "000000", Style: excelBorderStyle}}
-	default:
-		return fmt.Errorf("unsupported border type: %s", borderType)
-	}
-
-	styleID, err := e.File.NewStyle(style)
-	if err != nil {
-		return err
-	}
-
-	return e.File.SetCellStyle(e.SheetName, cellRef, cellRef, styleID)
-}
-
-// applyCellStyle applies a style to a cell reference based on the properties defined in the style parameter.
-func (e *TableExcelize) applyCellStyle(cellRef string, style Style) error {
-	excelStyle := convertStyleToExcelizeStyle(style)
-	styleID, err := e.File.NewStyle(excelStyle)
-	if err != nil {
-		return err
-	}
-	return e.File.SetCellStyle(e.SheetName, cellRef, cellRef, styleID)
 }
 
 // convertBorderStyleToExcelize converts a BorderStyle enum value to the corresponding Excelize border style integer.

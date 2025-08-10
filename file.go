@@ -1,4 +1,4 @@
-// file.go - Generic file writing and management for go-spit
+// file.go - Generic file writing and management
 //
 // This file provides utilities for writing data to files with options for filename sanitization, compression, and safe removal.
 
@@ -104,7 +104,6 @@ func (fwo FileWriteOptions) writeToFile(writeFunc func(io.Writer) error) (*FileW
 	fwo.Filename = strings.ToLower(fwo.SanitizeFilename())
 
 	if fwo.Filename == "" {
-		logger.L().Error("filename is empty after sanitization")
 		return nil, fmt.Errorf("filename is empty after sanitization")
 	}
 
@@ -123,7 +122,6 @@ func (fwo FileWriteOptions) writeToFile(writeFunc func(io.Writer) error) (*FileW
 	// Create temporary file
 	tempFile, err := os.CreateTemp("", tempFilePattern)
 	if err != nil {
-		logger.L().Error("failed to create temp file", logger.String("pattern", tempFilePattern), logger.Error(err))
 		return nil, fmt.Errorf("failed to create temp file: %w", err)
 	}
 	tempPath := tempFile.Name()
@@ -137,7 +135,6 @@ func (fwo FileWriteOptions) writeToFile(writeFunc func(io.Writer) error) (*FileW
 	// Check if file already exists when we don't want to overwrite (shouldn't happen with temp files)
 	if !fwo.OverwriteFile {
 		if _, err = os.Stat(tempPath); err == nil {
-			logger.L().Warn("temp file already exists", logger.String("filePath", tempPath))
 			return nil, fmt.Errorf("temp file already exists: %s", tempPath)
 		}
 	}
@@ -162,8 +159,7 @@ func (fwo FileWriteOptions) writeToFile(writeFunc func(io.Writer) error) (*FileW
 	// Write data using the provided write function
 	err = writeFunc(writer)
 	if err != nil {
-		logger.L().Error("failed to write data to file", logger.String("filePath", tempPath), logger.String("fileName", fileName), logger.Error(err))
-		return nil, fmt.Errorf("failed to write data: %w", err)
+		return nil, fmt.Errorf("failed to write data to %s: %w", tempPath, err)
 	}
 
 	logger.L().Info("file written successfully", logger.String("filePath", tempPath), logger.String("fileName", fileName))

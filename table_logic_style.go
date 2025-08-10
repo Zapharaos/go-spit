@@ -32,7 +32,10 @@ func (t *Table) renderStyles(ops tableOperations) error {
 	// Apply row borders
 	for rowIndex := range t.Data {
 		actualRowNum := rowIndex + dataStartRow
-		t.applyRowBorders(rowIndex, actualRowNum, totalColumns, ops)
+		err := t.applyRowBorders(rowIndex, actualRowNum, totalColumns, ops)
+		if err != nil {
+			return fmt.Errorf("failed to apply row borders: %w", err)
+		}
 	}
 
 	// Apply cell-specific borders (applied last to override other border settings)
@@ -87,7 +90,7 @@ func (t *Table) applyHeaderCellStyles(ops tableOperations) error {
 		// Fallback: apply styles to individual header cells
 		for row := 1; row <= maxDepth; row++ {
 			for col := 1; col <= totalColumns; col++ {
-				if err := t.applyCellStyle(&headerStyle, col, row, ops); err != nil {
+				if err = t.applyCellStyle(&headerStyle, col, row, ops); err != nil {
 					logger.L().Warn("Failed to apply header cell style",
 						logger.Int("column", col),
 						logger.Int("row", row),

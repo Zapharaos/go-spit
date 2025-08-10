@@ -110,8 +110,8 @@ func (e *SpreadsheetExcelize) applyBorderToCell(col, row int, side string, borde
 	return e.Table.applyBorderToCell(col, row, side, border)
 }
 
-func (e *SpreadsheetExcelize) applyBorderToRange(startCol, startRow, endCol, endRow int, borders Borders) error {
-	return e.Table.applyBorderToRange(startCol, startRow, endCol, endRow, borders)
+func (e *SpreadsheetExcelize) applyBordersToRange(startCol, startRow, endCol, endRow int, borders Borders) error {
+	return e.Table.applyBordersToRange(startCol, startRow, endCol, endRow, borders)
 }
 
 func (e *SpreadsheetExcelize) hasExistingBorder(col, row int, side string) bool {

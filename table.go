@@ -37,9 +37,9 @@ type tableOperations interface {
 	// The border style is defined by the Border parameter.
 	applyBorderToCell(col, row int, side string, border *Border) error
 
-	// applyBorderToRange applies borders to all cells in a rectangular range.
+	// applyBordersToRange applies borders to all cells in a rectangular range.
 	// Each side of the range can have a different border style, as specified in the Borders parameter.
-	applyBorderToRange(startCol, startRow, endCol, endRow int, borders Borders) error
+	applyBordersToRange(startCol, startRow, endCol, endRow int, borders Borders) error
 
 	// hasExistingBorder checks if a cell at the given column and row has a border on the specified side.
 	hasExistingBorder(col, row int, side string) bool
