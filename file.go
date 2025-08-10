@@ -1,6 +1,6 @@
-// file.go - Generic file writing and management
+// file.go - Generic file writing and management.
 //
-// This file provides utilities for writing data to files with options for filename sanitization, compression, and safe removal.
+// This file provides utilities for writing data to files with options and managing it.
 
 package go_spit
 

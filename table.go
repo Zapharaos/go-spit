@@ -1,7 +1,8 @@
-// table.go - Table abstraction and operations for go-spit
+// table.go - Table abstraction and operations.
 //
 // This file defines the Table structure and the tableOperations interface, which provide a unified way to
 // represent, manipulate, and export tabular data with hierarchical columns, formatting, and cell/row configuration.
+// It allows for flexible data representation and export across different libraries.
 
 package go_spit
 
@@ -363,13 +364,13 @@ func (mc MergeConditions) valuesShouldMerge(value1, value2 interface{}) bool {
 type BorderStyle int
 
 const (
-	BorderStyleNone   BorderStyle = 0 // No border
-	BorderStyleThin   BorderStyle = 1 // Thin solid line
-	BorderStyleMedium BorderStyle = 2 // Medium thickness solid line
-	BorderStyleDashed BorderStyle = 3 // Dashed line
-	BorderStyleDotted BorderStyle = 4 // Dotted line
-	BorderStyleThick  BorderStyle = 5 // Thick solid line
-	BorderStyleDouble BorderStyle = 6 // Double line
+	BorderStyleNone   BorderStyle = iota // No border
+	BorderStyleThin                      // Thin solid line
+	BorderStyleMedium                    // Medium thickness solid line
+	BorderStyleDashed                    // Dashed line
+	BorderStyleDotted                    // Dotted line
+	BorderStyleThick                     // Thick solid line
+	BorderStyleDouble                    // Double line
 )
 
 // Border represents the configuration for an entity border.

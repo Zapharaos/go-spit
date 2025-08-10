@@ -1,3 +1,7 @@
+// format.go - Export formats.
+//
+// This file defines the Format type and related constants for supported export formats.
+
 package go_spit
 
 import "fmt"

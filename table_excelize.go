@@ -120,7 +120,7 @@ func (e *TableExcelize) applyBorderToCell(col, row int, side string, border *Bor
 
 	// Create the style with border
 	style := &excelize.Style{}
-	excelBorderStyle := convertBorderStyleToExcelize(border.Style)
+	excelBorderStyle := int(border.Style)
 
 	switch side {
 	case "left":
@@ -274,28 +274,6 @@ func (e *TableExcelize) processValue(value interface{}, format string) (interfac
 	}
 }
 
-// convertBorderStyleToExcelize converts a BorderStyle enum value to the corresponding Excelize border style integer.
-func convertBorderStyleToExcelize(style BorderStyle) int {
-	switch style {
-	case BorderStyleNone:
-		return 0
-	case BorderStyleThin:
-		return 1
-	case BorderStyleMedium:
-		return 2
-	case BorderStyleDashed:
-		return 3
-	case BorderStyleDotted:
-		return 4
-	case BorderStyleThick:
-		return 5
-	case BorderStyleDouble:
-		return 6
-	default:
-		return 1
-	}
-}
-
 // convertStyleToExcelizeStyle converts a Style struct to the corresponding Excelize style.
 // Maps font, fill, and alignment properties to Excelize style attributes.
 func convertStyleToExcelizeStyle(style Style) *excelize.Style {
@@ -332,18 +310,12 @@ func convertStyleToExcelizeStyle(style Style) *excelize.Style {
 		}
 	}
 
-	// TODO : check function
 	if style.Alignment != AlignmentNone {
-		alignment := &excelize.Alignment{}
-		switch style.Alignment {
-		case AlignmentLeft:
-			alignment.Horizontal = "left"
-		case AlignmentCenter:
-			alignment.Horizontal = "center"
-		case AlignmentRight:
-			alignment.Horizontal = "right"
+		horizontal, vertical := style.Alignment.getAlignmentValues()
+		excelStyle.Alignment = &excelize.Alignment{
+			Horizontal: horizontal,
+			Vertical:   vertical,
 		}
-		excelStyle.Alignment = alignment
 	}
 
 	return excelStyle

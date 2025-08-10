@@ -1,3 +1,9 @@
+// table_logic_merge.go - Table cell merging logic.
+//
+// This file implements algorithms and operations for merging cells in exported tables (vertical, horizontal, and header merging).
+// Errors in merging are logged as warnings, allowing export to continue with best-effort merging.
+// Used by spreadsheet backends to support advanced cell merging features in exported files.
+
 package go_spit
 
 import (

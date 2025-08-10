@@ -1,3 +1,7 @@
+// utils.go - Utility functions.
+//
+// This file provides helper functions, designed to be generic for different export formats.
+
 package go_spit
 
 import (

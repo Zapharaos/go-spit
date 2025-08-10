@@ -1,6 +1,6 @@
-// csv.go - CSV export logic for go-spit
+// csv.go - CSV export logic.
 //
-// This file provides functions to write tabular data to CSV files, including support for multi-level headers and custom formatting.
+// This file provides functions to write tabular data to CSV files.
 
 package go_spit
 

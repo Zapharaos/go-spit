@@ -1,3 +1,9 @@
+// table_logic_style.go - Table cell styling logic.
+//
+// This file implements algorithms and operations for applying styles, borders, and formatting to exported tables.
+// Styling errors are logged as warnings, allowing export to continue with best-effort visual enhancements.
+// Used by spreadsheet backends to support advanced styling features in exported files.
+
 package go_spit
 
 import (
