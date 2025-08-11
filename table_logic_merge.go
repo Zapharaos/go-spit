@@ -8,8 +8,6 @@ package go_spit
 
 import (
 	"fmt"
-
-	"github.com/Zapharaos/go-spit/internal/logger"
 )
 
 // processMerging applies cell merging operations to the table
@@ -30,7 +28,7 @@ func (t *Table) processMerging(ops tableOperations) error {
 		// Column indices are 1-based, so we add 1 to the 0-based slice index
 		if err := t.executeVerticalMerging(column, actualColIndex+1, dataStartRow, ops); err != nil {
 			// Log the error but continue processing other columns
-			logger.L().Warn("Failed to process column for vertical merging", logger.Error(err))
+			L().Warn("Failed to process column for vertical merging", Error(err))
 		}
 	}
 
@@ -50,7 +48,7 @@ func (t *Table) processMerging(ops tableOperations) error {
 		rowNum := rowIndex + dataStartRow
 		if err := t.executeHorizontalMerging(item, t.Columns, rowNum, 1, nil, ops); err != nil {
 			// Log the error but continue processing other rows
-			logger.L().Warn("Failed to execute horizontal merging for row", logger.Int("row", rowNum), logger.Error(err))
+			L().Warn("Failed to execute horizontal merging for row", Int("row", rowNum), Error(err))
 		}
 	}
 
@@ -79,11 +77,11 @@ func (t *Table) processHeaderMergingRecursive(columns Columns, currentRow, maxDe
 			endCol := currentCol + columnSpan - 1
 			if endCol > currentCol {
 				if err := ops.mergeCells(currentCol, currentRow, endCol, currentRow); err != nil {
-					logger.L().Warn("Failed to merge header cells horizontally",
-						logger.Int("startCol", currentCol),
-						logger.Int("endCol", endCol),
-						logger.Int("row", currentRow),
-						logger.Error(err))
+					L().Warn("Failed to merge header cells horizontally",
+						Int("startCol", currentCol),
+						Int("endCol", endCol),
+						Int("row", currentRow),
+						Error(err))
 				}
 			}
 
@@ -98,11 +96,11 @@ func (t *Table) processHeaderMergingRecursive(columns Columns, currentRow, maxDe
 			// Merge vertically for leaf columns that span multiple header rows
 			if currentRow < maxDepth {
 				if err := ops.mergeCells(currentCol, currentRow, currentCol, maxDepth); err != nil {
-					logger.L().Warn("Failed to merge header cells vertically",
-						logger.Int("col", currentCol),
-						logger.Int("startRow", currentRow),
-						logger.Int("endRow", maxDepth),
-						logger.Error(err))
+					L().Warn("Failed to merge header cells vertically",
+						Int("col", currentCol),
+						Int("startRow", currentRow),
+						Int("endRow", maxDepth),
+						Error(err))
 				}
 			}
 			currentCol++
@@ -135,11 +133,11 @@ func (t *Table) executeVerticalMerging(column Column, actualColIndex int, dataSt
 		// Execute the vertical merge operation
 		if err := ops.mergeCells(actualColIndex, startRow, actualColIndex, endRow); err != nil {
 			// Log detailed error information for debugging and continue processing
-			logger.L().Warn("Failed to merge cells vertically",
-				logger.Int("col", actualColIndex),
-				logger.Int("startRow", startRow),
-				logger.Int("endRow", endRow),
-				logger.Error(err))
+			L().Warn("Failed to merge cells vertically",
+				Int("col", actualColIndex),
+				Int("startRow", startRow),
+				Int("endRow", endRow),
+				Error(err))
 		}
 	}
 
@@ -305,11 +303,11 @@ func (t *Table) applyHorizontalMerges(mergeRanges [][]int, rowNum, baseColIndex 
 		// Execute the horizontal merge operation across the column range
 		if err := ops.mergeCells(startCol, rowNum, endCol, rowNum); err != nil {
 			// Log detailed error information for debugging and continue processing
-			logger.L().Warn("Failed to merge cells horizontally",
-				logger.Int("row", rowNum),
-				logger.Int("startCol", startCol),
-				logger.Int("endCol", endCol),
-				logger.Error(err))
+			L().Warn("Failed to merge cells horizontally",
+				Int("row", rowNum),
+				Int("startCol", startCol),
+				Int("endCol", endCol),
+				Error(err))
 		}
 	}
 }

@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/Zapharaos/go-spit/internal/logger"
 	"github.com/xuri/excelize/v2"
 )
 
@@ -34,7 +33,7 @@ func NewXlsxWithExcelize(file *excelize.File, sheetName string, t *Table) *XLSX 
 
 // WriteDataToFile writes data to file using the generic file writer
 func (xlsx *XLSX) WriteDataToFile(options FileWriteOptions) (*FileWriteResult, error) {
-	logger.L().Info("Starting XLSX export to file", logger.String("filename", options.Filename))
+	L().Info("Starting XLSX export to file", String("filename", options.Filename))
 
 	// Ensure extension is set for XLSX files
 	if options.extension == "" {
@@ -43,23 +42,23 @@ func (xlsx *XLSX) WriteDataToFile(options FileWriteOptions) (*FileWriteResult, e
 
 	// Create a write function that handles the XLSX file creation and writing
 	writeFunc := func(writer io.Writer) error {
-		logger.L().Debug("Creating new Excel file")
+		L().Debug("Creating new Excel file")
 		if err := xlsx.Spreadsheet.createNewFile(); err != nil {
 			return fmt.Errorf("failed to create new XLSX file: %w", err)
 		}
 
 		defer func() {
 			if err := xlsx.Spreadsheet.close(); err != nil {
-				logger.L().Warn("Error closing spreadsheet", logger.Error(err))
+				L().Warn("Error closing spreadsheet", Error(err))
 			}
 		}()
 
-		logger.L().Debug("Writing data to Excel file")
+		L().Debug("Writing data to Excel file")
 		if err := xlsx.writeData(); err != nil {
 			return fmt.Errorf("failed to write data to XLSX file: %w", err)
 		}
 
-		logger.L().Debug("Saving Excel file to writer")
+		L().Debug("Saving Excel file to writer")
 		if err := xlsx.Spreadsheet.saveToWriter(writer); err != nil {
 			return fmt.Errorf("failed to write XLSX to writer: %w", err)
 		}
@@ -70,11 +69,11 @@ func (xlsx *XLSX) WriteDataToFile(options FileWriteOptions) (*FileWriteResult, e
 	// Use the generic file writer to handle the actual file writing
 	result, err := options.writeToFile(writeFunc)
 	if err != nil {
-		logger.L().Error("Failed to write XLSX to file", logger.Error(err))
+		L().Error("Failed to write XLSX to file", Error(err))
 		return nil, err
 	}
 
-	logger.L().Info("XLSX export completed", logger.String("filename", options.Filename))
+	L().Info("XLSX export completed", String("filename", options.Filename))
 	return result, nil
 }
 
@@ -84,7 +83,7 @@ func (xlsx *XLSX) writeData() error {
 		xlsx.Spreadsheet.setSheetName("Sheet1")
 	}
 
-	logger.L().Debug("Creating sheet")
+	L().Debug("Creating sheet")
 	if err := xlsx.Spreadsheet.createSheet(); err != nil {
 		return fmt.Errorf("failed to create sheet: %w", err)
 	}
@@ -100,7 +99,7 @@ func (xlsx *XLSX) writeData() error {
 
 	currentRow := 1
 	if len(t.Columns) > 0 {
-		logger.L().Debug("Writing headers")
+		L().Debug("Writing headers")
 		headerRows, err := xlsx.writeHeaders()
 		if err != nil {
 			return fmt.Errorf("failed to write headers: %w", err)
@@ -108,7 +107,7 @@ func (xlsx *XLSX) writeData() error {
 		currentRow += headerRows
 	}
 
-	logger.L().Debug("Writing data rows")
+	L().Debug("Writing data rows")
 	for _, item := range t.Data {
 		colIndex := 1
 		flatColumns := t.Columns.getFlattenedColumns()
@@ -131,7 +130,7 @@ func (xlsx *XLSX) writeData() error {
 		return fmt.Errorf("failed to render styles: %w", err)
 	}
 
-	logger.L().Debug("XLSX data writing complete.")
+	L().Debug("XLSX data writing complete.")
 	return nil
 }
 
@@ -142,7 +141,7 @@ func (xlsx *XLSX) writeHeaders() (int, error) {
 	nbColumns := len(t.Columns)
 
 	if nbColumns == 0 {
-		logger.L().Warn("No columns defined for headers")
+		L().Warn("No columns defined for headers")
 		return 0, nil
 	}
 
@@ -156,7 +155,7 @@ func (xlsx *XLSX) writeHeaders() (int, error) {
 		return 1, nil
 	}
 
-	logger.L().Debug("Writing multi-level headers", logger.Int("maxDepth", maxDepth))
+	L().Debug("Writing multi-level headers", Int("maxDepth", maxDepth))
 	if err := xlsx.writeHeaderRow(t.Columns, 1, maxDepth, 1); err != nil {
 		return 0, err
 	}
@@ -214,7 +213,7 @@ func (xlsx *XLSX) autoFitColumns() {
 	for i := 1; i <= len(xlsx.Spreadsheet.getTable().Columns.getFlattenedColumns()); i++ {
 		colLetter := xlsx.Spreadsheet.getColumnLetter(i)
 		if err := xlsx.Spreadsheet.setColumnWidth(colLetter, 15); err != nil {
-			logger.L().Warn("Failed to set column width", logger.String("column", colLetter), logger.Error(err))
+			L().Warn("Failed to set column width", String("column", colLetter), Error(err))
 		}
 	}
 }

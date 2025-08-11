@@ -8,8 +8,6 @@ package go_spit
 
 import (
 	"fmt"
-
-	"github.com/Zapharaos/go-spit/internal/logger"
 )
 
 // renderStyles applies styling and border operations to the table
@@ -62,10 +60,10 @@ func (t *Table) applyHeaderStyles(ops tableOperations) error {
 	for col := 1; col <= totalColumns; col++ {
 		bottomBorder := &Border{Style: BorderStyleThin}
 		if err := ops.applyBorderToCell(col, lastHeaderRow, "bottom", bottomBorder); err != nil {
-			logger.L().Warn("Failed to apply header bottom border",
-				logger.Int("column", col),
-				logger.Int("row", lastHeaderRow),
-				logger.Error(err))
+			L().Warn("Failed to apply header bottom border",
+				Int("column", col),
+				Int("row", lastHeaderRow),
+				Error(err))
 		}
 	}
 
@@ -91,16 +89,16 @@ func (t *Table) applyHeaderCellStyles(ops tableOperations) error {
 
 	// Apply header styling to all header rows
 	if err := ops.applyStyleToRange(1, 1, totalColumns, maxDepth, headerStyle); err != nil {
-		logger.L().Warn("Failed to apply header range style", logger.Error(err))
+		L().Warn("Failed to apply header range style", Error(err))
 
 		// Fallback: apply styles to individual header cells
 		for row := 1; row <= maxDepth; row++ {
 			for col := 1; col <= totalColumns; col++ {
 				if err = t.applyCellStyle(&headerStyle, col, row, ops); err != nil {
-					logger.L().Warn("Failed to apply header cell style",
-						logger.Int("column", col),
-						logger.Int("row", row),
-						logger.Error(err))
+					L().Warn("Failed to apply header cell style",
+						Int("column", col),
+						Int("row", row),
+						Error(err))
 				}
 			}
 		}
@@ -150,10 +148,10 @@ func (t *Table) applyCellStyles(dataStartRow, dataEndRow int, ops tableOperation
 
 			// Apply the determined style
 			if err := t.applyCellStyle(styleToApply, actualColIndex, rowIndex, ops); err != nil {
-				logger.L().Warn("Failed to apply cell style",
-					logger.Int("column", actualColIndex),
-					logger.Int("row", rowIndex),
-					logger.Error(err))
+				L().Warn("Failed to apply cell style",
+					Int("column", actualColIndex),
+					Int("row", rowIndex),
+					Error(err))
 				// Continue processing other cells even if one fails
 				continue
 			}
@@ -194,10 +192,10 @@ func (t *Table) applyColumnBorders(dataStartRow, dataEndRow int, ops tableOperat
 			// Apply complete borders to all cells in this column (inner borders enabled)
 			for row := dataStartRow; row <= dataEndRow; row++ {
 				if err := t.applyBordersToCell(actualColIndex, row, column.Borders, ops); err != nil {
-					logger.L().Warn("Failed to apply column border",
-						logger.Int("column", actualColIndex),
-						logger.Int("row", row),
-						logger.Error(err))
+					L().Warn("Failed to apply column border",
+						Int("column", actualColIndex),
+						Int("row", row),
+						Error(err))
 					continue
 				}
 			}
@@ -221,10 +219,10 @@ func (t *Table) applyColumnBorders(dataStartRow, dataEndRow int, ops tableOperat
 				}
 
 				if err := t.applyBordersToCell(actualColIndex, row, cellBorder, ops); err != nil {
-					logger.L().Warn("Failed to apply column border",
-						logger.Int("column", actualColIndex),
-						logger.Int("row", row),
-						logger.Error(err))
+					L().Warn("Failed to apply column border",
+						Int("column", actualColIndex),
+						Int("row", row),
+						Error(err))
 					continue
 				}
 			}
@@ -247,10 +245,10 @@ func (t *Table) applyRowBorders(dataRowIndex, actualRowNum, totalColumns int, op
 			// Apply complete borders to all columns in this row (inner borders enabled)
 			for col := 1; col <= totalColumns; col++ {
 				if err := t.applyBordersToCell(col, actualRowNum, *rowOptions.Border, ops); err != nil {
-					logger.L().Warn("Failed to apply row border",
-						logger.Int("column", col),
-						logger.Int("row", actualRowNum),
-						logger.Error(err))
+					L().Warn("Failed to apply row border",
+						Int("column", col),
+						Int("row", actualRowNum),
+						Error(err))
 					continue
 				}
 			}
@@ -274,10 +272,10 @@ func (t *Table) applyRowBorders(dataRowIndex, actualRowNum, totalColumns int, op
 				}
 
 				if err := t.applyBordersToCell(col, actualRowNum, cellBorders, ops); err != nil {
-					logger.L().Warn("Failed to apply row border",
-						logger.Int("column", col),
-						logger.Int("row", actualRowNum),
-						logger.Error(err))
+					L().Warn("Failed to apply row border",
+						Int("column", col),
+						Int("row", actualRowNum),
+						Error(err))
 					continue
 				}
 			}
@@ -295,10 +293,10 @@ func (t *Table) applyCellSpecificBorders(dataStartRow int, ops tableOperations) 
 			if cellOptions.Border != nil {
 				actualRowNum := rowIndex + dataStartRow
 				if err := t.applyBordersToCell(colIndex, actualRowNum, *cellOptions.Border, ops); err != nil {
-					logger.L().Warn("Failed to apply cell-specific border",
-						logger.Int("column", colIndex),
-						logger.Int("row", actualRowNum),
-						logger.Error(err))
+					L().Warn("Failed to apply cell-specific border",
+						Int("column", colIndex),
+						Int("row", actualRowNum),
+						Error(err))
 					// Continue processing other cells even if one fails
 					continue
 				}

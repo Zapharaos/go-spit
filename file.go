@@ -11,8 +11,6 @@ import (
 	"os"
 	"strings"
 	"unicode"
-
-	"github.com/Zapharaos/go-spit/internal/logger"
 )
 
 // FileWriteOptions contains generic options for file writing
@@ -117,7 +115,7 @@ func (fwo FileWriteOptions) writeToFile(writeFunc func(io.Writer) error) (*FileW
 		tempFilePattern += ".gz"
 	}
 
-	logger.L().Debug("creating temp file", logger.String("pattern", tempFilePattern))
+	L().Debug("creating temp file", String("pattern", tempFilePattern))
 
 	// Create temporary file
 	tempFile, err := os.CreateTemp("", tempFilePattern)
@@ -128,7 +126,7 @@ func (fwo FileWriteOptions) writeToFile(writeFunc func(io.Writer) error) (*FileW
 
 	defer func() {
 		if closeErr := tempFile.Close(); closeErr != nil {
-			logger.L().Warn("failed to close temp file", logger.String("filePath", tempPath), logger.Error(closeErr))
+			L().Warn("failed to close temp file", String("filePath", tempPath), Error(closeErr))
 		}
 	}()
 
@@ -144,17 +142,17 @@ func (fwo FileWriteOptions) writeToFile(writeFunc func(io.Writer) error) (*FileW
 
 	// Add gzip compression if requested
 	if fwo.UseGzip {
-		logger.L().Debug("enabling gzip compression for file", logger.String("filePath", tempPath))
+		L().Debug("enabling gzip compression for file", String("filePath", tempPath))
 		gzipWriter = gzip.NewWriter(tempFile)
 		defer func() {
 			if closeErr := gzipWriter.Close(); closeErr != nil {
-				logger.L().Warn("failed to close gzip writer", logger.Error(closeErr))
+				L().Warn("failed to close gzip writer", Error(closeErr))
 			}
 		}()
 		writer = gzipWriter
 	}
 
-	logger.L().Debug("writing data to file", logger.String("filePath", tempPath), logger.String("fileName", fileName))
+	L().Debug("writing data to file", String("filePath", tempPath), String("fileName", fileName))
 
 	// Write data using the provided write function
 	err = writeFunc(writer)
@@ -162,7 +160,7 @@ func (fwo FileWriteOptions) writeToFile(writeFunc func(io.Writer) error) (*FileW
 		return nil, fmt.Errorf("failed to write data to %s: %w", tempPath, err)
 	}
 
-	logger.L().Info("file written successfully", logger.String("filePath", tempPath), logger.String("fileName", fileName))
+	L().Info("file written successfully", String("filePath", tempPath), String("fileName", fileName))
 
 	return &FileWriteResult{
 		FilePath: tempPath,
@@ -174,13 +172,13 @@ func (fwo FileWriteOptions) writeToFile(writeFunc func(io.Writer) error) (*FileW
 func (fwr FileWriteResult) RemoveFile() error {
 	// Handle empty file path gracefully
 	if fwr.FilePath == "" {
-		logger.L().Debug("no file path specified for removal, skipping")
+		L().Debug("no file path specified for removal, skipping")
 		return nil // Nothing to remove
 	}
 
 	// Check if file exists before attempting removal
 	if _, err := os.Stat(fwr.FilePath); os.IsNotExist(err) {
-		logger.L().Debug("file does not exist, skipping removal", logger.String("filePath", fwr.FilePath))
+		L().Debug("file does not exist, skipping removal", String("filePath", fwr.FilePath))
 		return nil // File doesn't exist, nothing to remove
 	}
 
@@ -188,31 +186,31 @@ func (fwr FileWriteResult) RemoveFile() error {
 	if err := os.Remove(fwr.FilePath); err != nil {
 		// Check if file was already removed (race condition)
 		if os.IsNotExist(err) {
-			logger.L().Debug("file was already removed", logger.String("filePath", fwr.FilePath))
+			L().Debug("file was already removed", String("filePath", fwr.FilePath))
 			return nil
 		}
 
 		// Check for permission errors
 		if os.IsPermission(err) {
-			logger.L().Error("insufficient permissions to remove file",
-				logger.String("filePath", fwr.FilePath),
-				logger.String("fileName", fwr.FileName),
-				logger.Error(err))
+			L().Error("insufficient permissions to remove file",
+				String("filePath", fwr.FilePath),
+				String("fileName", fwr.FileName),
+				Error(err))
 			return fmt.Errorf("insufficient permissions to remove file '%s': %w", fwr.FileName, err)
 		}
 
 		// Handle other file system errors
-		logger.L().Error("failed to remove file",
-			logger.String("filePath", fwr.FilePath),
-			logger.String("fileName", fwr.FileName),
-			logger.Error(err))
+		L().Error("failed to remove file",
+			String("filePath", fwr.FilePath),
+			String("fileName", fwr.FileName),
+			Error(err))
 		return fmt.Errorf("failed to remove file '%s': %w", fwr.FileName, err)
 	}
 
 	// Log successful removal
-	logger.L().Info("file removed successfully",
-		logger.String("filePath", fwr.FilePath),
-		logger.String("fileName", fwr.FileName))
+	L().Info("file removed successfully",
+		String("filePath", fwr.FilePath),
+		String("fileName", fwr.FileName))
 
 	return nil
 }

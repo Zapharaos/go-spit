@@ -8,8 +8,6 @@ import (
 	stdcsv "encoding/csv"
 	"fmt"
 	"io"
-
-	"github.com/Zapharaos/go-spit/internal/logger"
 )
 
 // CSV contains CSV-specific export parameters
@@ -29,7 +27,7 @@ func NewCsv(separator string, t *Table) *CSV {
 
 // WriteDataToFile writes generic data to file using the generic file writer
 func (csv *CSV) WriteDataToFile(options FileWriteOptions) (*FileWriteResult, error) {
-	logger.L().Info("Starting CSV export to file", logger.String("filename", options.Filename))
+	L().Info("Starting CSV export to file", String("filename", options.Filename))
 
 	// Ensure extension is set for CSV files
 	if options.extension == "" {
@@ -45,17 +43,17 @@ func (csv *CSV) WriteDataToFile(options FileWriteOptions) (*FileWriteResult, err
 	// Use the generic file writer to handle the actual file writing
 	result, err := options.writeToFile(writeFunc)
 	if err != nil {
-		logger.L().Error("Failed to write CSV to file", logger.Error(err))
+		L().Error("Failed to write CSV to file", Error(err))
 		return nil, err
 	}
 
-	logger.L().Info("CSV export completed", logger.String("filename", options.Filename))
+	L().Info("CSV export completed", String("filename", options.Filename))
 	return result, nil
 }
 
 // writeData writes the provided data to the CSV writer
 func (csv *CSV) writeData() error {
-	logger.L().Debug("Writing data to CSV...")
+	L().Debug("Writing data to CSV...")
 	// Set the CSV delimiter (comma by default)
 	if csv.writer.Comma == 0 {
 		csv.writer.Comma = ','
@@ -63,7 +61,7 @@ func (csv *CSV) writeData() error {
 
 	// Write headers if requested
 	if csv.table.WriteHeader && len(csv.table.Columns) > 0 {
-		logger.L().Debug("Writing CSV headers...")
+		L().Debug("Writing CSV headers...")
 		if err := csv.writeHeaders(); err != nil {
 			return fmt.Errorf("error writing CSV headers: %w", err)
 		}
@@ -102,7 +100,7 @@ func (csv *CSV) writeData() error {
 		return fmt.Errorf("error flushing CSV writer: %w", err)
 	}
 
-	logger.L().Debug("CSV data writing complete.")
+	L().Debug("CSV data writing complete.")
 	return nil
 }
 
@@ -111,7 +109,7 @@ func (csv *CSV) writeData() error {
 func (csv *CSV) writeHeaders() error {
 	maxDepth := csv.table.Columns.getMaxDepth()
 	totalCols := csv.table.Columns.getTotalColumnCount()
-	logger.L().Debug("Writing header levels", logger.Int("levels", maxDepth), logger.Int("columns", totalCols))
+	L().Debug("Writing header levels", Int("levels", maxDepth), Int("columns", totalCols))
 
 	// Generate header rows for each level
 	for level := 0; level < maxDepth; level++ {
@@ -121,7 +119,7 @@ func (csv *CSV) writeHeaders() error {
 			return fmt.Errorf("error writing header row: %w", err)
 		}
 	}
-	logger.L().Debug("CSV headers written successfully.")
+	L().Debug("CSV headers written successfully.")
 	return nil
 }
 

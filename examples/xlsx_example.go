@@ -66,9 +66,6 @@ func main() {
 	spreadsheet := go_spit.NewSpreadsheetExcelize(nil, "Employee Data", table)
 	xlsx := go_spit.NewXlsx(spreadsheet)
 
-	// Method 2 : Create XLSX instance with NewXlsxWithExcelize convenience function
-	_ = go_spit.NewXlsxWithExcelize(nil, "Sales Report", table)
-
 	options := go_spit.FileWriteOptions{
 		Filename:      "employee_report",
 		OverwriteFile: true,
@@ -78,6 +75,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error writing XLSX file: %v", err)
 	}
+
+	// Method 2 : Create XLSX instance with NewXlsxWithExcelize convenience function
+	// We can reuse the file created earlier and write to a new sheet
+	xlsx = go_spit.NewXlsxWithExcelize(spreadsheet.File, "Sales Report", table)
 
 	result, err = xlsx.WriteDataToFile(options)
 	if err != nil {
