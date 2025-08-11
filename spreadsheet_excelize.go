@@ -62,7 +62,7 @@ func (e *SpreadsheetExcelize) setSheetName(name string) {
 func (e *SpreadsheetExcelize) createSheet() error {
 	index, err := e.File.GetSheetIndex(e.SheetName)
 	if err != nil || index == -1 {
-		index, err = e.File.NewSheet(e.SheetName)
+		_, err = e.File.NewSheet(e.SheetName)
 		if err != nil {
 			return fmt.Errorf("failed to create sheet: %w", err)
 		}

@@ -68,6 +68,7 @@ func main() {
 
 	options := go_spit.FileWriteOptions{
 		Filename:      "employee_report",
+		UseTempFile:   true,
 		OverwriteFile: true,
 	}
 

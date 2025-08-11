@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"unicode"
 )
@@ -16,6 +17,8 @@ import (
 // FileWriteOptions contains generic options for file writing
 type FileWriteOptions struct {
 	Filename      string // Desired filename (without extension)
+	Filepath      string // Optional: directory to write file to (used if UseTempFile is false)
+	UseTempFile   bool   // Optional: use temp file (default: false)
 	UseGzip       bool   // Optional: compress with gzip
 	OverwriteFile bool   // Optional: overwrite existing file (default: false)
 	extension     string // Optional: File extension (e.g., ".csv", ".json")
@@ -115,35 +118,53 @@ func (fwo FileWriteOptions) writeToFile(writeFunc func(io.Writer) error) (*FileW
 		tempFilePattern += ".gz"
 	}
 
-	L().Debug("creating temp file", String("pattern", tempFilePattern))
+	var filePath string
+	var file *os.File
+	var err error
 
-	// Create temporary file
-	tempFile, err := os.CreateTemp("", tempFilePattern)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create temp file: %w", err)
+	if fwo.UseTempFile {
+		L().Debug("creating temp file", String("pattern", tempFilePattern))
+		file, err = os.CreateTemp("", tempFilePattern)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create temp file: %w", err)
+		}
+		filePath = file.Name()
+	} else {
+		// Use Filepath if provided, else current directory
+		dir := fwo.Filepath
+		if dir == "" {
+			dir = "."
+		}
+		// Ensure directory exists
+		if mkErr := os.MkdirAll(dir, 0755); mkErr != nil {
+			return nil, fmt.Errorf("failed to create directory %s: %w", dir, mkErr)
+		}
+		filePath = filepath.Join(dir, fileName)
+		L().Debug("creating regular file", String("filePath", filePath))
+		if !fwo.OverwriteFile {
+			if _, err = os.Stat(filePath); err == nil {
+				return nil, fmt.Errorf("file already exists: %s", filePath)
+			}
+		}
+		file, err = os.Create(filePath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create file: %w", err)
+		}
 	}
-	tempPath := tempFile.Name()
 
 	defer func() {
-		if closeErr := tempFile.Close(); closeErr != nil {
-			L().Warn("failed to close temp file", String("filePath", tempPath), Error(closeErr))
+		if closeErr := file.Close(); closeErr != nil {
+			L().Warn("failed to close file", String("filePath", filePath), Error(closeErr))
 		}
 	}()
 
-	// Check if file already exists when we don't want to overwrite (shouldn't happen with temp files)
-	if !fwo.OverwriteFile {
-		if _, err = os.Stat(tempPath); err == nil {
-			return nil, fmt.Errorf("temp file already exists: %s", tempPath)
-		}
-	}
-
-	var writer io.Writer = tempFile
+	var writer io.Writer = file
 	var gzipWriter *gzip.Writer
 
 	// Add gzip compression if requested
 	if fwo.UseGzip {
-		L().Debug("enabling gzip compression for file", String("filePath", tempPath))
-		gzipWriter = gzip.NewWriter(tempFile)
+		L().Debug("enabling gzip compression for file", String("filePath", filePath))
+		gzipWriter = gzip.NewWriter(file)
 		defer func() {
 			if closeErr := gzipWriter.Close(); closeErr != nil {
 				L().Warn("failed to close gzip writer", Error(closeErr))
@@ -152,18 +173,18 @@ func (fwo FileWriteOptions) writeToFile(writeFunc func(io.Writer) error) (*FileW
 		writer = gzipWriter
 	}
 
-	L().Debug("writing data to file", String("filePath", tempPath), String("fileName", fileName))
+	L().Debug("writing data to file", String("filePath", filePath), String("fileName", fileName))
 
 	// Write data using the provided write function
 	err = writeFunc(writer)
 	if err != nil {
-		return nil, fmt.Errorf("failed to write data to %s: %w", tempPath, err)
+		return nil, fmt.Errorf("failed to write data to %s: %w", filePath, err)
 	}
 
-	L().Info("file written successfully", String("filePath", tempPath), String("fileName", fileName))
+	L().Info("file written successfully", String("filePath", filePath), String("fileName", fileName))
 
 	return &FileWriteResult{
-		FilePath: tempPath,
+		FilePath: filePath,
 		FileName: fileName,
 	}, nil
 }

@@ -162,15 +162,6 @@ func (c Columns) getTotalColumnCount() int {
 	return total
 }
 
-// getColumnsLabels returns the display labels from all columns in the collection.
-func (c Columns) getColumnsLabels() []string {
-	labels := make([]string, 0, len(c))
-	for _, column := range c {
-		labels = append(labels, column.Label)
-	}
-	return labels
-}
-
 // getFlattenedColumns returns a flattened list of all leaf columns in the hierarchy.
 // Traverses the entire column structure and extracts only columns without sub-columns.
 func (c Columns) getFlattenedColumns() []Column {
@@ -200,67 +191,6 @@ func (c Columns) getMaxDepth() int {
 		}
 	}
 	return maxDepth
-}
-
-// getParentColumnByIndex traverses the column hierarchy to find the parent column for a given leaf column index.
-func (c Columns) getParentColumnByIndex(colIndex int) *Column {
-	// Use a helper function to maintain state during recursive traversal
-	var helper func(cols Columns, targetIdx int, parent *Column, currentIdx *int) *Column
-	helper = func(cols Columns, targetIdx int, parent *Column, currentIdx *int) *Column {
-		for i := 0; i < len(cols); i++ {
-			col := &cols[i]
-			if col.hasSubColumns() {
-				// Recursively search in sub-columns with this column as parent
-				result := helper(col.Columns, targetIdx, col, currentIdx)
-				if result != nil {
-					return result // Found the target in sub-columns
-				}
-			} else {
-				// Check if this leaf column matches the target index
-				if *currentIdx == targetIdx {
-					return parent // Return the parent of the matching column
-				}
-				*currentIdx++ // Move to next leaf column
-			}
-		}
-		return nil // Target not found in this branch
-	}
-
-	idx := 0
-	return helper(c, colIndex, nil, &idx)
-}
-
-// getColumnIndex returns the index of a specific column within the hierarchy (1-based).
-func (c Columns) getColumnIndex(target *Column) int {
-	currentIndex := 1
-
-	// Recursive helper function to traverse the hierarchy
-	var findIndex func(cols Columns, target *Column, currentIdx *int) bool
-	findIndex = func(cols Columns, target *Column, currentIdx *int) bool {
-		for i := range cols {
-			col := &cols[i]
-			if col == target {
-				return true // Found the target column
-			}
-
-			if col.hasSubColumns() {
-				// Search recursively in sub-columns
-				if findIndex(col.Columns, target, currentIdx) {
-					return true
-				}
-			} else {
-				// Move to next position for leaf columns
-				*currentIdx++
-			}
-		}
-		return false // Target not found in this branch
-	}
-
-	if findIndex(c, target, &currentIndex) {
-		return currentIndex
-	}
-
-	return 0 // Column not found
 }
 
 // RowOptionsMap maps row indices to their specific options.
