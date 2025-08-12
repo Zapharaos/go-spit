@@ -1,9 +1,9 @@
-// spreadsheet.go - Spreadsheet abstraction and operations.
+// spreadsheet.go - spreadsheet abstraction and operations.
 //
 // This interface abstracts spreadsheet functionality, allowing for multiple implementations (e.g., Excel, Google Sheets) and libraries.
 // It includes methods for file management, sheet management, column formatting, and table operations.
 
-package go_spit
+package spit
 
 import (
 	"io"

@@ -28,139 +28,106 @@ go get github.com/Zapharaos/go-spit
 
 **Note:** Spit uses [Go Modules](https://go.dev/wiki/Modules) to manage dependencies.
 
-## Usage Example
+## Usage Examples
 
 ### CSV Export
 
-Export tabular data to CSV with different separators:
-
 ```go
-import "github.com/Zapharaos/go-spit"
+package main
 
-// Create sample data
-data := go_spit.DataSlice{
-    {
-        "name":       "John Doe",
-        "age":        30,
-        "email":      "john@example.com",
-        "department": "Engineering",
-        "skills":     []interface{}{"Go", "Python", "Docker"},
-    },
-    {
-        "name":       "Jane Smith", 
-        "age":        28,
-        "email":      "jane@example.com",
-        "department": "Marketing",
-        "skills":     []interface{}{"Marketing", "Analytics", "SEO"},
-    },
-}
+import (
+    "log"
+    "github.com/Zapharaos/go-spit"
+)
 
-// Define columns
-columns := go_spit.Columns{
-    {Name: "name", Label: "Full Name"},
-    {Name: "age", Label: "Age"},
-    {Name: "email", Label: "Email Address"},
-    {Name: "department", Label: "Department"},
-    {Name: "skills", Label: "Skills"},
-}
+func main() {
+    // Sample data
+    data := spit.DataSlice{
+        {"name": "John Doe", "age": 30, "salary": 75000.50},
+        {"name": "Jane Smith", "age": 28, "salary": 82000},
+    }
 
-// Create table
-table := &go_spit.Table{
-    Data:          data,
-    Columns:       columns,
-    WriteHeader:   true,
-    ListSeparator: "; ", // How to join array/slice values
-}
+    // Define columns with formatting
+    columns := spit.Columns{
+        {Name: "name", Label: "Full Name"},
+        {Name: "age", Label: "Age"},
+        {Name: "salary", Label: "Salary"},
+    }
 
-// Create CSV with comma separator
-csv := go_spit.NewCsv(",", table)
-
-// Write to file
-options := go_spit.FileWriteOptions{
-    Filename:      "employees",
-    OverwriteFile: true,
-}
-
-result, err := csv.WriteDataToFile(options)
-if err != nil {
-    log.Fatalf("Error writing CSV: %v", err)
+    // Create and export
+    table := &spit.Table{Data: data, Columns: columns, WriteHeader: true}
+    result, err := spit.ExportCSV(",", table, spit.FileWriteParams{Filename: "employees"})
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer result.RemoveFile()
 }
 ```
 
 ### XLSX Export
 
-Export data to Excel spreadsheets with hierarchical headers:
-
 ```go
+package main
+
 import (
+    "log"
     "github.com/Zapharaos/go-spit"
-    "github.com/xuri/excelize/v2"
 )
 
-// Create hierarchical columns
-columns := go_spit.Columns{
-    {
-        Label: "Personal Info",
-        Columns: go_spit.Columns{
-            {Name: "name", Label: "Full Name"},
-            {Name: "age", Label: "Age"},
-            {Name: "email", Label: "Email Address"},
+func main() {
+    // Sample data
+    data := spit.DataSlice{
+        {"name": "John Doe", "age": 30, "department": "Engineering"},
+        {"name": "Jane Smith", "age": 28, "department": "Marketing"},
+    }
+
+    // Define hierarchical columns
+    columns := spit.Columns{
+        {Name: "name", Label: "Name"},
+        {
+            Label: "Details",
+            Columns: spit.Columns{
+                {Name: "age", Label: "Age"},
+                {Name: "department", Label: "Department"},
+            },
         },
-    },
-    {
-        Label: "Work Info",
-        Columns: go_spit.Columns{
-            {Name: "department", Label: "Department"},
-            {Name: "salary", Label: "Salary", Format: "currency"},
-        },
-    },
-}
+    }
 
-table := &go_spit.Table{
-    Data:        data,
-    Columns:     columns,
-    WriteHeader: true,
-}
-
-// Method 1: Using NewXlsx with custom spreadsheet
-file := excelize.NewFile()
-spreadsheet := go_spit.NewSpreadsheetExcelize(file, "Employee Data", table)
-xlsx := go_spit.NewXlsx(spreadsheet)
-
-// Method 2: Using convenience function
-xlsx2 := go_spit.NewXlsxWithExcelize(excelize.NewFile(), "Sales Report", table)
-
-// Write to file
-options := go_spit.FileWriteOptions{
-    Filename:      "employee_report",
-    OverwriteFile: true,
-}
-
-result, err := xlsx.WriteDataToFile(options)
-if err != nil {
-    log.Fatalf("Error writing XLSX: %v", err)
+    // Create and export
+    table := &spit.Table{Data: data, Columns: columns, WriteHeader: true}
+    spreadsheet := spit.NewSpreadsheetExcelize("Employees", table)
+    result, err := spit.ExportXLSX(spreadsheet, spit.FileWriteParams{Filename: "employees"})
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer result.RemoveFile()
 }
 ```
 
-### Advanced File Options
+#### XLSX Advanced Features
+
+The XLSX format supports advanced styling and formatting options:
+
+- **Styles**: Font family, size, colors, bold, italic, alignment
+- **Borders**: Thin, medium, thick, double, dashed borders with inner border support
+- **Cell Merging**: Vertical and horizontal merging based on identical or empty values
+- **Row Options**: Apply styling, borders, merging options to entire rows
+- **Cell Options**: Fine-grained styling, borders, merging options for individual cells
+- **Column Formatting**: Currency, date, custom number formats
+
+### File Options
 
 Write files with compression and custom settings:
 
 ```go
 options := go_spit.FileWriteOptions{
-    Filename:      "report",
+    Filename:      "report", // Without extension, which will be added based on format
+    Filepath:      "/path/to/directory", // Could be "." or empty as well
+    UseTempFile:   false,    // Enable dedicated temporary files
     UseGzip:       true,     // Enable compression
-    OverwriteFile: true,     // Overwrite existing files
+    OverwriteFile: true,     // Overwrite existing file
 }
-
-result, err := csv.WriteDataToFile(options)
 ```
-
-### Complete Examples
-
-For complete working examples with various use cases, see:
-- [CSV Examples](examples/csv_example.go) - Demonstrates different separators, hierarchical headers, and compression
-- [XLSX Examples](examples/xlsx_example.go) - Shows hierarchical columns, multiple sheets, and advanced formatting
 
 ## Development
 
@@ -179,7 +146,7 @@ make coverage
 Run linters:
 
 ```shell
-make lint # pass -j option to run them in parallel
+make lint
 ```
 
 Some linter violations can automatically be fixed:
@@ -187,7 +154,6 @@ Some linter violations can automatically be fixed:
 ```shell
 make fmt
 ```
-
 
 ## Contributing
 

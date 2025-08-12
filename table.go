@@ -4,7 +4,7 @@
 // represent, manipulate, and export tabular data with hierarchical columns, formatting, and cell/row configuration.
 // It allows for flexible data representation and export across different libraries.
 
-package go_spit
+package spit
 
 import (
 	"fmt"
@@ -67,7 +67,7 @@ type Table struct {
 	CellOptionsMap CellOptionsMap // Cell-specific options for fine-grained control
 	WriteHeader    bool           // Whether to generate headers from column definitions
 	Limit          int64          // Maximum number of data rows to export (0 = no limit)
-	ListSeparator  string         // Separator used when rendering slice/array values as strings
+	ListSeparator  string         // separator used when rendering slice/array values as strings
 }
 
 // getDataStartRow calculates the starting row number for data based on header configuration.

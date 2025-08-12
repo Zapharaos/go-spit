@@ -4,7 +4,7 @@
 // Errors in merging are logged as warnings, allowing export to continue with best-effort merging.
 // Used by spreadsheet backends to support advanced cell merging features in exported files.
 
-package go_spit
+package spit
 
 import (
 	"fmt"

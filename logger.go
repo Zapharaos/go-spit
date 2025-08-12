@@ -1,4 +1,4 @@
-package go_spit
+package spit
 
 import (
 	"fmt"

@@ -2,7 +2,7 @@
 //
 // This file provides utilities for writing data to files with options and managing it.
 
-package go_spit
+package spit
 
 import (
 	"compress/gzip"
@@ -14,24 +14,24 @@ import (
 	"unicode"
 )
 
-// FileWriteOptions contains generic options for file writing
-type FileWriteOptions struct {
+// FileWriteParams contains generic parameters for file writing
+type FileWriteParams struct {
 	Filename      string // Desired filename (without extension)
-	Filepath      string // Optional: directory to write file to (used if UseTempFile is false)
+	Filepath      string // Directory to write file to (used if UseTempFile is false)
 	UseTempFile   bool   // Optional: use temp file (default: false)
 	UseGzip       bool   // Optional: compress with gzip
 	OverwriteFile bool   // Optional: overwrite existing file (default: false)
-	extension     string // Optional: File extension (e.g., ".csv", ".json")
+	extension     string // File extension (e.g., ".csv", ".json")
 }
 
 // FileWriteResult contains the result of file writing operation
 type FileWriteResult struct {
-	FilePath string // Full path to the created file
-	FileName string // Final filename (including any modifications)
+	Filepath string // Full path to the created file
+	Filename string // Final filename (including any modifications)
 }
 
 // SanitizeFilename sanitizes a string to be safe for use as a filename.
-func (fwo FileWriteOptions) SanitizeFilename() string {
+func (fwo FileWriteParams) SanitizeFilename() string {
 	// First handle accented characters and special Unicode characters
 	result := strings.Map(func(r rune) rune {
 		switch r {
@@ -100,16 +100,16 @@ func (fwo FileWriteOptions) SanitizeFilename() string {
 }
 
 // writeToFile writes data to a file with generic options and returns file info
-func (fwo FileWriteOptions) writeToFile(writeFunc func(io.Writer) error) (*FileWriteResult, error) {
+func (fwo FileWriteParams) writeToFile(writeFunc func(io.Writer) error) (*FileWriteResult, error) {
 	// Sanitize the filename to ensure it's safe for use
-	fwo.Filename = strings.ToLower(fwo.SanitizeFilename())
+	fwo.Filename = fwo.SanitizeFilename()
 
 	if fwo.Filename == "" {
 		return nil, fmt.Errorf("filename is empty after sanitization")
 	}
 
 	// Construct filename with extension
-	extension := "." + strings.ToLower(fwo.extension)
+	extension := "." + fwo.extension
 	fileName := fwo.Filename + extension
 	tempFilePattern := fwo.Filename + "_*" + extension
 
@@ -124,7 +124,7 @@ func (fwo FileWriteOptions) writeToFile(writeFunc func(io.Writer) error) (*FileW
 
 	if fwo.UseTempFile {
 		L().Debug("creating temp file", String("pattern", tempFilePattern))
-		file, err = os.CreateTemp("", tempFilePattern)
+		file, err = os.CreateTemp(fwo.Filepath, tempFilePattern)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create temp file: %w", err)
 		}
@@ -184,54 +184,54 @@ func (fwo FileWriteOptions) writeToFile(writeFunc func(io.Writer) error) (*FileW
 	L().Info("file written successfully", String("filePath", filePath), String("fileName", fileName))
 
 	return &FileWriteResult{
-		FilePath: filePath,
-		FileName: fileName,
+		Filepath: filePath,
+		Filename: fileName,
 	}, nil
 }
 
 // RemoveFile safely removes a file with improved error handling and logging
 func (fwr FileWriteResult) RemoveFile() error {
 	// Handle empty file path gracefully
-	if fwr.FilePath == "" {
+	if fwr.Filepath == "" {
 		L().Debug("no file path specified for removal, skipping")
 		return nil // Nothing to remove
 	}
 
 	// Check if file exists before attempting removal
-	if _, err := os.Stat(fwr.FilePath); os.IsNotExist(err) {
-		L().Debug("file does not exist, skipping removal", String("filePath", fwr.FilePath))
+	if _, err := os.Stat(fwr.Filepath); os.IsNotExist(err) {
+		L().Debug("file does not exist, skipping removal", String("filePath", fwr.Filepath))
 		return nil // File doesn't exist, nothing to remove
 	}
 
 	// Attempt to remove the file
-	if err := os.Remove(fwr.FilePath); err != nil {
+	if err := os.Remove(fwr.Filepath); err != nil {
 		// Check if file was already removed (race condition)
 		if os.IsNotExist(err) {
-			L().Debug("file was already removed", String("filePath", fwr.FilePath))
+			L().Debug("file was already removed", String("filePath", fwr.Filepath))
 			return nil
 		}
 
 		// Check for permission errors
 		if os.IsPermission(err) {
 			L().Error("insufficient permissions to remove file",
-				String("filePath", fwr.FilePath),
-				String("fileName", fwr.FileName),
+				String("filePath", fwr.Filepath),
+				String("fileName", fwr.Filename),
 				Error(err))
-			return fmt.Errorf("insufficient permissions to remove file '%s': %w", fwr.FileName, err)
+			return fmt.Errorf("insufficient permissions to remove file '%s': %w", fwr.Filename, err)
 		}
 
 		// Handle other file system errors
 		L().Error("failed to remove file",
-			String("filePath", fwr.FilePath),
-			String("fileName", fwr.FileName),
+			String("filePath", fwr.Filepath),
+			String("fileName", fwr.Filename),
 			Error(err))
-		return fmt.Errorf("failed to remove file '%s': %w", fwr.FileName, err)
+		return fmt.Errorf("failed to remove file '%s': %w", fwr.Filename, err)
 	}
 
 	// Log successful removal
 	L().Info("file removed successfully",
-		String("filePath", fwr.FilePath),
-		String("fileName", fwr.FileName))
+		String("filePath", fwr.Filepath),
+		String("fileName", fwr.Filename))
 
 	return nil
 }

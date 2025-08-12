@@ -3,7 +3,7 @@
 // This file provides an adapter for the github.com/xuri/excelize library, enabling table operations
 // such as cell access, merging, styling, and value formatting for Excel spreadsheets.
 
-package go_spit
+package spit
 
 import (
 	"fmt"
@@ -21,12 +21,17 @@ type TableExcelize struct {
 }
 
 // NewTableExcelize creates a new TableExcelize instance for a given file, sheet, and table.
-func NewTableExcelize(file *excelize.File, sheetName string, table *Table) *TableExcelize {
+func NewTableExcelize(sheetName string, table *Table) *TableExcelize {
 	return &TableExcelize{
-		File:      file,
 		SheetName: sheetName,
 		Table:     table,
 	}
+}
+
+// WithFile allows setting an existing Excelize file to the SpreadsheetExcelize instance.
+func (e *TableExcelize) WithFile(file *excelize.File) *TableExcelize {
+	e.File = file
+	return e
 }
 
 // getTable returns the underlying Table struct for direct access/manipulation.

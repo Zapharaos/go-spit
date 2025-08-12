@@ -2,7 +2,7 @@
 //
 // This file provides helper functions, designed to be generic for different export formats.
 
-package go_spit
+package spit
 
 import (
 	"fmt"

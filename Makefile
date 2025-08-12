@@ -6,23 +6,23 @@ help:
 	@echo "Usage: make <target>"
 	@echo "Targets:"
 	@echo "  help      Show this help message"
-	@echo "  test      Run tests (excluding examples)"
-	@echo "  coverage  Run tests with coverage (excluding examples)"
-	@echo "  lint      Run golangci-lint (excluding examples)"
-	@echo "  fmt       Tries to automatically fix linting errors (excluding examples)"
+	@echo "  test      Run tests"
+	@echo "  coverage  Run tests with coverage"
+	@echo "  lint      Run golangci-lint"
+	@echo "  fmt       Tries to automatically fix linting errors"
 
 # Run tests, excluding the examples package
 test:
-	go test $(shell go list ./... | grep -v '/gen' | grep -v '/test' | grep -v '/examples')
+	go test $(shell go list ./... | grep -v '/gen' | grep -v '/test')
 
 # Run tests with coverage, excluding the examples package
 coverage:
-	go test -cover $(shell go list ./... | grep -v '/gen' | grep -v '/test' | grep -v '/examples')
+	go test -cover $(shell go list ./... | grep -v '/gen' | grep -v '/test')
 
 # Run golangci-lint, excluding the examples package
 lint:
-	golangci-lint run -exclude-dirs=examples
+	golangci-lint run
 
 # Run with fix to automatically fix issues
 fmt:
-	golangci-lint run -exclude-dirs=examples --fix
+	golangci-lint run --fix

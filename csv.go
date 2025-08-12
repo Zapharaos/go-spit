@@ -2,7 +2,7 @@
 //
 // This file provides functions to write tabular data to CSV files.
 
-package go_spit
+package spit
 
 import (
 	stdcsv "encoding/csv"
@@ -10,52 +10,54 @@ import (
 	"io"
 )
 
-// CSV contains CSV-specific export parameters
-type CSV struct {
-	writer    *stdcsv.Writer // Private CSV writer instance
-	Separator string         // Separator used for CSV fields, default is comma
-	table     *Table         // Reference to the Table being exported
-}
-
-// NewCsv creates a new CSV instance with the specified separator and table
-func NewCsv(separator string, t *Table) *CSV {
-	return &CSV{
-		Separator: separator,
-		table:     t,
-	}
-}
-
-// WriteDataToFile writes generic data to file using the generic file writer
-func (csv *CSV) WriteDataToFile(options FileWriteOptions) (*FileWriteResult, error) {
-	L().Info("Starting CSV export to file", String("filename", options.Filename))
-
+// ExportCSV writes generic data to file using the generic file writer
+func ExportCSV(separator string, t *Table, params FileWriteParams) (*FileWriteResult, error) {
 	// Ensure extension is set for CSV files
-	if options.extension == "" {
-		options.extension = FormatCSV.String()
+	if params.extension == "" {
+		params.extension = FormatCSV.String()
 	}
+
+	csvConfig := &csv{
+		separator: separator,
+		table:     t,
+		params:    params,
+	}
+
+	L().Info("Starting CSV export to file", String("filename", csvConfig.params.Filename))
 
 	// Create a write function that handles the CSV file creation and writing
 	writeFunc := func(writer io.Writer) error {
-		csv.writer = stdcsv.NewWriter(writer)
-		return csv.writeData()
+		csvConfig.writer = stdcsv.NewWriter(writer)
+		return csvConfig.writeData()
 	}
 
 	// Use the generic file writer to handle the actual file writing
-	result, err := options.writeToFile(writeFunc)
+	result, err := csvConfig.params.writeToFile(writeFunc)
 	if err != nil {
 		L().Error("Failed to write CSV to file", Error(err))
 		return nil, err
 	}
 
-	L().Info("CSV export completed", String("filename", options.Filename))
+	L().Info("CSV export completed", String("filename", csvConfig.params.Filename))
 	return result, nil
 }
 
+// csv contains CSV-specific export parameters
+type csv struct {
+	writer    *stdcsv.Writer  // Private CSV writer instance
+	separator string          // separator used for CSV fields, default is comma
+	table     *Table          // Reference to the Table being exported
+	params    FileWriteParams // File write parameters for the CSV export
+}
+
 // writeData writes the provided data to the CSV writer
-func (csv *CSV) writeData() error {
+func (csv *csv) writeData() error {
 	L().Debug("Writing data to CSV...")
+
 	// Set the CSV delimiter (comma by default)
-	if csv.writer.Comma == 0 {
+	if csv.separator != "" {
+		csv.writer.Comma = rune(csv.separator[0])
+	} else {
 		csv.writer.Comma = ','
 	}
 
@@ -106,7 +108,7 @@ func (csv *CSV) writeData() error {
 
 // writeHeaders writes header rows to represent the hierarchical column structure
 // Each row corresponds to a level in the column hierarchy, allowing for grouped headers in the CSV output.
-func (csv *CSV) writeHeaders() error {
+func (csv *csv) writeHeaders() error {
 	maxDepth := csv.table.Columns.getMaxDepth()
 	totalCols := csv.table.Columns.getTotalColumnCount()
 	L().Debug("Writing header levels", Int("levels", maxDepth), Int("columns", totalCols))
@@ -124,7 +126,7 @@ func (csv *CSV) writeHeaders() error {
 }
 
 // fillHeaderLevel recursively fills a header row for a specific level
-func (csv *CSV) fillHeaderLevel(headerRow []string, targetLevel int, currentLevel int, colIndex int) int {
+func (csv *csv) fillHeaderLevel(headerRow []string, targetLevel int, currentLevel int, colIndex int) int {
 	for _, column := range csv.table.Columns {
 		if currentLevel == targetLevel {
 			// This is the level we want to fill
@@ -161,7 +163,7 @@ func (csv *CSV) fillHeaderLevel(headerRow []string, targetLevel int, currentLeve
 }
 
 // processValue processes a value based on its type and format
-func (csv *CSV) processValue(value interface{}, format string) (string, error) {
+func (csv *csv) processValue(value interface{}, format string) (string, error) {
 	switch v := value.(type) {
 	case []interface{}:
 		if csv.table.ListSeparator != "" {

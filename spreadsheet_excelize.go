@@ -1,9 +1,9 @@
-// spreadsheet_excelize.go - Excelize-based implementation of the Spreadsheet interface.
+// spreadsheet_excelize.go - Excelize-based implementation of the spreadsheet interface.
 //
 // This file provides an adapter for the github.com/xuri/excelize library, enabling spreadsheet operations
 // such as file creation, sheet management, cell formatting, and table manipulation in Excel files.
 
-package go_spit
+package spit
 
 import (
 	"fmt"
@@ -15,18 +15,25 @@ import (
 // SpreadsheetExcelize provides Excelize-specific operations for spreadsheet handling.
 // Implements the Spreadsheet interface using github.com/xuri/excelize.
 type SpreadsheetExcelize struct {
-	File      *excelize.File // Underlying Excelize file object
+	File *excelize.File // Single Excelize file object for all sheets
+	// Tables    map[string]*TableExcelize
 	SheetName string         // Current sheet name
-	Table     *TableExcelize // Table adapter for Excelize
+	Table     *TableExcelize // Current Table for Excelize
 }
 
 // NewSpreadsheetExcelize creates a new SpreadsheetExcelize instance for a given file, sheet, and table.
-func NewSpreadsheetExcelize(file *excelize.File, sheetName string, t *Table) *SpreadsheetExcelize {
+func NewSpreadsheetExcelize(sheetName string, t *Table) *SpreadsheetExcelize {
 	return &SpreadsheetExcelize{
-		File:      file,
 		SheetName: sheetName,
-		Table:     NewTableExcelize(file, sheetName, t),
+		Table:     NewTableExcelize(sheetName, t),
 	}
+}
+
+// WithFile allows setting an existing Excelize file to the SpreadsheetExcelize instance.
+func (e *SpreadsheetExcelize) WithFile(file *excelize.File) *SpreadsheetExcelize {
+	e.Table.WithFile(file) // Keep the TableExcelize in sync with the spreadsheet file
+	e.File = file
+	return e
 }
 
 func (e *SpreadsheetExcelize) getTable() *Table {
@@ -38,7 +45,9 @@ func (e *SpreadsheetExcelize) getFile() interface{} {
 }
 
 func (e *SpreadsheetExcelize) createNewFile() error {
-	e.File = excelize.NewFile()
+	f := excelize.NewFile()
+	e.WithFile(f)
+	e.Table.WithFile(f)
 	return nil
 }
 

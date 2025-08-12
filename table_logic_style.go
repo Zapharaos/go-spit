@@ -4,7 +4,7 @@
 // Styling errors are logged as warnings, allowing export to continue with best-effort visual enhancements.
 // Used by spreadsheet backends to support advanced styling features in exported files.
 
-package go_spit
+package spit
 
 import (
 	"fmt"
