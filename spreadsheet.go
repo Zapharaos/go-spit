@@ -3,6 +3,8 @@
 // This interface abstracts spreadsheet functionality, allowing for multiple implementations (e.g., Excel, Google Sheets) and libraries.
 // It includes methods for file management, sheet management, column formatting, and table operations.
 
+//go:generate mockgen -destination=mocks/spreadsheet_mock.go -package=mocks . Spreadsheet
+
 package spit
 
 import (

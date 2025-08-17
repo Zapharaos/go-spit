@@ -4,6 +4,8 @@
 // represent, manipulate, and export tabular data with hierarchical columns, formatting, and cell/row configuration.
 // It allows for flexible data representation and export across different libraries.
 
+//go:generate mockgen -destination=mocks/table_mock.go -package=mocks . tableOperations
+
 package spit
 
 import (

@@ -1,3 +1,5 @@
+//go:generate mockgen -destination=mocks/logger_mock.go -package=mocks . Logger
+
 package spit
 
 import (

@@ -131,6 +131,16 @@ options := go_spit.FileWriteOptions{
 
 ## Development
 
+Install dependencies:
+```shell
+make dev-deps
+```
+
+Generate interface mocks for testing:
+```shell
+make mocks
+```
+
 Run the test suite:
 
 ```shell
