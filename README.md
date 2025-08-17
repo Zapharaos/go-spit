@@ -136,21 +136,9 @@ Install dependencies:
 make dev-deps
 ```
 
-Generate interface mocks for testing:
+Run unit tests and generate coverage report:
 ```shell
-make mocks
-```
-
-Run the test suite:
-
-```shell
-make test
-```
-
-Run the test suite with coverage:
-
-```shell
-make coverage
+make test-unit
 ```
 
 Run linters:

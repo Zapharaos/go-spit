@@ -12,7 +12,7 @@ package mocks
 import (
 	reflect "reflect"
 
-	go_spit "github.com/Zapharaos/go-spit"
+	spit "github.com/Zapharaos/go-spit"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -41,7 +41,7 @@ func (m *MockLogger) EXPECT() *MockLoggerMockRecorder {
 }
 
 // Debug mocks base method.
-func (m *MockLogger) Debug(msg string, fields ...go_spit.Field) {
+func (m *MockLogger) Debug(msg string, fields ...spit.Field) {
 	m.ctrl.T.Helper()
 	varargs := []any{msg}
 	for _, a := range fields {
@@ -58,7 +58,7 @@ func (mr *MockLoggerMockRecorder) Debug(msg any, fields ...any) *gomock.Call {
 }
 
 // Error mocks base method.
-func (m *MockLogger) Error(msg string, fields ...go_spit.Field) {
+func (m *MockLogger) Error(msg string, fields ...spit.Field) {
 	m.ctrl.T.Helper()
 	varargs := []any{msg}
 	for _, a := range fields {
@@ -75,7 +75,7 @@ func (mr *MockLoggerMockRecorder) Error(msg any, fields ...any) *gomock.Call {
 }
 
 // Info mocks base method.
-func (m *MockLogger) Info(msg string, fields ...go_spit.Field) {
+func (m *MockLogger) Info(msg string, fields ...spit.Field) {
 	m.ctrl.T.Helper()
 	varargs := []any{msg}
 	for _, a := range fields {
@@ -92,7 +92,7 @@ func (mr *MockLoggerMockRecorder) Info(msg any, fields ...any) *gomock.Call {
 }
 
 // Warn mocks base method.
-func (m *MockLogger) Warn(msg string, fields ...go_spit.Field) {
+func (m *MockLogger) Warn(msg string, fields ...spit.Field) {
 	m.ctrl.T.Helper()
 	varargs := []any{msg}
 	for _, a := range fields {

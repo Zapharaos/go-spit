@@ -1,17 +1,18 @@
 # Makefile for go-spit
 
+GO_PACKAGE ?= "spit"
+
 .PHONY: help mocks test coverage lint fmt dev-deps
 
 help:
 	@echo "Usage: make <target>"
 	@echo "Targets:"
-	@echo "  help      Show this help message"
-	@echo "  dev-deps  Install development dependencies"
-	@echo "  mocks     Generate mocks for interfaces"
-	@echo "  test      Run tests"
-	@echo "  coverage  Run tests with coverage"
-	@echo "  lint      Run golangci-lint"
-	@echo "  fmt       Tries to automatically fix linting errors"
+	@echo "  help        Show this help message"
+	@echo "  dev-deps    Install development dependencies"
+	@echo "  mocks       Generate mocks for interfaces"
+	@echo "  test-unit   Run unit tests and generate coverage report"
+	@echo "  lint        Run golangci-lint"
+	@echo "  fmt         Tries to automatically fix linting errors"
 
 # Install development dependencies
 dev-deps:
@@ -22,18 +23,18 @@ dev-deps:
 mocks:
 	go generate ./...
 
-# Run tests, excluding the mocks directory
-test:
-	go test $(shell go list ./... | grep -v '/mocks')
+# Test the code and generate coverage report
+test-unit:
+	mkdir -p reporting
+	go test -p=1 -short -cover -coverpkg=$$($(GO_PACKAGE) | tr '\n' ',') -coverprofile=reporting/profile.out -json $$($(GO_PACKAGE)) > reporting/tests.json || true
+	go tool cover -html=reporting/profile.out -o reporting/coverage.html
+	go tool cover -func=reporting/profile.out -o reporting/coverage.txt
+	cat reporting/coverage.txt
 
-# Run tests with coverage, excluding the mocks directory
-coverage:
-	go test -cover $(shell go list ./... | grep -v '/mocks')
-
-# Run golangci-lint, excluding the mocks directory
+# Run golangci-lint
 lint:
-	golangci-lint run --skip-dirs mocks
+	golangci-lint run
 
 # Run with fix to automatically fix issues
 fmt:
-	golangci-lint run --fix --skip-dirs mocks
+	golangci-lint run --fix

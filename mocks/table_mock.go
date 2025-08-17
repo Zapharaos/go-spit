@@ -12,7 +12,7 @@ package mocks
 import (
 	reflect "reflect"
 
-	go_spit "github.com/Zapharaos/go-spit"
+	spit "github.com/Zapharaos/go-spit"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -41,7 +41,7 @@ func (m *MocktableOperations) EXPECT() *MocktableOperationsMockRecorder {
 }
 
 // applyBorderToCell mocks base method.
-func (m *MocktableOperations) applyBorderToCell(col, row int, side string, border *go_spit.Border) error {
+func (m *MocktableOperations) applyBorderToCell(col, row int, side string, border *spit.Border) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "applyBorderToCell", col, row, side, border)
 	ret0, _ := ret[0].(error)
@@ -55,7 +55,7 @@ func (mr *MocktableOperationsMockRecorder) applyBorderToCell(col, row, side, bor
 }
 
 // applyBordersToRange mocks base method.
-func (m *MocktableOperations) applyBordersToRange(startCol, startRow, endCol, endRow int, borders go_spit.Borders) error {
+func (m *MocktableOperations) applyBordersToRange(startCol, startRow, endCol, endRow int, borders spit.Borders) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "applyBordersToRange", startCol, startRow, endCol, endRow, borders)
 	ret0, _ := ret[0].(error)
@@ -69,7 +69,7 @@ func (mr *MocktableOperationsMockRecorder) applyBordersToRange(startCol, startRo
 }
 
 // applyStyleToCell mocks base method.
-func (m *MocktableOperations) applyStyleToCell(col, row int, style go_spit.Style) error {
+func (m *MocktableOperations) applyStyleToCell(col, row int, style spit.Style) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "applyStyleToCell", col, row, style)
 	ret0, _ := ret[0].(error)
@@ -83,7 +83,7 @@ func (mr *MocktableOperationsMockRecorder) applyStyleToCell(col, row, style any)
 }
 
 // applyStyleToRange mocks base method.
-func (m *MocktableOperations) applyStyleToRange(startCol, startRow, endCol, endRow int, style go_spit.Style) error {
+func (m *MocktableOperations) applyStyleToRange(startCol, startRow, endCol, endRow int, style spit.Style) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "applyStyleToRange", startCol, startRow, endCol, endRow, style)
 	ret0, _ := ret[0].(error)
@@ -126,10 +126,10 @@ func (mr *MocktableOperationsMockRecorder) getColumnLetter(col any) *gomock.Call
 }
 
 // getTable mocks base method.
-func (m *MocktableOperations) getTable() *go_spit.Table {
+func (m *MocktableOperations) getTable() *spit.Table {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "getTable")
-	ret0, _ := ret[0].(*go_spit.Table)
+	ret0, _ := ret[0].(*spit.Table)
 	return ret0
 }
 

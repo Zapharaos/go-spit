@@ -13,7 +13,7 @@ import (
 	io "io"
 	reflect "reflect"
 
-	go_spit "github.com/Zapharaos/go-spit"
+	spit "github.com/Zapharaos/go-spit"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -42,7 +42,7 @@ func (m *MockSpreadsheet) EXPECT() *MockSpreadsheetMockRecorder {
 }
 
 // applyBorderToCell mocks base method.
-func (m *MockSpreadsheet) applyBorderToCell(col, row int, side string, border *go_spit.Border) error {
+func (m *MockSpreadsheet) applyBorderToCell(col, row int, side string, border *spit.Border) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "applyBorderToCell", col, row, side, border)
 	ret0, _ := ret[0].(error)
@@ -56,7 +56,7 @@ func (mr *MockSpreadsheetMockRecorder) applyBorderToCell(col, row, side, border 
 }
 
 // applyBordersToRange mocks base method.
-func (m *MockSpreadsheet) applyBordersToRange(startCol, startRow, endCol, endRow int, borders go_spit.Borders) error {
+func (m *MockSpreadsheet) applyBordersToRange(startCol, startRow, endCol, endRow int, borders spit.Borders) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "applyBordersToRange", startCol, startRow, endCol, endRow, borders)
 	ret0, _ := ret[0].(error)
@@ -70,7 +70,7 @@ func (mr *MockSpreadsheetMockRecorder) applyBordersToRange(startCol, startRow, e
 }
 
 // applyStyleToCell mocks base method.
-func (m *MockSpreadsheet) applyStyleToCell(col, row int, style go_spit.Style) error {
+func (m *MockSpreadsheet) applyStyleToCell(col, row int, style spit.Style) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "applyStyleToCell", col, row, style)
 	ret0, _ := ret[0].(error)
@@ -84,7 +84,7 @@ func (mr *MockSpreadsheetMockRecorder) applyStyleToCell(col, row, style any) *go
 }
 
 // applyStyleToRange mocks base method.
-func (m *MockSpreadsheet) applyStyleToRange(startCol, startRow, endCol, endRow int, style go_spit.Style) error {
+func (m *MockSpreadsheet) applyStyleToRange(startCol, startRow, endCol, endRow int, style spit.Style) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "applyStyleToRange", startCol, startRow, endCol, endRow, style)
 	ret0, _ := ret[0].(error)
@@ -197,10 +197,10 @@ func (mr *MockSpreadsheetMockRecorder) getSheetName() *gomock.Call {
 }
 
 // getTable mocks base method.
-func (m *MockSpreadsheet) getTable() *go_spit.Table {
+func (m *MockSpreadsheet) getTable() *spit.Table {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "getTable")
-	ret0, _ := ret[0].(*go_spit.Table)
+	ret0, _ := ret[0].(*spit.Table)
 	return ret0
 }
 
