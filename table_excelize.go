@@ -123,24 +123,21 @@ func (e *TableExcelize) applyBorderToCell(col, row int, side string, border *Bor
 		return nil
 	}
 
-	// Create the style with border
-	style := &excelize.Style{}
-	excelBorderStyle := int(border.Style)
+	// Get current style and preserve borders
+	excelStyle, err := e.getCellStyle(col, row)
+	if excelStyle == nil || err != nil {
+		excelStyle = &excelize.Style{}
+	} else {
 
-	switch side {
-	case "left":
-		style.Border = []excelize.Border{{Type: "left", Color: "000000", Style: excelBorderStyle}}
-	case "right":
-		style.Border = []excelize.Border{{Type: "right", Color: "000000", Style: excelBorderStyle}}
-	case "top":
-		style.Border = []excelize.Border{{Type: "top", Color: "000000", Style: excelBorderStyle}}
-	case "bottom":
-		style.Border = []excelize.Border{{Type: "bottom", Color: "000000", Style: excelBorderStyle}}
-	default:
-		return fmt.Errorf("unsupported border side: %s", side)
+		switch side {
+		case "left", "right", "top", "bottom":
+			excelStyle.Border = append(excelStyle.Border, excelize.Border{Type: side, Color: "000000", Style: int(border.Style)})
+		default:
+			return fmt.Errorf("unsupported border side: %s", side)
+		}
 	}
 
-	styleID, err := e.File.NewStyle(style)
+	styleID, err := e.File.NewStyle(excelStyle)
 	if err != nil {
 		return err
 	}
@@ -201,7 +198,40 @@ func (e *TableExcelize) applyStyleToCell(col, row int, style Style) error {
 		return err
 	}
 
-	excelStyle := convertStyleToExcelizeStyle(style)
+	inputStyle := convertStyleToExcelizeStyle(style)
+
+	// Get current style and preserve borders
+	excelStyle, err := e.getCellStyle(col, row)
+	if excelStyle == nil || err != nil {
+		// If no existing style, use the input style directly
+		excelStyle = inputStyle
+	} else {
+		// Merge input style with existing style
+		// Preserve existing style properties if the inputStyle has nil values in them
+
+		if inputStyle.Border != nil {
+			excelStyle.Border = inputStyle.Border
+		}
+		if inputStyle.Fill.Color != nil {
+			excelStyle.Fill = inputStyle.Fill
+		}
+		if inputStyle.Font != nil {
+			excelStyle.Font = inputStyle.Font
+		}
+		if inputStyle.Alignment != nil {
+			excelStyle.Alignment = inputStyle.Alignment
+		}
+		if inputStyle.Protection != nil {
+			excelStyle.Protection = inputStyle.Protection
+		}
+		if inputStyle.DecimalPlaces != nil {
+			excelStyle.DecimalPlaces = inputStyle.DecimalPlaces
+		}
+		if inputStyle.CustomNumFmt != nil {
+			excelStyle.CustomNumFmt = inputStyle.CustomNumFmt
+		}
+	}
+
 	styleID, err := e.File.NewStyle(excelStyle)
 	if err != nil {
 		return err
@@ -212,19 +242,26 @@ func (e *TableExcelize) applyStyleToCell(col, row int, style Style) error {
 // applyStyleToRange applies a style to a range of cells defined by start and end coordinates.
 // The style properties are defined in the style parameter.
 func (e *TableExcelize) applyStyleToRange(startCol, startRow, endCol, endRow int, style Style) error {
-	startCell, err1 := excelize.CoordinatesToCellName(startCol, startRow)
-	endCell, err2 := excelize.CoordinatesToCellName(endCol, endRow)
-	if err1 != nil || err2 != nil {
-		return fmt.Errorf("failed to convert coordinates: %v, %v", err1, err2)
+	for row := startRow; row <= endRow; row++ {
+		for col := startCol; col <= endCol; col++ {
+			if err := e.applyStyleToCell(col, row, style); err != nil {
+				return err
+			}
+		}
 	}
+	return nil
+}
 
-	excelStyle := convertStyleToExcelizeStyle(style)
-	styleID, err := e.File.NewStyle(excelStyle)
+func (e *TableExcelize) getCellStyle(col, row int) (*excelize.Style, error) {
+	cellRef, err := excelize.CoordinatesToCellName(col, row)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	return e.File.SetCellStyle(e.SheetName, startCell, endCell, styleID)
+	styleID, err := e.File.GetCellStyle(e.SheetName, cellRef)
+	if err != nil {
+		return nil, err
+	}
+	return e.File.GetStyle(styleID)
 }
 
 // getColumnLetter returns the Excel-style column letter (A, B, C, ...) for a given column number.

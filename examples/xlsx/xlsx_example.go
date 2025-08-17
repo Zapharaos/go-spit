@@ -24,7 +24,7 @@ func getMainColumns() spit.Columns {
 			Label: "Name",
 			Style: getBasicStyle(),
 		},
-		// Column with subcolumns, columns with dedicated borders
+		// Column with subcolumns, subcolumns with dedicated borders
 		{
 			Label: "Personal Info",
 			Columns: spit.Columns{
@@ -45,23 +45,22 @@ func getMainColumns() spit.Columns {
 		// Column with subcolumns and inner borders
 		{
 			Label:   "Work Info",
-			Borders: spit.NewBorderOptions(spit.BorderStyleThin).SetInner(spit.BorderStyleDashed),
+			Borders: spit.NewBorderOptions(spit.BorderStyleThin),
 			Columns: spit.Columns{
 				{
-					Name:  "department",
-					Label: "Department",
-					Style: getBasicStyle(),
+					Name:    "department",
+					Label:   "Department",
+					Style:   getBasicStyle(),
+					Borders: spit.NewBorderOptions(spit.BorderStyleThin).SetInner(spit.BorderStyleDouble),
 					Merge: &spit.MergeRules{
 						Vertical: spit.MergeConditions{spit.MergeConditionIdentical},
 					}, // Show vertical merge
 				},
 				{
-					Name:  "status",
-					Label: "Status",
-					Style: getBasicStyle(),
-					Merge: &spit.MergeRules{
-						Horizontal: spit.MergeConditions{spit.MergeConditionIdentical},
-					}, // Show horizontal merge
+					Name:    "status",
+					Label:   "Status",
+					Style:   getBasicStyle(),
+					Borders: spit.NewBorderOptions(spit.BorderStyleThin).SetInner(spit.BorderStyleDashed),
 				},
 			},
 		},
@@ -82,15 +81,29 @@ func getSampleData() spit.DataSlice {
 			"name":       "Jane Smith",
 			"age":        28,
 			"email":      "jane@example.com",
-			"department": "Engineering", // Same as above - will merge vertically
+			"department": "Engineering",
 			"status":     "Active",
+		},
+		{
+			"name":       "Sam Taylor",
+			"age":        40,
+			"email":      "sam.taylor@example.com",
+			"department": "Engineering",
+			"status":     "Disabled",
+		},
+		{
+			"name":       "Lisa Brown",
+			"age":        27,
+			"email":      "lisa.brown@example.com",
+			"department": "Engineering",
+			"status":     "Disabled",
 		},
 		{
 			"name":       "Bob Johnson",
 			"age":        35,
 			"email":      "bob@example.com",
 			"department": "Marketing",
-			"status":     "Active", // Same as others - will merge horizontally
+			"status":     "Active",
 		},
 		{
 			"name":       "Alice Wilson",
@@ -98,6 +111,13 @@ func getSampleData() spit.DataSlice {
 			"email":      "alice@example.com",
 			"department": "Marketing",
 			"status":     "Active",
+		},
+		{
+			"name":       "N/A",
+			"age":        0,
+			"email":      "N/A",
+			"department": "N/A",
+			"status":     "N/A",
 		},
 	}
 }
@@ -109,7 +129,21 @@ func getRowOptions() spit.RowOptionsMap {
 			RowIndex: 1,
 			Style: &spit.Style{
 				BackgroundColor: "#FFE6E6",
+				Alignment:       spit.AlignmentCenterMiddle,
 			},
+			Border:    spit.NewBorderOptions(spit.BorderStyleThick),
+			Mergeable: false, // Cancel any column merge behavior for this row
+		},
+		6: spit.RowOptions{
+			RowIndex: 6,
+			Style: &spit.Style{
+				BackgroundColor: "#FFE6E6",
+				Alignment:       spit.AlignmentCenterMiddle,
+			},
+			Merge: &spit.MergeRules{
+				Horizontal: spit.MergeConditions{spit.MergeConditionIdentical},
+			}, // Show horizontal merge
+			Border: spit.NewBorderOptions(spit.BorderStyleThin),
 		},
 	}
 }
@@ -117,13 +151,28 @@ func getRowOptions() spit.RowOptionsMap {
 // Minimal cell options - just background color
 func getCellOptions() spit.CellOptionsMap {
 	return spit.CellOptionsMap{
-		1: { // Column index 1 (age column)
-			2: spit.CellOptions{ // Row index 2 (third data row)
-				RowIndex: 2,
-				ColIndex: 1,
+		4: { // Column index 4 (department column)
+			5: spit.CellOptions{ // Row index 5 (sixth data row)
+				RowIndex: 5,
+				ColIndex: 4,
 				Style: &spit.Style{
 					BackgroundColor: "#FFFF99",
+					Alignment:       spit.AlignmentCenterMiddle,
 				},
+				Mergeable: false, // Refuses to merge this cell
+				Border:    spit.NewBorderOptions(spit.BorderStyleThick),
+			},
+		},
+		2: { // Column index 2 (department column)
+			6: spit.CellOptions{ // Row index 6 (seventh data row)
+				RowIndex: 6,
+				ColIndex: 2,
+				Style: &spit.Style{
+					BackgroundColor: "#FFFF99",
+					Alignment:       spit.AlignmentCenterMiddle,
+				},
+				Mergeable: false, // Refuses to merge this cell
+				Border:    spit.NewBorderOptions(spit.BorderStyleThick),
 			},
 		},
 	}

@@ -34,18 +34,27 @@ func (t *Table) processMerging(ops tableOperations) error {
 
 	// Process horizontal merging for each data row
 	for rowIndex, item := range t.Data {
+		// Convert data row index to actual sheet row number
+		rowNum := rowIndex + dataStartRow
+
+		// Retrieve any custom row options for this row
+		rc, exists := t.RowOptionsMap[rowIndex]
+
 		// Check if this row has custom merge configuration
-		if rc, exists := t.RowOptionsMap[rowIndex]; exists && rc.Merge != nil && len(rc.Merge.Horizontal) > 0 {
+		if exists && rc.Merge != nil && len(rc.Merge.Horizontal) > 0 {
 			// Row has custom horizontal merge settings - process it with those settings
-			if err := t.executeHorizontalMerging(item, t.Columns, rowIndex, 1, &rc, ops); err != nil {
+			if err := t.executeHorizontalMerging(item, t.Columns, rowNum, 1, &rc, ops); err != nil {
 				return fmt.Errorf("failed to apply row horizontal merging: %w", err)
 			}
 			continue // Skip standard processing for this row
 		}
 
+		// If no custom row merge settings, check if the row is marked as non-mergeable
+		if exists && !rc.Mergeable {
+			continue
+		}
+
 		// Standard horizontal merging processing
-		// Convert data row index to actual sheet row number
-		rowNum := rowIndex + dataStartRow
 		if err := t.executeHorizontalMerging(item, t.Columns, rowNum, 1, nil, ops); err != nil {
 			// Log the error but continue processing other rows
 			L().Warn("Failed to execute horizontal merging for row", Int("row", rowNum), Error(err))
@@ -152,15 +161,27 @@ func (t *Table) findVerticalMergeRanges(colIndex int, fieldName string, format s
 
 	// Iterate through each data row to analyze values and build ranges
 	for rowIndex, item := range t.Data {
-		// Skip rows that have custom vertical merge configurations
-		// These are handled separately to avoid conflicts
-		if rc, exists := t.RowOptionsMap[rowIndex]; exists && rc.Merge != nil {
+		// Skip rows that have disabled merging or have custom vertical merge configurations
+		// Custom configurations are handled separately to avoid conflicts
+		if rc, exists := t.RowOptionsMap[rowIndex]; exists && (!rc.Mergeable || rc.Merge != nil) {
+			// Can't get value for this row - end current range if it exists
+			if len(currentRange) > 1 {
+				mergeRanges = append(mergeRanges, currentRange)
+			}
+			currentRange = nil
+			lastValue = nil
 			continue
 		}
 
 		// Check if this specific cell is marked as non-mergeable
 		// This allows fine-grained control over which cells can be merged
 		if cc, exists := t.CellOptionsMap[colIndex][rowIndex]; exists && !cc.Mergeable {
+			// Can't get value for this row - end current range if it exists
+			if len(currentRange) > 1 {
+				mergeRanges = append(mergeRanges, currentRange)
+			}
+			currentRange = nil
+			lastValue = nil
 			continue
 		}
 

@@ -126,7 +126,7 @@ type Column struct {
 	Label   string      // Display label for headers
 	Format  string      // Format specification for value processing (e.g., date format)
 	Merge   *MergeRules // Optional merge configuration for this column
-	Borders Borders     // Borders configuration
+	Borders *Borders    // Borders configuration
 	Style   *Style      // Optional content style
 	Columns Columns     // Sub-columns for hierarchical structures
 }
@@ -200,10 +200,11 @@ type RowOptionsMap map[int]RowOptions
 // This allows fine-grained control over individual rows, overriding default
 // column-based settings when needed.
 type RowOptions struct {
-	RowIndex int         // The 0-based index of the row this option applies to
-	Border   *Borders    // Optional border configuration for the entire row
-	Merge    *MergeRules // Optional merge configuration that overrides column settings
-	Style    *Style      // Optional style configuration for the entire row
+	RowIndex  int         // The 0-based index of the row this option applies to
+	Border    *Borders    // Optional border configuration for the entire row
+	Style     *Style      // Optional style configuration for the entire row
+	Merge     *MergeRules // Optional merge configuration that overrides column settings
+	Mergeable bool        // Whether this row cells can participate in merge operations
 }
 
 // CellOptionsMap provides cell-level option mapping.
@@ -318,7 +319,7 @@ type Borders struct {
 }
 
 // hasBorders checks if any borders are configured in these Borders.
-func (bc Borders) hasBorders() bool {
+func (bc *Borders) hasBorders() bool {
 	return (bc.Left != nil && bc.Left.Style != BorderStyleNone) ||
 		(bc.Right != nil && bc.Right.Style != BorderStyleNone) ||
 		(bc.Top != nil && bc.Top.Style != BorderStyleNone) ||
@@ -326,7 +327,8 @@ func (bc Borders) hasBorders() bool {
 }
 
 // SetInner creates inner border configuration with the same style for all edges.
-func (bc Borders) SetInner(style BorderStyle) Borders {
+// Note: When applied to a table column, this will only be applied if the column has no sub-columns.
+func (bc *Borders) SetInner(style BorderStyle) *Borders {
 	border := &Border{Style: style}
 	bc.Inner = &Borders{
 		Left:   border,
@@ -338,9 +340,9 @@ func (bc Borders) SetInner(style BorderStyle) Borders {
 }
 
 // NewBorderOptions creates a Borders with the same style applied to all edges.
-func NewBorderOptions(style BorderStyle) Borders {
+func NewBorderOptions(style BorderStyle) *Borders {
 	border := &Border{Style: style}
-	return Borders{
+	return &Borders{
 		Left:   border,
 		Right:  border,
 		Top:    border,
