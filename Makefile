@@ -26,7 +26,8 @@ mocks:
 # Test the code and generate coverage report
 test-unit:
 	mkdir -p reporting
-	go test -p=1 -short -cover -coverpkg=$$($(GO_PACKAGE) | tr '\n' ',') -coverprofile=reporting/profile.out -json $$($(GO_PACKAGE)) > reporting/tests.json || true
+	go test -p=1 -short -cover -coverpkg=$$($(GO_PACKAGE) | tr '\n' ',') -coverprofile=reporting/profile_raw.out -json $$($(GO_PACKAGE)) > reporting/tests.json || true
+	grep -v '_mock.go' reporting/profile_raw.out > reporting/profile.out
 	go tool cover -html=reporting/profile.out -o reporting/coverage.html
 	go tool cover -func=reporting/profile.out -o reporting/coverage.txt
 	cat reporting/coverage.txt
