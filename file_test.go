@@ -131,7 +131,9 @@ func TestFileWriteParams_writeToFile(t *testing.T) {
 	}
 	// Pre-create a file for the "already exists" test
 	existsPath := filepath.Join(tmpDir, "existsfile.txt")
-	os.WriteFile(existsPath, []byte("exists"), 0644)
+	if err := os.WriteFile(existsPath, []byte("exists"), 0644); err != nil {
+		t.Fatalf("failed to create test file: %v", err)
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -163,7 +165,9 @@ func TestFileWriteParams_writeToFile(t *testing.T) {
 func TestFileWriteResult_RemoveFile(t *testing.T) {
 	tmpDir := t.TempDir()
 	filePath := filepath.Join(tmpDir, "toremove.txt")
-	os.WriteFile(filePath, []byte("data"), 0644)
+	if err := os.WriteFile(filePath, []byte("data"), 0644); err != nil {
+		t.Fatalf("failed to create test file: %v", err)
+	}
 
 	tests := []struct {
 		name    string

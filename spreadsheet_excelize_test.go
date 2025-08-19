@@ -116,7 +116,9 @@ func TestSpreadsheetExcelize_saveToWriter(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	se.createNewFile()
+	if err := se.createNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
 
 	var buf bytes.Buffer
 	err := se.saveToWriter(&buf)
@@ -137,7 +139,9 @@ func TestSpreadsheetExcelize_close(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	se.createNewFile()
+	if err := se.createNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
 
 	err := se.close()
 
@@ -188,7 +192,9 @@ func TestSpreadsheetExcelize_createSheet(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	se.createNewFile()
+	if err := se.createNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
 
 	err := se.createSheet()
 
@@ -214,7 +220,9 @@ func TestSpreadsheetExcelize_createSheet_ExistingSheet(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("Sheet1", table) // Use default sheet name
-	se.createNewFile()
+	if err := se.createNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
 
 	err := se.createSheet()
 
@@ -231,8 +239,12 @@ func TestSpreadsheetExcelize_setActiveSheet(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	se.createNewFile()
-	se.createSheet()
+	if err := se.createNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
+	if err := se.createSheet(); err != nil {
+		t.Fatalf("failed to create sheet: %v", err)
+	}
 
 	err := se.setActiveSheet()
 
@@ -256,7 +268,9 @@ func TestSpreadsheetExcelize_setActiveSheet_NonExistentSheet(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("NonExistentSheet", table)
-	se.createNewFile()
+	if err := se.createNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
 
 	err := se.setActiveSheet()
 
@@ -282,8 +296,12 @@ func TestSpreadsheetExcelize_setColumnWidth(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	se.createNewFile()
-	se.createSheet()
+	if err := se.createNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
+	if err := se.createSheet(); err != nil {
+		t.Fatalf("failed to create sheet: %v", err)
+	}
 
 	err := se.setColumnWidth("A", 20.5)
 
@@ -309,11 +327,17 @@ func TestSpreadsheetExcelize_getCellValue(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	se.createNewFile()
-	se.createSheet()
+	if err := se.createNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
+	if err := se.createSheet(); err != nil {
+		t.Fatalf("failed to create sheet: %v", err)
+	}
 
 	// Set a value first
-	se.File.SetCellValue("TestSheet", "A1", "TestValue")
+	if err := se.File.SetCellValue("TestSheet", "A1", "TestValue"); err != nil {
+		t.Fatalf("failed to set cell value: %v", err)
+	}
 
 	value, err := se.getCellValue(1, 1)
 
@@ -333,8 +357,12 @@ func TestSpreadsheetExcelize_setCellValue(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	se.createNewFile()
-	se.createSheet()
+	if err := se.createNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
+	if err := se.createSheet(); err != nil {
+		t.Fatalf("failed to create sheet: %v", err)
+	}
 
 	err := se.setCellValue(1, 1, "TestValue")
 
@@ -360,8 +388,12 @@ func TestSpreadsheetExcelize_mergeCells(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	se.createNewFile()
-	se.createSheet()
+	if err := se.createNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
+	if err := se.createSheet(); err != nil {
+		t.Fatalf("failed to create sheet: %v", err)
+	}
 
 	err := se.mergeCells(1, 1, 2, 2)
 
@@ -387,11 +419,17 @@ func TestSpreadsheetExcelize_isCellMerged(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	se.createNewFile()
-	se.createSheet()
+	if err := se.createNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
+	if err := se.createSheet(); err != nil {
+		t.Fatalf("failed to create sheet: %v", err)
+	}
 
 	// Merge cells first
-	se.mergeCells(1, 1, 2, 2)
+	if err := se.mergeCells(1, 1, 2, 2); err != nil {
+		t.Fatalf("failed to merge cells: %v", err)
+	}
 
 	result := se.isCellMerged(1, 1)
 
@@ -414,11 +452,17 @@ func TestSpreadsheetExcelize_isCellMergedHorizontally(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	se.createNewFile()
-	se.createSheet()
+	if err := se.createNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
+	if err := se.createSheet(); err != nil {
+		t.Fatalf("failed to create sheet: %v", err)
+	}
 
 	// Merge cells horizontally
-	se.mergeCells(1, 1, 3, 1)
+	if err := se.mergeCells(1, 1, 3, 1); err != nil {
+		t.Fatalf("failed to merge cells: %v", err)
+	}
 
 	result := se.isCellMergedHorizontally(1, 1)
 
@@ -441,8 +485,12 @@ func TestSpreadsheetExcelize_applyBorderToCell(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	se.createNewFile()
-	se.createSheet()
+	if err := se.createNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
+	if err := se.createSheet(); err != nil {
+		t.Fatalf("failed to create sheet: %v", err)
+	}
 
 	border := &Border{Style: BorderStyleThin}
 
@@ -461,8 +509,12 @@ func TestSpreadsheetExcelize_applyBordersToRange(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	se.createNewFile()
-	se.createSheet()
+	if err := se.createNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
+	if err := se.createSheet(); err != nil {
+		t.Fatalf("failed to create sheet: %v", err)
+	}
 
 	borders := Borders{
 		Top:    &Border{Style: BorderStyleThin},
@@ -486,12 +538,18 @@ func TestSpreadsheetExcelize_hasExistingBorder(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	se.createNewFile()
-	se.createSheet()
+	if err := se.createNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
+	if err := se.createSheet(); err != nil {
+		t.Fatalf("failed to create sheet: %v", err)
+	}
 
 	// Apply a border first
 	border := &Border{Style: BorderStyleThin}
-	se.applyBorderToCell(1, 1, "top", border)
+	if err := se.applyBorderToCell(1, 1, "top", border); err != nil {
+		t.Fatalf("failed to apply border: %v", err)
+	}
 
 	result := se.hasExistingBorder(1, 1, "top")
 
@@ -514,8 +572,12 @@ func TestSpreadsheetExcelize_applyStyleToCell(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	se.createNewFile()
-	se.createSheet()
+	if err := se.createNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
+	if err := se.createSheet(); err != nil {
+		t.Fatalf("failed to create sheet: %v", err)
+	}
 
 	style := Style{
 		Bold:            true,
@@ -539,8 +601,12 @@ func TestSpreadsheetExcelize_applyStyleToRange(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	se.createNewFile()
-	se.createSheet()
+	if err := se.createNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
+	if err := se.createSheet(); err != nil {
+		t.Fatalf("failed to create sheet: %v", err)
+	}
 
 	style := Style{
 		Bold:            true,

@@ -67,7 +67,9 @@ func TestTableExcelize_getCellValue(t *testing.T) {
 	tableExcel := NewTableExcelize(sheetName, &Table{}).WithFile(file)
 
 	// Set a test value
-	file.SetCellValue(sheetName, "A1", "test value")
+	if err := file.SetCellValue(sheetName, "A1", "test value"); err != nil {
+		t.Fatalf("failed to set cell value: %v", err)
+	}
 
 	tests := []struct {
 		name     string
@@ -272,7 +274,9 @@ func TestTableExcelize_isCellMerged(t *testing.T) {
 	tableExcel := NewTableExcelize(sheetName, &Table{}).WithFile(file)
 
 	// Create a merged range for testing
-	file.MergeCell(sheetName, "A1", "C1")
+	if err := file.MergeCell(sheetName, "A1", "C1"); err != nil {
+		t.Fatalf("failed to merge cells: %v", err)
+	}
 
 	tests := []struct {
 		name     string
@@ -349,8 +353,12 @@ func TestTableExcelize_isCellMergedHorizontally(t *testing.T) {
 	tableExcel := NewTableExcelize(sheetName, &Table{}).WithFile(file)
 
 	// Create horizontal and vertical merged ranges for testing
-	file.MergeCell(sheetName, "A1", "C1") // Horizontal merge
-	file.MergeCell(sheetName, "A3", "A5") // Vertical merge
+	if err := file.MergeCell(sheetName, "A1", "C1"); err != nil {
+		t.Fatalf("failed to merge cells horizontally: %v", err)
+	}
+	if err := file.MergeCell(sheetName, "A3", "A5"); err != nil {
+		t.Fatalf("failed to merge cells vertically: %v", err)
+	}
 
 	tests := []struct {
 		name     string
@@ -558,7 +566,9 @@ func TestTableExcelize_applyBorderToCell_ErrorHandling(t *testing.T) {
 				styleID, _ := file.NewStyle(&excelize.Style{
 					Font: &excelize.Font{Bold: true},
 				})
-				file.SetCellStyle(sheetName, "C1", "C1", styleID)
+				if err := file.SetCellStyle(sheetName, "C1", "C1", styleID); err != nil {
+					t.Fatalf("failed to set cell style: %v", err)
+				}
 			},
 		},
 		{
@@ -788,7 +798,9 @@ func TestTableExcelize_hasExistingBorder(t *testing.T) {
 			{Type: "left", Style: 1, Color: "000000"},
 		},
 	})
-	file.SetCellStyle(sheetName, "A1", "A1", styleID)
+	if err := file.SetCellStyle(sheetName, "A1", "A1", styleID); err != nil {
+		t.Fatalf("failed to set cell style: %v", err)
+	}
 
 	tests := []struct {
 		name     string
@@ -870,7 +882,9 @@ func TestTableExcelize_applyStyleToCell(t *testing.T) {
 			Vertical:   "top",
 		},
 	})
-	file.SetCellStyle(sheetName, "B2", "B2", existingStyleID)
+	if err := file.SetCellStyle(sheetName, "B2", "B2", existingStyleID); err != nil {
+		t.Fatalf("failed to set cell style: %v", err)
+	}
 
 	tests := []struct {
 		name    string
@@ -1226,7 +1240,9 @@ func TestTableExcelize_getCellStyle(t *testing.T) {
 	styleID, _ := file.NewStyle(&excelize.Style{
 		Font: &excelize.Font{Bold: true},
 	})
-	file.SetCellStyle(sheetName, "A1", "A1", styleID)
+	if err := file.SetCellStyle(sheetName, "A1", "A1", styleID); err != nil {
+		t.Fatalf("failed to set cell style: %v", err)
+	}
 
 	tests := []struct {
 		name    string
