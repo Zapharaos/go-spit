@@ -5,7 +5,7 @@
 
 ![GitHub Release](https://img.shields.io/github/v/release/zapharaos/go-spit)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/zapharaos/go-spit/golang.yml)
-[![codecov](https://codecov.io/gh/Zapharaos/go-spit/graph/badge.svg?token=BL7YP0GTK9)](https://codecov.io/gh/Zapharaos/go-spit)
+[![codecov](https://codecov.io/gh/Zapharaos/go-spit/graph/badge.svg?token=VNQGKOP6ZX)](https://codecov.io/gh/Zapharaos/go-spit)
 
 # go-spit
 
