@@ -2,23 +2,23 @@
 
 package spit
 
-// LogLevel represents the severity level for logging
+// LogLevel represents the severity level for logging. Used to filter log output.
 type LogLevel int
 
 const (
-	LevelOff LogLevel = iota
-	LevelError
-	LevelWarn
-	LevelInfo
-	LevelDebug
+	LevelOff   LogLevel = iota // Logging disabled
+	LevelError                 // Error level logs
+	LevelWarn                  // Warning level logs
+	LevelInfo                  // Informational logs
+	LevelDebug                 // Debug level logs
 )
 
 var (
-	_logger   Logger   = &StdLogger{}
-	_logLevel LogLevel = LevelInfo
+	_logger   Logger   = &StdLogger{} // Global logger instance
+	_logLevel LogLevel = LevelInfo    // Default log level
 )
 
-// Logger interface that can be implemented by any logging library
+// Logger defines the interface for logging implementations.
 // Compatible with popular loggers like Zap, Logrus, etc.
 type Logger interface {
 	Debug(msg string, fields ...Field)
@@ -33,27 +33,32 @@ type Field struct {
 	Value interface{}
 }
 
+// String returns a Field with a string value.
 func String(key, val string) Field {
 	return Field{Key: key, Value: val}
 }
 
+// Error returns a Field for an error value.
 func Error(err error) Field {
 	return Field{Key: "error", Value: err}
 }
 
+// Int returns a Field with an int value.
 func Int(key string, val int) Field {
 	return Field{Key: key, Value: val}
 }
 
+// Bool returns a Field with a bool value.
 func Bool(key string, val bool) Field {
 	return Field{Key: key, Value: val}
 }
 
+// Any returns a Field with any value type.
 func Any(key string, val interface{}) Field {
 	return Field{Key: key, Value: val}
 }
 
-// L singleton logger access
+// L returns the global logger instance.
 func L() Logger {
 	return _logger
 }

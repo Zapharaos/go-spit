@@ -10,7 +10,7 @@ import (
 	"io"
 )
 
-// ExportCSV writes generic data to file using the generic file writer
+// ExportCSV writes generic table data to a CSV file using the generic file writer.
 func ExportCSV(separator string, t *Table, params FileWriteParams) (*FileWriteResult, error) {
 	// Ensure extension is set for CSV files
 	if params.extension == "" {
@@ -42,15 +42,16 @@ func ExportCSV(separator string, t *Table, params FileWriteParams) (*FileWriteRe
 	return result, nil
 }
 
-// csv contains CSV-specific export parameters
+// csv contains CSV-specific export parameters and logic.
 type csv struct {
 	writer    *stdcsv.Writer  // Private CSV writer instance
-	separator string          // separator used for CSV fields, default is comma
+	separator string          // Separator used for CSV fields, default is comma
 	table     *Table          // Reference to the Table being exported
 	params    FileWriteParams // File write parameters for the CSV export
 }
 
-// writeData writes the provided data to the CSV writer
+// writeData writes the provided table data to the CSV writer.
+// Handles headers, data rows, and value formatting.
 func (csv *csv) writeData() error {
 	L().Debug("Writing data to CSV...")
 
@@ -76,7 +77,7 @@ func (csv *csv) writeData() error {
 	for rowIdx, item := range csv.table.Data {
 		record := make([]string, 0, len(flatColumns))
 		for _, column := range flatColumns {
-			// lookup the value for this column in the current row
+			// Lookup the value for this column in the current row
 			value, err := item.lookup(column.Name)
 			if err != nil {
 				return fmt.Errorf("missing value for column %s in row %d: %w", column.Name, rowIdx, err)
@@ -125,7 +126,8 @@ func (csv *csv) writeHeaders() error {
 	return nil
 }
 
-// fillHeaderLevel recursively fills a header row for a specific level using the provided columns
+// fillHeaderLevel recursively fills a header row for a specific level using the provided columns.
+// Handles parent columns (spanning multiple sub-columns) and leaf columns.
 func (csv *csv) fillHeaderLevel(headerRow []string, targetLevel int, currentLevel int, colIndex int, columns Columns) int {
 	for _, column := range columns {
 		if currentLevel == targetLevel {
@@ -167,7 +169,8 @@ func (csv *csv) fillHeaderLevel(headerRow []string, targetLevel int, currentLeve
 	return colIndex
 }
 
-// processValue processes a value based on its type and format
+// processValue processes a value based on its type and format for CSV output.
+// Handles slices, formatting, and string conversion.
 func (csv *csv) processValue(value interface{}, format string) (string, error) {
 	switch v := value.(type) {
 	case []interface{}:

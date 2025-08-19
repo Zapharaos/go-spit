@@ -33,12 +33,12 @@ type Spreadsheet interface {
 	// SetSheetName sets the active sheet name.
 	setSheetName(name string)
 
-	// CreateSheet creates a new sheet with the current sheet name.
+	// createSheet creates a new sheet with the current sheet name.
 	createSheet() error
 
-	// SetActiveSheet sets the active sheet for subsequent operations.
+	// setActiveSheet sets the active sheet for subsequent operations.
 	setActiveSheet() error
 
-	// SetColumnWidth sets the width of a column by its letter (e.g., "A", "B").
+	// setColumnWidth sets the width of a column by its letter (e.g., "A", "B").
 	setColumnWidth(colLetter string, width float64) error
 }

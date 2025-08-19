@@ -1,6 +1,7 @@
 // file.go - Generic file writing and management.
 //
 // This file provides utilities for writing data to files with options and managing it.
+// Supports temp files, gzip compression, directory creation, filename sanitization.
 
 package spit
 
@@ -99,7 +100,9 @@ func (fwo FileWriteParams) SanitizeFilename() string {
 	return result
 }
 
-// writeToFile writes data to a file with generic options and returns file info
+// writeToFile writes data to a file with generic options and returns file info.
+// Handles temp file creation, directory management, gzip compression, and file overwriting.
+// Uses the provided writeFunc to write data to the file (or gzip stream).
 func (fwo FileWriteParams) writeToFile(writeFunc func(io.Writer) error) (*FileWriteResult, error) {
 	// Sanitize the filename to ensure it's safe for use
 	fwo.Filename = fwo.SanitizeFilename()
@@ -180,8 +183,6 @@ func (fwo FileWriteParams) writeToFile(writeFunc func(io.Writer) error) (*FileWr
 	if err != nil {
 		return nil, fmt.Errorf("failed to write data to %s: %w", filePath, err)
 	}
-
-	L().Info("file written successfully", String("filePath", filePath), String("fileName", fileName))
 
 	return &FileWriteResult{
 		Filepath: filePath,

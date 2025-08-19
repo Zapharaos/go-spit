@@ -20,7 +20,8 @@ type TableExcelize struct {
 	Table     *Table         // Reference to the generic Table struct
 }
 
-// NewTableExcelize creates a new TableExcelize instance for a given file, sheet, and table.
+// NewTableExcelize creates a new TableExcelize instance for a given sheet name and table.
+// The Excelize file is optional, set later via WithFile.
 func NewTableExcelize(sheetName string, table *Table) *TableExcelize {
 	return &TableExcelize{
 		SheetName: sheetName,
@@ -28,7 +29,8 @@ func NewTableExcelize(sheetName string, table *Table) *TableExcelize {
 	}
 }
 
-// WithFile allows setting an existing Excelize file to the SpreadsheetExcelize instance.
+// WithFile sets an existing Excelize file to the TableExcelize instance.
+// Returns the TableExcelize for chaining.
 func (e *TableExcelize) WithFile(file *excelize.File) *TableExcelize {
 	e.File = file
 	return e
@@ -113,7 +115,7 @@ func (e *TableExcelize) isCellMergedHorizontally(col, row int) bool {
 }
 
 // applyBorderToCell applies a border to a specific side of a cell at the given column and row.
-// The border style is defined by the Border parameter.
+// The border style is defined by the Border parameter. Only non-none styles are applied.
 func (e *TableExcelize) applyBorderToCell(col, row int, side string, border *Border) error {
 	cellRef, err := excelize.CoordinatesToCellName(col, row)
 	if err != nil {
@@ -174,7 +176,7 @@ func (e *TableExcelize) applyBordersToRange(startCol, startRow, endCol, endRow i
 	return nil
 }
 
-// hasExistingBorder checks if a cell at the given column and row has any existing border applied.
+// hasExistingBorder checks if a cell at the given column and row has any existing border applied on the specified side.
 // Returns true if there is a border style applied, false otherwise.
 func (e *TableExcelize) hasExistingBorder(col, row int, side string) bool {
 	cellRef, err := excelize.CoordinatesToCellName(col, row)
@@ -190,7 +192,7 @@ func (e *TableExcelize) hasExistingBorder(col, row int, side string) bool {
 }
 
 // applyStyleToCell applies a style to a cell at the given column and row.
-// The style properties are defined in the style parameter.
+// The style properties are defined in the style parameter. Existing borders are preserved.
 func (e *TableExcelize) applyStyleToCell(col, row int, style Style) error {
 	cellRef, err := excelize.CoordinatesToCellName(col, row)
 	if err != nil {

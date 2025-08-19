@@ -2,7 +2,8 @@
 //
 // This file defines the Table structure and the TableOperations interface, which provide a unified way to
 // represent, manipulate, and export tabular data with hierarchical columns, formatting, and cell/row configuration.
-// It allows for flexible data representation and export across different libraries.
+// It allows for flexible data representation and export across different libraries and backends.
+// Implement TableOperations for each backend (e.g., Excelize, CSV) to support table manipulation and export.
 
 //go:generate mockgen -destination=table_mock.go -package=spit . TableOperations
 
@@ -14,7 +15,7 @@ import (
 )
 
 // TableOperations defines table-specific operations interface.
-// Implement this interface to support table manipulation for various libraries.
+// Implement this interface to support table manipulation for various libraries and backends.
 type TableOperations interface {
 	// GetTable returns the underlying Table struct for direct access/manipulation.
 	getTable() *Table
