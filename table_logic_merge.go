@@ -85,7 +85,7 @@ func (t *Table) processHeaderMergingRecursive(columns Columns, currentRow, maxDe
 			columnSpan := column.getColumnCount()
 			endCol := currentCol + columnSpan - 1
 			if endCol > currentCol {
-				if err := ops.MergeCells(currentCol, currentRow, endCol, currentRow); err != nil {
+				if err := ops.mergeCells(currentCol, currentRow, endCol, currentRow); err != nil {
 					L().Warn("Failed to merge header cells horizontally",
 						Int("startCol", currentCol),
 						Int("endCol", endCol),
@@ -104,7 +104,7 @@ func (t *Table) processHeaderMergingRecursive(columns Columns, currentRow, maxDe
 		} else {
 			// Merge vertically for leaf columns that span multiple header rows
 			if currentRow < maxDepth {
-				if err := ops.MergeCells(currentCol, currentRow, currentCol, maxDepth); err != nil {
+				if err := ops.mergeCells(currentCol, currentRow, currentCol, maxDepth); err != nil {
 					L().Warn("Failed to merge header cells vertically",
 						Int("col", currentCol),
 						Int("startRow", currentRow),
@@ -140,7 +140,7 @@ func (t *Table) executeVerticalMerging(column Column, actualColIndex int, dataSt
 		endRow := mr[len(mr)-1] + dataStartRow
 
 		// Execute the vertical merge operation
-		if err := ops.MergeCells(actualColIndex, startRow, actualColIndex, endRow); err != nil {
+		if err := ops.mergeCells(actualColIndex, startRow, actualColIndex, endRow); err != nil {
 			// Log detailed error information for debugging and continue processing
 			L().Warn("Failed to merge cells vertically",
 				Int("col", actualColIndex),
@@ -199,7 +199,7 @@ func (t *Table) findVerticalMergeRanges(colIndex int, fieldName string, format s
 
 		// Process the value according to the column's format specification
 		// This ensures consistent formatting for merge comparison
-		processedValue, err := ops.ProcessValue(value, format)
+		processedValue, err := ops.processValue(value, format)
 		if err != nil {
 			continue // Skip this row if value processing fails
 		}
@@ -322,7 +322,7 @@ func (t *Table) applyHorizontalMerges(mergeRanges [][]int, rowNum, baseColIndex 
 		endCol := mergeRange[len(mergeRange)-1] + baseColIndex
 
 		// Execute the horizontal merge operation across the column range
-		if err := ops.MergeCells(startCol, rowNum, endCol, rowNum); err != nil {
+		if err := ops.mergeCells(startCol, rowNum, endCol, rowNum); err != nil {
 			// Log detailed error information for debugging and continue processing
 			L().Warn("Failed to merge cells horizontally",
 				Int("row", rowNum),
@@ -374,7 +374,7 @@ func (t *Table) findHorizontalMergeRanges(item Data, columns Columns, conditions
 
 		// Process the value according to the column's format specification
 		// This ensures consistent formatting for merge comparison
-		processedValue, err := ops.ProcessValue(value, column.Format)
+		processedValue, err := ops.processValue(value, column.Format)
 		if err != nil {
 			// Use raw value if processing fails
 			processedValue = value

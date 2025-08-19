@@ -52,10 +52,10 @@ func TestTableExcelize_getTable(t *testing.T) {
 	}
 	tableExcel := NewTableExcelize("Sheet1", table)
 
-	result := tableExcel.GetTable()
+	result := tableExcel.getTable()
 
 	if result != table {
-		t.Errorf("GetTable() = %v, want %v", result, table)
+		t.Errorf("getTable() = %v, want %v", result, table)
 	}
 }
 
@@ -101,17 +101,17 @@ func TestTableExcelize_getCellValue(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := tableExcel.GetCellValue(tt.col, tt.row)
+			result, err := tableExcel.getCellValue(tt.col, tt.row)
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("GetCellValue() expected error, got nil")
+					t.Errorf("getCellValue() expected error, got nil")
 				}
 			} else {
 				if err != nil {
-					t.Errorf("GetCellValue() unexpected error: %v", err)
+					t.Errorf("getCellValue() unexpected error: %v", err)
 				}
 				if result != tt.expected {
-					t.Errorf("GetCellValue() = %v, want %v", result, tt.expected)
+					t.Errorf("getCellValue() = %v, want %v", result, tt.expected)
 				}
 			}
 		})
@@ -164,14 +164,14 @@ func TestTableExcelize_setCellValue(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tableExcel.SetCellValue(tt.col, tt.row, tt.value)
+			err := tableExcel.setCellValue(tt.col, tt.row, tt.value)
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("SetCellValue() expected error, got nil")
+					t.Errorf("setCellValue() expected error, got nil")
 				}
 			} else {
 				if err != nil {
-					t.Errorf("SetCellValue() unexpected error: %v", err)
+					t.Errorf("setCellValue() unexpected error: %v", err)
 				}
 				// Verify the value was set correctly
 				if !tt.wantErr {
@@ -191,7 +191,7 @@ func TestTableExcelize_setCellValue(t *testing.T) {
 						}
 					}
 					if actualValue != expectedStr {
-						t.Errorf("SetCellValue() value = %v, want %v", actualValue, expectedStr)
+						t.Errorf("setCellValue() value = %v, want %v", actualValue, expectedStr)
 					}
 				}
 			}
@@ -250,14 +250,14 @@ func TestTableExcelize_mergeCells(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tableExcel.MergeCells(tt.startCol, tt.startRow, tt.endCol, tt.endRow)
+			err := tableExcel.mergeCells(tt.startCol, tt.startRow, tt.endCol, tt.endRow)
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("MergeCells() expected error, got nil")
+					t.Errorf("mergeCells() expected error, got nil")
 				}
 			} else {
 				if err != nil {
-					t.Errorf("MergeCells() unexpected error: %v", err)
+					t.Errorf("mergeCells() unexpected error: %v", err)
 				}
 			}
 		})
@@ -332,10 +332,10 @@ func TestTableExcelize_isCellMerged(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			originalSheet := tableExcel.SheetName
 			tt.setup()
-			result := tableExcel.IsCellMerged(tt.col, tt.row)
+			result := tableExcel.isCellMerged(tt.col, tt.row)
 			tableExcel.SheetName = originalSheet // Restore original sheet name
 			if result != tt.expected {
-				t.Errorf("IsCellMerged() = %v, want %v", result, tt.expected)
+				t.Errorf("isCellMerged() = %v, want %v", result, tt.expected)
 			}
 		})
 	}
@@ -403,10 +403,10 @@ func TestTableExcelize_isCellMergedHorizontally(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			originalSheet := tableExcel.SheetName
 			tt.setup()
-			result := tableExcel.IsCellMergedHorizontally(tt.col, tt.row)
+			result := tableExcel.isCellMergedHorizontally(tt.col, tt.row)
 			tableExcel.SheetName = originalSheet // Restore sheet name
 			if result != tt.expected {
-				t.Errorf("IsCellMergedHorizontally() = %v, want %v", result, tt.expected)
+				t.Errorf("isCellMergedHorizontally() = %v, want %v", result, tt.expected)
 			}
 		})
 	}
@@ -495,21 +495,21 @@ func TestTableExcelize_applyBorderToCell(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tableExcel.ApplyBorderToCell(tt.col, tt.row, tt.side, tt.border)
+			err := tableExcel.applyBorderToCell(tt.col, tt.row, tt.side, tt.border)
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("ApplyBorderToCell() expected error, got nil")
+					t.Errorf("applyBorderToCell() expected error, got nil")
 				}
 			} else {
 				if err != nil {
-					t.Errorf("ApplyBorderToCell() unexpected error: %v", err)
+					t.Errorf("applyBorderToCell() unexpected error: %v", err)
 				}
 			}
 		})
 	}
 }
 
-// Add comprehensive test for ApplyBorderToCell error handling
+// Add comprehensive test for applyBorderToCell error handling
 func TestTableExcelize_applyBorderToCell_ErrorHandling(t *testing.T) {
 	file := excelize.NewFile()
 	defer file.Close()
@@ -576,16 +576,16 @@ func TestTableExcelize_applyBorderToCell_ErrorHandling(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			originalSheet := tableExcel.SheetName
 			tt.setup()
-			err := tableExcel.ApplyBorderToCell(tt.col, tt.row, tt.side, tt.border)
+			err := tableExcel.applyBorderToCell(tt.col, tt.row, tt.side, tt.border)
 			tableExcel.SheetName = originalSheet // Restore sheet name
 
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("ApplyBorderToCell() expected error, got nil")
+					t.Errorf("applyBorderToCell() expected error, got nil")
 				}
 			} else {
 				if err != nil {
-					t.Errorf("ApplyBorderToCell() unexpected error: %v", err)
+					t.Errorf("applyBorderToCell() unexpected error: %v", err)
 				}
 			}
 		})
@@ -698,7 +698,7 @@ func TestTableExcelize_applyBordersToRange(t *testing.T) {
 			setup:   func() {},
 		},
 		{
-			name:     "Error in ApplyBorderToCell - invalid sheet for left border",
+			name:     "Error in applyBorderToCell - invalid sheet for left border",
 			startCol: 1,
 			startRow: 1,
 			endCol:   1,
@@ -712,7 +712,7 @@ func TestTableExcelize_applyBordersToRange(t *testing.T) {
 			},
 		},
 		{
-			name:     "Error in ApplyBorderToCell - invalid sheet for right border",
+			name:     "Error in applyBorderToCell - invalid sheet for right border",
 			startCol: 1,
 			startRow: 1,
 			endCol:   1,
@@ -726,7 +726,7 @@ func TestTableExcelize_applyBordersToRange(t *testing.T) {
 			},
 		},
 		{
-			name:     "Error in ApplyBorderToCell - invalid sheet for top border",
+			name:     "Error in applyBorderToCell - invalid sheet for top border",
 			startCol: 1,
 			startRow: 1,
 			endCol:   1,
@@ -740,7 +740,7 @@ func TestTableExcelize_applyBordersToRange(t *testing.T) {
 			},
 		},
 		{
-			name:     "Error in ApplyBorderToCell - invalid sheet for bottom border",
+			name:     "Error in applyBorderToCell - invalid sheet for bottom border",
 			startCol: 1,
 			startRow: 1,
 			endCol:   1,
@@ -759,16 +759,16 @@ func TestTableExcelize_applyBordersToRange(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			originalSheet := tableExcel.SheetName
 			tt.setup()
-			err := tableExcel.ApplyBordersToRange(tt.startCol, tt.startRow, tt.endCol, tt.endRow, tt.borders)
+			err := tableExcel.applyBordersToRange(tt.startCol, tt.startRow, tt.endCol, tt.endRow, tt.borders)
 			tableExcel.SheetName = originalSheet // Restore sheet name
 
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("ApplyBordersToRange() expected error, got nil")
+					t.Errorf("applyBordersToRange() expected error, got nil")
 				}
 			} else {
 				if err != nil {
-					t.Errorf("ApplyBordersToRange() unexpected error: %v", err)
+					t.Errorf("applyBordersToRange() unexpected error: %v", err)
 				}
 			}
 		})
@@ -838,10 +838,10 @@ func TestTableExcelize_hasExistingBorder(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			originalSheet := tableExcel.SheetName
 			tt.setup()
-			result := tableExcel.HasExistingBorder(tt.col, tt.row, tt.side)
+			result := tableExcel.hasExistingBorder(tt.col, tt.row, tt.side)
 			tableExcel.SheetName = originalSheet // Restore sheet name
 			if result != tt.expected {
-				t.Errorf("HasExistingBorder() = %v, want %v", result, tt.expected)
+				t.Errorf("hasExistingBorder() = %v, want %v", result, tt.expected)
 			}
 		})
 	}
@@ -988,23 +988,23 @@ func TestTableExcelize_applyStyleToCell(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			originalSheet := tableExcel.SheetName
 			tt.setup()
-			err := tableExcel.ApplyStyleToCell(tt.col, tt.row, tt.style)
+			err := tableExcel.applyStyleToCell(tt.col, tt.row, tt.style)
 			tableExcel.SheetName = originalSheet // Restore sheet name
 
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("ApplyStyleToCell() expected error, got nil")
+					t.Errorf("applyStyleToCell() expected error, got nil")
 				}
 			} else {
 				if err != nil {
-					t.Errorf("ApplyStyleToCell() unexpected error: %v", err)
+					t.Errorf("applyStyleToCell() unexpected error: %v", err)
 				}
 			}
 		})
 	}
 }
 
-// Test specific conditions for ApplyStyleToCell error handling
+// Test specific conditions for applyStyleToCell error handling
 func TestTableExcelize_applyStyleToCell_ErrorConditions(t *testing.T) {
 	file := excelize.NewFile()
 	defer file.Close()
@@ -1039,16 +1039,16 @@ func TestTableExcelize_applyStyleToCell_ErrorConditions(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			originalSheet := tableExcel.SheetName
 			tt.setup()
-			err := tableExcel.ApplyStyleToCell(tt.col, tt.row, tt.style)
+			err := tableExcel.applyStyleToCell(tt.col, tt.row, tt.style)
 			tableExcel.SheetName = originalSheet // Restore sheet name
 
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("ApplyStyleToCell() expected error, got nil")
+					t.Errorf("applyStyleToCell() expected error, got nil")
 				}
 			} else {
 				if err != nil {
-					t.Errorf("ApplyStyleToCell() unexpected error: %v", err)
+					t.Errorf("applyStyleToCell() unexpected error: %v", err)
 				}
 			}
 		})
@@ -1153,7 +1153,7 @@ func TestTableExcelize_applyStyleToRange(t *testing.T) {
 			setup:    func() {},
 		},
 		{
-			name:     "Error in ApplyStyleToCell - invalid coordinates",
+			name:     "Error in applyStyleToCell - invalid coordinates",
 			startCol: 0,
 			startRow: 1,
 			endCol:   1,
@@ -1165,7 +1165,7 @@ func TestTableExcelize_applyStyleToRange(t *testing.T) {
 			setup:   func() {},
 		},
 		{
-			name:     "Error in ApplyStyleToCell - invalid sheet",
+			name:     "Error in applyStyleToCell - invalid sheet",
 			startCol: 1,
 			startRow: 1,
 			endCol:   2,
@@ -1199,16 +1199,16 @@ func TestTableExcelize_applyStyleToRange(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			originalSheet := tableExcel.SheetName
 			tt.setup()
-			err := tableExcel.ApplyStyleToRange(tt.startCol, tt.startRow, tt.endCol, tt.endRow, tt.style)
+			err := tableExcel.applyStyleToRange(tt.startCol, tt.startRow, tt.endCol, tt.endRow, tt.style)
 			tableExcel.SheetName = originalSheet
 
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("ApplyStyleToRange() expected error, got nil")
+					t.Errorf("applyStyleToRange() expected error, got nil")
 				}
 			} else {
 				if err != nil {
-					t.Errorf("ApplyStyleToRange() unexpected error: %v", err)
+					t.Errorf("applyStyleToRange() unexpected error: %v", err)
 				}
 			}
 		})
@@ -1326,9 +1326,9 @@ func TestTableExcelize_getColumnLetter(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tableExcel.GetColumnLetter(tt.col)
+			result := tableExcel.getColumnLetter(tt.col)
 			if result != tt.expected {
-				t.Errorf("GetColumnLetter() = %v, want %v", result, tt.expected)
+				t.Errorf("getColumnLetter() = %v, want %v", result, tt.expected)
 			}
 		})
 	}
@@ -1438,17 +1438,17 @@ func TestTableExcelize_processValue(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := tableExcel.ProcessValue(tt.value, tt.format)
+			result, err := tableExcel.processValue(tt.value, tt.format)
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("ProcessValue() expected error, got nil")
+					t.Errorf("processValue() expected error, got nil")
 				}
 			} else {
 				if err != nil {
-					t.Errorf("ProcessValue() unexpected error: %v", err)
+					t.Errorf("processValue() unexpected error: %v", err)
 				}
 				if result != tt.expected {
-					t.Errorf("ProcessValue() = %v, want %v", result, tt.expected)
+					t.Errorf("processValue() = %v, want %v", result, tt.expected)
 				}
 			}
 		})

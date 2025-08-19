@@ -339,11 +339,11 @@ func TestCSV_processValue(t *testing.T) {
 			result, err := csvInstance.processValue(tt.value, tt.format)
 
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ProcessValue() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("processValue() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if result != tt.expected {
-				t.Errorf("ProcessValue() = %v, want %v", result, tt.expected)
+				t.Errorf("processValue() = %v, want %v", result, tt.expected)
 			}
 		})
 	}

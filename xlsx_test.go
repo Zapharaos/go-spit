@@ -1,12 +1,10 @@
-package spit_test
+package spit
 
 import (
 	"errors"
 	"os"
 	"testing"
 
-	"github.com/Zapharaos/go-spit"
-	"github.com/Zapharaos/go-spit/mocks"
 	"go.uber.org/mock/gomock"
 )
 
@@ -28,27 +26,27 @@ func TestExportXLSX(t *testing.T) {
 
 	tests := []struct {
 		name           string
-		setupMock      func(*mocks.MockSpreadsheet)
-		params         spit.FileWriteParams
+		setupMock      func(*MockSpreadsheet)
+		params         FileWriteParams
 		expectError    bool
 		errorContains  string
-		validateResult func(*spit.FileWriteResult)
+		validateResult func(*FileWriteResult)
 	}{
 		{
 			name: "successful_export_with_new_file",
-			setupMock: func(mock *mocks.MockSpreadsheet) {
-				mock.EXPECT().GetFile().Return(nil)
-				mock.EXPECT().CreateNewFile().Return(nil)
-				mock.EXPECT().Close().Return(nil)
-				mock.EXPECT().GetSheetName().Return("")
-				mock.EXPECT().SetSheetName("Sheet1")
-				mock.EXPECT().CreateSheet().Return(nil)
-				mock.EXPECT().SetActiveSheet().Return(nil)
-				mock.EXPECT().GetTable().Return(&spit.Table{
-					Data: spit.DataSlice{
+			setupMock: func(mock *MockSpreadsheet) {
+				mock.EXPECT().getFile().Return(nil)
+				mock.EXPECT().createNewFile().Return(nil)
+				mock.EXPECT().close().Return(nil)
+				mock.EXPECT().getSheetName().Return("")
+				mock.EXPECT().setSheetName("Sheet1")
+				mock.EXPECT().createSheet().Return(nil)
+				mock.EXPECT().setActiveSheet().Return(nil)
+				mock.EXPECT().getTable().Return(&Table{
+					Data: DataSlice{
 						{"name": "John", "age": 30},
 					},
-					Columns: spit.Columns{
+					Columns: Columns{
 						{Name: "name", Label: "Name"},
 						{Name: "age", Label: "Age"},
 					},
@@ -56,41 +54,41 @@ func TestExportXLSX(t *testing.T) {
 				}).AnyTimes()
 
 				// Header writing expectations
-				mock.EXPECT().SetCellValue(1, 1, "Name").Return(nil)
-				mock.EXPECT().SetCellValue(2, 1, "Age").Return(nil)
+				mock.EXPECT().setCellValue(1, 1, "Name").Return(nil)
+				mock.EXPECT().setCellValue(2, 1, "Age").Return(nil)
 
 				// Data writing expectations
-				mock.EXPECT().ProcessValue("John", "").Return("John", nil)
-				mock.EXPECT().SetCellValue(1, 2, "John").Return(nil)
-				mock.EXPECT().ProcessValue(30, "").Return(30, nil)
-				mock.EXPECT().SetCellValue(2, 2, 30).Return(nil)
+				mock.EXPECT().processValue("John", "").Return("John", nil)
+				mock.EXPECT().setCellValue(1, 2, "John").Return(nil)
+				mock.EXPECT().processValue(30, "").Return(30, nil)
+				mock.EXPECT().setCellValue(2, 2, 30).Return(nil)
 
 				// Auto-fit columns expectations
-				mock.EXPECT().GetColumnLetter(1).Return("A")
-				mock.EXPECT().GetColumnLetter(2).Return("B")
-				mock.EXPECT().SetColumnWidth("A", 15.0).Return(nil)
-				mock.EXPECT().SetColumnWidth("B", 15.0).Return(nil)
+				mock.EXPECT().getColumnLetter(1).Return("A")
+				mock.EXPECT().getColumnLetter(2).Return("B")
+				mock.EXPECT().setColumnWidth("A", 15.0).Return(nil)
+				mock.EXPECT().setColumnWidth("B", 15.0).Return(nil)
 
 				// Table processing expectations (merging and styling)
 				// Allow any number of border/style calls since these depend on table configuration
-				mock.EXPECT().ApplyBorderToCell(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-				mock.EXPECT().ApplyBordersToRange(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-				mock.EXPECT().ApplyStyleToCell(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-				mock.EXPECT().ApplyStyleToRange(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-				mock.EXPECT().MergeCells(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-				mock.EXPECT().IsCellMerged(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
-				mock.EXPECT().IsCellMergedHorizontally(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
-				mock.EXPECT().HasExistingBorder(gomock.Any(), gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+				mock.EXPECT().applyBorderToCell(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mock.EXPECT().applyBordersToRange(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mock.EXPECT().applyStyleToCell(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mock.EXPECT().applyStyleToRange(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mock.EXPECT().mergeCells(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mock.EXPECT().isCellMerged(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+				mock.EXPECT().isCellMergedHorizontally(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+				mock.EXPECT().hasExistingBorder(gomock.Any(), gomock.Any(), gomock.Any()).Return(false).AnyTimes()
 
 				// Final save expectation
-				mock.EXPECT().SaveToWriter(gomock.Any()).Return(nil)
+				mock.EXPECT().saveToWriter(gomock.Any()).Return(nil)
 			},
-			params: spit.FileWriteParams{
+			params: FileWriteParams{
 				Filename: "test_export",
 				Filepath: tempDir,
 			},
 			expectError: false,
-			validateResult: func(result *spit.FileWriteResult) {
+			validateResult: func(result *FileWriteResult) {
 				if result == nil {
 					t.Error("Expected non-nil result")
 					return
@@ -102,19 +100,19 @@ func TestExportXLSX(t *testing.T) {
 		},
 		{
 			name: "successful_export_with_existing_file",
-			setupMock: func(mock *mocks.MockSpreadsheet) {
-				mock.EXPECT().GetFile().Return(&struct{ name string }{name: "existing_file"})
-				mock.EXPECT().GetSheetName().Return("Sheet1")
-				mock.EXPECT().CreateSheet().Return(nil)
-				mock.EXPECT().SetActiveSheet().Return(nil)
-				mock.EXPECT().GetTable().Return(&spit.Table{
-					Data:        spit.DataSlice{},
-					Columns:     spit.Columns{},
+			setupMock: func(mock *MockSpreadsheet) {
+				mock.EXPECT().getFile().Return(&struct{ name string }{name: "existing_file"})
+				mock.EXPECT().getSheetName().Return("Sheet1")
+				mock.EXPECT().createSheet().Return(nil)
+				mock.EXPECT().setActiveSheet().Return(nil)
+				mock.EXPECT().getTable().Return(&Table{
+					Data:        DataSlice{},
+					Columns:     Columns{},
 					WriteHeader: false,
 				}).AnyTimes()
-				mock.EXPECT().SaveToWriter(gomock.Any()).Return(nil)
+				mock.EXPECT().saveToWriter(gomock.Any()).Return(nil)
 			},
-			params: spit.FileWriteParams{
+			params: FileWriteParams{
 				Filename: "test_existing",
 				Filepath: tempDir,
 			},
@@ -122,11 +120,11 @@ func TestExportXLSX(t *testing.T) {
 		},
 		{
 			name: "error_creating_new_file",
-			setupMock: func(mock *mocks.MockSpreadsheet) {
-				mock.EXPECT().GetFile().Return(nil)
-				mock.EXPECT().CreateNewFile().Return(errors.New("create file error"))
+			setupMock: func(mock *MockSpreadsheet) {
+				mock.EXPECT().getFile().Return(nil)
+				mock.EXPECT().createNewFile().Return(errors.New("create file error"))
 			},
-			params: spit.FileWriteParams{
+			params: FileWriteParams{
 				Filename: "test_error",
 				Filepath: tempDir,
 			},
@@ -135,12 +133,12 @@ func TestExportXLSX(t *testing.T) {
 		},
 		{
 			name: "error_writing_data",
-			setupMock: func(mock *mocks.MockSpreadsheet) {
-				mock.EXPECT().GetFile().Return(&struct{ name string }{name: "existing_file"})
-				mock.EXPECT().GetSheetName().Return("Sheet1")
-				mock.EXPECT().CreateSheet().Return(errors.New("create sheet error"))
+			setupMock: func(mock *MockSpreadsheet) {
+				mock.EXPECT().getFile().Return(&struct{ name string }{name: "existing_file"})
+				mock.EXPECT().getSheetName().Return("Sheet1")
+				mock.EXPECT().createSheet().Return(errors.New("create sheet error"))
 			},
-			params: spit.FileWriteParams{
+			params: FileWriteParams{
 				Filename: "test_write_error",
 				Filepath: tempDir,
 			},
@@ -149,19 +147,19 @@ func TestExportXLSX(t *testing.T) {
 		},
 		{
 			name: "error_saving_to_writer",
-			setupMock: func(mock *mocks.MockSpreadsheet) {
-				mock.EXPECT().GetFile().Return(&struct{ name string }{name: "existing_file"})
-				mock.EXPECT().GetSheetName().Return("Sheet1")
-				mock.EXPECT().CreateSheet().Return(nil)
-				mock.EXPECT().SetActiveSheet().Return(nil)
-				mock.EXPECT().GetTable().Return(&spit.Table{
-					Data:        spit.DataSlice{},
-					Columns:     spit.Columns{},
+			setupMock: func(mock *MockSpreadsheet) {
+				mock.EXPECT().getFile().Return(&struct{ name string }{name: "existing_file"})
+				mock.EXPECT().getSheetName().Return("Sheet1")
+				mock.EXPECT().createSheet().Return(nil)
+				mock.EXPECT().setActiveSheet().Return(nil)
+				mock.EXPECT().getTable().Return(&Table{
+					Data:        DataSlice{},
+					Columns:     Columns{},
 					WriteHeader: false,
 				}).AnyTimes()
-				mock.EXPECT().SaveToWriter(gomock.Any()).Return(errors.New("save error"))
+				mock.EXPECT().saveToWriter(gomock.Any()).Return(errors.New("save error"))
 			},
-			params: spit.FileWriteParams{
+			params: FileWriteParams{
 				Filename: "test_save_error",
 				Filepath: tempDir,
 			},
@@ -172,10 +170,10 @@ func TestExportXLSX(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockSpreadsheet := mocks.NewMockSpreadsheet(ctrl)
+			mockSpreadsheet := NewMockSpreadsheet(ctrl)
 			tt.setupMock(mockSpreadsheet)
 
-			result, err := spit.ExportXLSX(mockSpreadsheet, tt.params)
+			result, err := ExportXLSX(mockSpreadsheet, tt.params)
 
 			if tt.expectError {
 				if err == nil {

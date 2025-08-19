@@ -17,47 +17,47 @@ import (
 // Implement this interface to support table manipulation for various libraries.
 type TableOperations interface {
 	// GetTable returns the underlying Table struct for direct access/manipulation.
-	GetTable() *Table
+	getTable() *Table
 
 	// GetCellValue returns the value of a cell at the given column and row (1-based indices).
 	// The implementation should convert indices to the appropriate cell reference and retrieve the value.
-	GetCellValue(col, row int) (string, error)
+	getCellValue(col, row int) (string, error)
 
 	// SetCellValue sets the value of a cell at the given column and row.
 	// The implementation should convert indices to the appropriate cell reference and set the value.
-	SetCellValue(col, row int, value interface{}) error
+	setCellValue(col, row int, value interface{}) error
 
 	// MergeCells merges a rectangular range of cells defined by start and end coordinates.
-	MergeCells(startCol, startRow, endCol, endRow int) error
+	mergeCells(startCol, startRow, endCol, endRow int) error
 
 	// IsCellMerged checks if a cell at the given column and row is part of any merged range.
-	IsCellMerged(col, row int) bool
+	isCellMerged(col, row int) bool
 
 	// IsCellMergedHorizontally checks if a cell at the given column and row is merged horizontally (across columns).
-	IsCellMergedHorizontally(col, row int) bool
+	isCellMergedHorizontally(col, row int) bool
 
 	// ApplyBorderToCell applies a border to a cell on the specified side ("left", "right", "top", "bottom").
 	// The border style is defined by the Border parameter.
-	ApplyBorderToCell(col, row int, side string, border *Border) error
+	applyBorderToCell(col, row int, side string, border *Border) error
 
 	// ApplyBordersToRange applies borders to all cells in a rectangular range.
 	// Each side of the range can have a different border style, as specified in the Borders parameter.
-	ApplyBordersToRange(startCol, startRow, endCol, endRow int, borders Borders) error
+	applyBordersToRange(startCol, startRow, endCol, endRow int, borders Borders) error
 
 	// HasExistingBorder checks if a cell at the given column and row has a border on the specified side.
-	HasExistingBorder(col, row int, side string) bool
+	hasExistingBorder(col, row int, side string) bool
 
 	// ApplyStyleToCell applies a style to a specific cell at the given column and row.
-	ApplyStyleToCell(col, row int, style Style) error
+	applyStyleToCell(col, row int, style Style) error
 
 	// ApplyStyleToRange Applies a style to a rectangular range of cells.
-	ApplyStyleToRange(startCol, startRow, endCol, endRow int, style Style) error
+	applyStyleToRange(startCol, startRow, endCol, endRow int, style Style) error
 
 	// GetColumnLetter Returns the Excel-style column letter (e.g., "A", "B") for a given column index.
-	GetColumnLetter(col int) string
+	getColumnLetter(col int) string
 
 	// ProcessValue Processes a value for output, applying formatting if needed.
-	ProcessValue(value interface{}, format string) (interface{}, error)
+	processValue(value interface{}, format string) (interface{}, error)
 }
 
 // Table represents a structured data table with configuration for export operations.

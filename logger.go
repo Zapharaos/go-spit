@@ -1,4 +1,4 @@
-//go:generate mockgen -destination=mocks/logger_mock.go -package=mocks . Logger
+//go:generate mockgen -destination=logger_mock.go -package=spit . Logger
 
 package spit
 

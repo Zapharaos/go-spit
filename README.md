@@ -13,7 +13,7 @@ Go-spit is a Go package for flexible file exporting. It supports multiple format
 
 ## Features
 - Export tabular data and spreadsheets
-- Customizable file writing options (compression, overwrite, etc.)
+- Customizable file writing options (compression, overwrite, temporary, etc.)
 - Multiple output formats
 
 ## Supported Formats
