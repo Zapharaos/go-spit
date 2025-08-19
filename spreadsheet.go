@@ -13,32 +13,32 @@ import (
 
 // Spreadsheet defines the interface for spreadsheet-specific operations.
 type Spreadsheet interface {
-	tableOperations // Embeds table-related operations (see tableOperations interface)
+	TableOperations // Embeds table-related operations (see TableOperations interface)
 
-	// getFile returns the underlying file object (implementation-specific).
-	getFile() interface{}
+	// GetFile returns the underlying file object (implementation-specific).
+	GetFile() interface{}
 
-	// createNewFile initializes a new spreadsheet file.
-	createNewFile() error
+	// CreateNewFile initializes a new spreadsheet file.
+	CreateNewFile() error
 
-	// saveToWriter writes the spreadsheet to an io.Writer (e.g., file, buffer).
-	saveToWriter(writer io.Writer) error
+	// SaveToWriter writes the spreadsheet to an io.Writer (e.g., file, buffer).
+	SaveToWriter(writer io.Writer) error
 
-	// close releases resources associated with the spreadsheet file.
-	close() error
+	// Close releases resources associated with the spreadsheet file.
+	Close() error
 
-	// getSheetName returns the current sheet name.
-	getSheetName() string
+	// GetSheetName returns the current sheet name.
+	GetSheetName() string
 
-	// setSheetName sets the active sheet name.
-	setSheetName(name string)
+	// SetSheetName sets the active sheet name.
+	SetSheetName(name string)
 
-	// createSheet creates a new sheet with the current sheet name.
-	createSheet() error
+	// CreateSheet creates a new sheet with the current sheet name.
+	CreateSheet() error
 
-	// setActiveSheet sets the active sheet for subsequent operations.
-	setActiveSheet() error
+	// SetActiveSheet sets the active sheet for subsequent operations.
+	SetActiveSheet() error
 
-	// setColumnWidth sets the width of a column by its letter (e.g., "A", "B").
-	setColumnWidth(colLetter string, width float64) error
+	// SetColumnWidth sets the width of a column by its letter (e.g., "A", "B").
+	SetColumnWidth(colLetter string, width float64) error
 }

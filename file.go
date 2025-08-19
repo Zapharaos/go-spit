@@ -154,7 +154,7 @@ func (fwo FileWriteParams) writeToFile(writeFunc func(io.Writer) error) (*FileWr
 
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
-			L().Warn("failed to close file", String("filePath", filePath), Error(closeErr))
+			L().Warn("failed to Close file", String("filePath", filePath), Error(closeErr))
 		}
 	}()
 
@@ -167,7 +167,7 @@ func (fwo FileWriteParams) writeToFile(writeFunc func(io.Writer) error) (*FileWr
 		gzipWriter = gzip.NewWriter(file)
 		defer func() {
 			if closeErr := gzipWriter.Close(); closeErr != nil {
-				L().Warn("failed to close gzip writer", Error(closeErr))
+				L().Warn("failed to Close gzip writer", Error(closeErr))
 			}
 		}()
 		writer = gzipWriter

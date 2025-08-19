@@ -11,7 +11,7 @@ import (
 )
 
 // renderStyles applies styling and border operations to the table
-func (t *Table) renderStyles(ops tableOperations) error {
+func (t *Table) renderStyles(ops TableOperations) error {
 	dataStartRow := t.getDataStartRow()
 	totalColumns := t.Columns.getTotalColumnCount()
 	dataEndRow := dataStartRow + len(t.Data) - 1
@@ -51,7 +51,7 @@ func (t *Table) renderStyles(ops tableOperations) error {
 }
 
 // applyHeaderStyles applies styling and borders to header rows
-func (t *Table) applyHeaderStyles(ops tableOperations) error {
+func (t *Table) applyHeaderStyles(ops TableOperations) error {
 	maxDepth := t.Columns.getMaxDepth()
 	totalColumns := t.Columns.getTotalColumnCount()
 
@@ -78,7 +78,7 @@ func (t *Table) applyHeaderStyles(ops tableOperations) error {
 }
 
 // applyHeaderCellStyles applies styling to header cells
-func (t *Table) applyHeaderCellStyles(ops tableOperations) error {
+func (t *Table) applyHeaderCellStyles(ops TableOperations) error {
 	maxDepth := t.Columns.getMaxDepth()
 	totalColumns := t.Columns.getTotalColumnCount()
 
@@ -90,7 +90,7 @@ func (t *Table) applyHeaderCellStyles(ops tableOperations) error {
 	}
 
 	// Apply header styling to all header rows
-	if err := ops.applyStyleToRange(1, 1, totalColumns, maxDepth, headerStyle); err != nil {
+	if err := ops.ApplyStyleToRange(1, 1, totalColumns, maxDepth, headerStyle); err != nil {
 		L().Warn("Failed to apply header range style", Error(err))
 		return err
 	}
@@ -99,7 +99,7 @@ func (t *Table) applyHeaderCellStyles(ops tableOperations) error {
 }
 
 // applyCellStyles applies styling to all data cells based on priority: cell > row > column
-func (t *Table) applyCellStyles(dataStartRow, dataEndRow int, ops tableOperations) error {
+func (t *Table) applyCellStyles(dataStartRow, dataEndRow int, ops TableOperations) error {
 	flatColumns := t.Columns.getFlattenedColumns()
 
 	// Apply styles to each data row
@@ -153,13 +153,13 @@ func (t *Table) applyCellStyles(dataStartRow, dataEndRow int, ops tableOperation
 }
 
 // applyCellStyle applies a style configuration to a specific cell
-func (t *Table) applyCellStyle(style *Style, colIndex, rowIndex int, ops tableOperations) error {
+func (t *Table) applyCellStyle(style *Style, colIndex, rowIndex int, ops TableOperations) error {
 	if style == nil {
 		return nil // No style to apply
 	}
 
 	// Apply the style using the operations interface
-	if err := ops.applyStyleToCell(colIndex, rowIndex, *style); err != nil {
+	if err := ops.ApplyStyleToCell(colIndex, rowIndex, *style); err != nil {
 		return fmt.Errorf("failed to apply style to cell (%d,%d): %w", colIndex, rowIndex, err)
 	}
 
@@ -167,7 +167,7 @@ func (t *Table) applyCellStyle(style *Style, colIndex, rowIndex int, ops tableOp
 }
 
 // applyColumnBorders applies borders to columns for all data rows
-func (t *Table) applyColumnBorders(dataStartRow, dataEndRow int, ops tableOperations) error {
+func (t *Table) applyColumnBorders(dataStartRow, dataEndRow int, ops TableOperations) error {
 	flatColumns := t.Columns.getFlattenedColumns()
 
 	for colIndex, column := range flatColumns {
@@ -223,7 +223,7 @@ func (t *Table) applyColumnBorders(dataStartRow, dataEndRow int, ops tableOperat
 }
 
 // applyRowBorders applies borders to all columns in a specific row
-func (t *Table) applyRowBorders(dataRowIndex, actualRowNum, totalColumns int, ops tableOperations) error {
+func (t *Table) applyRowBorders(dataRowIndex, actualRowNum, totalColumns int, ops TableOperations) error {
 	// Check if this row has a specific border configuration
 	if rowOptions, exists := t.RowOptionsMap[dataRowIndex]; exists && rowOptions.Border != nil {
 		// Skip if border config is empty
@@ -276,7 +276,7 @@ func (t *Table) applyRowBorders(dataRowIndex, actualRowNum, totalColumns int, op
 }
 
 // applyCellSpecificBorders applies borders to individual cells based on cell configurations
-func (t *Table) applyCellSpecificBorders(dataStartRow int, ops tableOperations) error {
+func (t *Table) applyCellSpecificBorders(dataStartRow int, ops TableOperations) error {
 	// Iterate through all cell-specific configurations
 	for colIndex, rowOptionsMap := range t.CellOptionsMap {
 		for rowIndex, cellOptions := range rowOptionsMap {
@@ -298,24 +298,24 @@ func (t *Table) applyCellSpecificBorders(dataStartRow int, ops tableOperations) 
 }
 
 // applyBordersToCell applies all configured borders to a specific cell
-func (t *Table) applyBordersToCell(col, row int, borders *Borders, ops tableOperations) error {
+func (t *Table) applyBordersToCell(col, row int, borders *Borders, ops TableOperations) error {
 	if borders.Left != nil {
-		if err := ops.applyBorderToCell(col, row, "left", borders.Left); err != nil {
+		if err := ops.ApplyBorderToCell(col, row, "left", borders.Left); err != nil {
 			return fmt.Errorf("failed to apply left border: %w", err)
 		}
 	}
 	if borders.Right != nil {
-		if err := ops.applyBorderToCell(col, row, "right", borders.Right); err != nil {
+		if err := ops.ApplyBorderToCell(col, row, "right", borders.Right); err != nil {
 			return fmt.Errorf("failed to apply right border: %w", err)
 		}
 	}
 	if borders.Top != nil {
-		if err := ops.applyBorderToCell(col, row, "top", borders.Top); err != nil {
+		if err := ops.ApplyBorderToCell(col, row, "top", borders.Top); err != nil {
 			return fmt.Errorf("failed to apply top border: %w", err)
 		}
 	}
 	if borders.Bottom != nil {
-		if err := ops.applyBorderToCell(col, row, "bottom", borders.Bottom); err != nil {
+		if err := ops.ApplyBorderToCell(col, row, "bottom", borders.Bottom); err != nil {
 			return fmt.Errorf("failed to apply bottom border: %w", err)
 		}
 	}
