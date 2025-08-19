@@ -11,7 +11,7 @@ import (
 )
 
 // processMerging applies cell merging operations to the table
-func (t *Table) processMerging(ops tableOperations) error {
+func (t *Table) processMerging(ops TableOperations) error {
 	// Process header merging first
 	if t.WriteHeader && len(t.Columns) > 0 {
 		if err := t.executeHeaderMerging(ops); err != nil {
@@ -65,7 +65,7 @@ func (t *Table) processMerging(ops tableOperations) error {
 }
 
 // executeHeaderMerging applies merging operations to header cells
-func (t *Table) executeHeaderMerging(ops tableOperations) error {
+func (t *Table) executeHeaderMerging(ops TableOperations) error {
 	maxDepth := t.Columns.getMaxDepth()
 	if maxDepth <= 1 {
 		return nil // No merging needed for single-level headers
@@ -76,7 +76,7 @@ func (t *Table) executeHeaderMerging(ops tableOperations) error {
 }
 
 // processHeaderMergingRecursive processes header merging for hierarchical columns
-func (t *Table) processHeaderMergingRecursive(columns Columns, currentRow, maxDepth, startCol int, ops tableOperations) error {
+func (t *Table) processHeaderMergingRecursive(columns Columns, currentRow, maxDepth, startCol int, ops TableOperations) error {
 	currentCol := startCol
 
 	for _, column := range columns {
@@ -120,7 +120,7 @@ func (t *Table) processHeaderMergingRecursive(columns Columns, currentRow, maxDe
 }
 
 // executeVerticalMergingForColumn handles vertical cell merging for a single column.
-func (t *Table) executeVerticalMerging(column Column, actualColIndex int, dataStartRow int, ops tableOperations) error {
+func (t *Table) executeVerticalMerging(column Column, actualColIndex int, dataStartRow int, ops TableOperations) error {
 	// Check if this column has vertical merge configuration
 	if column.Merge == nil || len(column.Merge.Vertical) == 0 {
 		return nil
@@ -154,7 +154,7 @@ func (t *Table) executeVerticalMerging(column Column, actualColIndex int, dataSt
 }
 
 // findVerticalMergeRanges identifies ranges of consecutive rows that should be merged vertically.
-func (t *Table) findVerticalMergeRanges(colIndex int, fieldName string, format string, conditions MergeConditions, ops tableOperations) [][]int {
+func (t *Table) findVerticalMergeRanges(colIndex int, fieldName string, format string, conditions MergeConditions, ops TableOperations) [][]int {
 	var mergeRanges [][]int   // Collection of merge ranges to return
 	var currentRange []int    // Current range being built
 	var lastValue interface{} // Previous row's processed value for comparison
@@ -245,7 +245,7 @@ func (t *Table) findVerticalMergeRanges(colIndex int, fieldName string, format s
 
 // executeHorizontalMerging processes horizontal cell merging for a single row.
 // This function handles merging cells across columns within a row based on merge conditions.
-func (t *Table) executeHorizontalMerging(item Data, columns Columns, rowNum int, startColIndex int, rowOptions *RowOptions, ops tableOperations) error {
+func (t *Table) executeHorizontalMerging(item Data, columns Columns, rowNum int, startColIndex int, rowOptions *RowOptions, ops TableOperations) error {
 	if len(columns) == 0 {
 		return nil
 	}
@@ -310,7 +310,7 @@ func (t *Table) executeHorizontalMerging(item Data, columns Columns, rowNum int,
 }
 
 // applyHorizontalMerges executes horizontal merge operations for identified merge ranges.
-func (t *Table) applyHorizontalMerges(mergeRanges [][]int, rowNum, baseColIndex int, ops tableOperations) {
+func (t *Table) applyHorizontalMerges(mergeRanges [][]int, rowNum, baseColIndex int, ops TableOperations) {
 	// Process each identified merge range
 	for _, mergeRange := range mergeRanges {
 		if len(mergeRange) < 2 {
@@ -336,7 +336,7 @@ func (t *Table) applyHorizontalMerges(mergeRanges [][]int, rowNum, baseColIndex 
 // findHorizontalMergeRanges identifies ranges of consecutive columns that should be merged horizontally.
 // This function analyzes column values within a single row and determines which adjacent columns
 // contain values that meet the specified merge conditions, building ranges of columns to merge.
-func (t *Table) findHorizontalMergeRanges(item Data, columns Columns, conditions MergeConditions, ops tableOperations) [][]int {
+func (t *Table) findHorizontalMergeRanges(item Data, columns Columns, conditions MergeConditions, ops TableOperations) [][]int {
 	var mergeRanges [][]int   // Collection of merge ranges to return
 	var currentRange []int    // Current range being built
 	var lastValue interface{} // Previous column's processed value for comparison

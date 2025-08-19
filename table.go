@@ -1,8 +1,10 @@
 // table.go - Table abstraction and operations.
 //
-// This file defines the Table structure and the tableOperations interface, which provide a unified way to
+// This file defines the Table structure and the TableOperations interface, which provide a unified way to
 // represent, manipulate, and export tabular data with hierarchical columns, formatting, and cell/row configuration.
 // It allows for flexible data representation and export across different libraries.
+
+//go:generate mockgen -destination=table_mock.go -package=spit . TableOperations
 
 package spit
 
@@ -11,50 +13,50 @@ import (
 	"strings"
 )
 
-// tableOperations defines table-specific operations interface.
+// TableOperations defines table-specific operations interface.
 // Implement this interface to support table manipulation for various libraries.
-type tableOperations interface {
-	// getTable returns the underlying Table struct for direct access/manipulation.
+type TableOperations interface {
+	// GetTable returns the underlying Table struct for direct access/manipulation.
 	getTable() *Table
 
-	// getCellValue returns the value of a cell at the given column and row (1-based indices).
+	// GetCellValue returns the value of a cell at the given column and row (1-based indices).
 	// The implementation should convert indices to the appropriate cell reference and retrieve the value.
 	getCellValue(col, row int) (string, error)
 
-	// setCellValue sets the value of a cell at the given column and row.
+	// SetCellValue sets the value of a cell at the given column and row.
 	// The implementation should convert indices to the appropriate cell reference and set the value.
 	setCellValue(col, row int, value interface{}) error
 
-	// mergeCells merges a rectangular range of cells defined by start and end coordinates.
+	// MergeCells merges a rectangular range of cells defined by start and end coordinates.
 	mergeCells(startCol, startRow, endCol, endRow int) error
 
-	// isCellMerged checks if a cell at the given column and row is part of any merged range.
+	// IsCellMerged checks if a cell at the given column and row is part of any merged range.
 	isCellMerged(col, row int) bool
 
-	// isCellMergedHorizontally checks if a cell at the given column and row is merged horizontally (across columns).
+	// IsCellMergedHorizontally checks if a cell at the given column and row is merged horizontally (across columns).
 	isCellMergedHorizontally(col, row int) bool
 
-	// applyBorderToCell applies a border to a cell on the specified side ("left", "right", "top", "bottom").
+	// ApplyBorderToCell applies a border to a cell on the specified side ("left", "right", "top", "bottom").
 	// The border style is defined by the Border parameter.
 	applyBorderToCell(col, row int, side string, border *Border) error
 
-	// applyBordersToRange applies borders to all cells in a rectangular range.
+	// ApplyBordersToRange applies borders to all cells in a rectangular range.
 	// Each side of the range can have a different border style, as specified in the Borders parameter.
 	applyBordersToRange(startCol, startRow, endCol, endRow int, borders Borders) error
 
-	// hasExistingBorder checks if a cell at the given column and row has a border on the specified side.
+	// HasExistingBorder checks if a cell at the given column and row has a border on the specified side.
 	hasExistingBorder(col, row int, side string) bool
 
-	// applyStyleToCell applies a style to a specific cell at the given column and row.
+	// ApplyStyleToCell applies a style to a specific cell at the given column and row.
 	applyStyleToCell(col, row int, style Style) error
 
-	// applyStyleToRange Applies a style to a rectangular range of cells.
+	// ApplyStyleToRange Applies a style to a rectangular range of cells.
 	applyStyleToRange(startCol, startRow, endCol, endRow int, style Style) error
 
-	// getColumnLetter Returns the Excel-style column letter (e.g., "A", "B") for a given column index.
+	// GetColumnLetter Returns the Excel-style column letter (e.g., "A", "B") for a given column index.
 	getColumnLetter(col int) string
 
-	// processValue Processes a value for output, applying formatting if needed.
+	// ProcessValue Processes a value for output, applying formatting if needed.
 	processValue(value interface{}, format string) (interface{}, error)
 }
 

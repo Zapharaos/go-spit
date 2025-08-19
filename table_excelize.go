@@ -1,4 +1,4 @@
-// table_excelize.go - Excelize-based implementation of tableOperations for go-spit
+// table_excelize.go - Excelize-based implementation of TableOperations for go-spit
 //
 // This file provides an adapter for the github.com/xuri/excelize library, enabling table operations
 // such as cell access, merging, styling, and value formatting for Excel spreadsheets.
@@ -13,7 +13,7 @@ import (
 )
 
 // TableExcelize provides Excelize-specific operations for table handling.
-// Implements tableOperations for Excel spreadsheets using github.com/xuri/excelize.
+// Implements TableOperations for Excel spreadsheets using github.com/xuri/excelize.
 type TableExcelize struct {
 	File      *excelize.File // Underlying Excelize file object
 	SheetName string         // Current sheet name
@@ -128,7 +128,6 @@ func (e *TableExcelize) applyBorderToCell(col, row int, side string, border *Bor
 	if excelStyle == nil || err != nil {
 		excelStyle = &excelize.Style{}
 	} else {
-
 		switch side {
 		case "left", "right", "top", "bottom":
 			excelStyle.Border = append(excelStyle.Border, excelize.Border{Type: side, Color: "000000", Style: int(border.Style)})
@@ -209,9 +208,6 @@ func (e *TableExcelize) applyStyleToCell(col, row int, style Style) error {
 		// Merge input style with existing style
 		// Preserve existing style properties if the inputStyle has nil values in them
 
-		if inputStyle.Border != nil {
-			excelStyle.Border = inputStyle.Border
-		}
 		if inputStyle.Fill.Color != nil {
 			excelStyle.Fill = inputStyle.Fill
 		}
@@ -220,15 +216,6 @@ func (e *TableExcelize) applyStyleToCell(col, row int, style Style) error {
 		}
 		if inputStyle.Alignment != nil {
 			excelStyle.Alignment = inputStyle.Alignment
-		}
-		if inputStyle.Protection != nil {
-			excelStyle.Protection = inputStyle.Protection
-		}
-		if inputStyle.DecimalPlaces != nil {
-			excelStyle.DecimalPlaces = inputStyle.DecimalPlaces
-		}
-		if inputStyle.CustomNumFmt != nil {
-			excelStyle.CustomNumFmt = inputStyle.CustomNumFmt
 		}
 	}
 

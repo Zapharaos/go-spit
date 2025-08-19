@@ -116,7 +116,7 @@ func (csv *csv) writeHeaders() error {
 	// Generate header rows for each level
 	for level := 0; level < maxDepth; level++ {
 		headerRow := make([]string, totalCols)
-		csv.fillHeaderLevel(headerRow, level, 0, 0)
+		csv.fillHeaderLevel(headerRow, level, 0, 0, csv.table.Columns)
 		if err := csv.writer.Write(headerRow); err != nil {
 			return fmt.Errorf("error writing header row: %w", err)
 		}
@@ -125,15 +125,17 @@ func (csv *csv) writeHeaders() error {
 	return nil
 }
 
-// fillHeaderLevel recursively fills a header row for a specific level
-func (csv *csv) fillHeaderLevel(headerRow []string, targetLevel int, currentLevel int, colIndex int) int {
-	for _, column := range csv.table.Columns {
+// fillHeaderLevel recursively fills a header row for a specific level using the provided columns
+func (csv *csv) fillHeaderLevel(headerRow []string, targetLevel int, currentLevel int, colIndex int, columns Columns) int {
+	for _, column := range columns {
 		if currentLevel == targetLevel {
 			// This is the level we want to fill
 			if column.hasSubColumns() {
 				// For parent columns, write the label and span across all sub-columns
 				colSpan := column.getColumnCount()
-				headerRow[colIndex] = column.Label
+				if colIndex < len(headerRow) {
+					headerRow[colIndex] = column.Label
+				}
 				// Fill the span with empty strings for merged appearance
 				for i := 1; i < colSpan; i++ {
 					if colIndex+i < len(headerRow) {
@@ -143,16 +145,19 @@ func (csv *csv) fillHeaderLevel(headerRow []string, targetLevel int, currentLeve
 				colIndex += colSpan
 			} else {
 				// Leaf column at this level
-				headerRow[colIndex] = column.Label
+				if colIndex < len(headerRow) {
+					headerRow[colIndex] = column.Label
+				}
 				colIndex++
 			}
 		} else if currentLevel < targetLevel {
 			// We need to go deeper
 			if column.hasSubColumns() {
-				colIndex = csv.fillHeaderLevel(headerRow, targetLevel, currentLevel+1, colIndex)
+				// Recurse into sub-columns
+				colIndex = csv.fillHeaderLevel(headerRow, targetLevel, currentLevel+1, colIndex, column.Columns)
 			} else {
 				// Leaf column, but we're looking for a deeper level - leave empty
-				if targetLevel > currentLevel {
+				if colIndex < len(headerRow) {
 					headerRow[colIndex] = ""
 				}
 				colIndex++
