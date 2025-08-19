@@ -10,7 +10,8 @@ import (
 	"time"
 )
 
-// convertSliceToString Take a slice []interface{}, format and returns the elements separated by custom separator.
+// convertSliceToString takes a slice []interface{}, formats each element, and returns the elements separated by a custom separator.
+// Used for rendering array/slice values in exported files.
 func convertSliceToString(slice []interface{}, format string, separator string) (string, error) {
 	var strValues []string
 	for _, elem := range slice {
@@ -26,7 +27,8 @@ func convertSliceToString(slice []interface{}, format string, separator string) 
 	return strings.Join(strValues, separator), nil
 }
 
-// formatValue Apply the specified format to a given value.
+// formatValue applies the specified format to a given value.
+// Supports time.Time and string values that can be parsed as dates.
 func formatValue(value interface{}, format string) (interface{}, error) {
 	switch v := value.(type) {
 	case time.Time:
@@ -41,7 +43,8 @@ func formatValue(value interface{}, format string) (interface{}, error) {
 	return value, nil
 }
 
-// parseDate parses a date string
+// parseDate parses a date string using several supported formats.
+// Returns a time.Time if parsing succeeds, or an error otherwise.
 func parseDate(dateStr string) (time.Time, error) {
 	formats := []string{
 		"2006-01-02T15:04:05.999",

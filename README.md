@@ -9,7 +9,7 @@
 
 # go-spit
 
-Go-spit is a Go package for flexible file exporting. It supports multiple formats and is designed for extensibility, making it easy to export data in various ways for reporting, data exchange, and automation.
+Go-spit is a Go package for flexible file exporting. It supports multiple formats and is designed for extensibility, making it easy to export data in various ways for reporting, data exchange and automation.
 
 ## Features
 - Export tabular data and spreadsheets

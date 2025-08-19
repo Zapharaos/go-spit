@@ -11,7 +11,7 @@ import (
 	"reflect"
 )
 
-// ExportXLSX writes data to file using the generic file writer
+// ExportXLSX writes table data to an XLSX file using the generic file writer and a dynamic spreadsheet implementation.
 func ExportXLSX(s Spreadsheet, params FileWriteParams) (*FileWriteResult, error) {
 	// Ensure extension is set for XLSX files
 	if params.extension == "" {
@@ -74,7 +74,8 @@ type xlsx struct {
 	params      FileWriteParams
 }
 
-// writeData writes the provided data to the XLSX file
+// writeData writes the provided table data to the XLSX file.
+// Handles sheet creation, header writing, data rows, merging, styling, and auto-fitting columns.
 func (xlsx *xlsx) writeData() error {
 	if xlsx.spreadsheet.getSheetName() == "" {
 		xlsx.spreadsheet.setSheetName("Sheet1")
@@ -131,8 +132,8 @@ func (xlsx *xlsx) writeData() error {
 	return nil
 }
 
-// writeHeaders writes multi-level headers to the Excel sheet
-// Returns error and fails fast if any header cell fails to write
+// writeHeaders writes multi-level headers to the Excel sheet.
+// Returns the number of header rows written and error if any header cell fails to write.
 func (xlsx *xlsx) writeHeaders() (int, error) {
 	t := xlsx.spreadsheet.getTable()
 	nbColumns := len(t.Columns)
@@ -159,7 +160,8 @@ func (xlsx *xlsx) writeHeaders() (int, error) {
 	return maxDepth, nil
 }
 
-// writeHeaderRow writes a specific header row, handling hierarchical structure
+// writeHeaderRow writes a specific header row, handling hierarchical structure.
+// Recursively processes sub-columns for multi-level headers.
 func (xlsx *xlsx) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol int) error {
 	currentCol := startCol
 
@@ -186,7 +188,8 @@ func (xlsx *xlsx) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol
 	return nil
 }
 
-// writeCell writes a single cell item
+// writeCell writes a single cell item to the spreadsheet.
+// Looks up the value, processes formatting, and sets the cell value.
 func (xlsx *xlsx) writeCell(item Data, column Column, colIndex, rowIndex int) error {
 	value, err := item.lookup(column.Name)
 	if err != nil {
@@ -205,7 +208,8 @@ func (xlsx *xlsx) writeCell(item Data, column Column, colIndex, rowIndex int) er
 	return nil
 }
 
-// autoFitColumns auto-fits column widths using dynamic operations
+// autoFitColumns auto-fits column widths using dynamic operations.
+// Sets a default width for each column for improved readability.
 func (xlsx *xlsx) autoFitColumns() {
 	for i := 1; i <= len(xlsx.spreadsheet.getTable().Columns.getFlattenedColumns()); i++ {
 		colLetter := xlsx.spreadsheet.getColumnLetter(i)

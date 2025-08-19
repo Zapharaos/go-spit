@@ -10,7 +10,8 @@ import (
 	"fmt"
 )
 
-// processMerging applies cell merging operations to the table
+// processMerging applies all cell merging operations to the table.
+// Handles header, vertical, and horizontal merging in order. Errors are logged and processing continues for best-effort merging.
 func (t *Table) processMerging(ops TableOperations) error {
 	// Process header merging first
 	if t.WriteHeader && len(t.Columns) > 0 {
@@ -22,8 +23,7 @@ func (t *Table) processMerging(ops TableOperations) error {
 	// Calculate where data rows start (after headers, if present)
 	dataStartRow := t.getDataStartRow()
 
-	// Process vertical merging for each flattened column
-	// We use flattened columns because merging only applies to leaf columns
+	// Process vertical merging for each flattened column (leaf columns only)
 	for actualColIndex, column := range t.Columns.getFlattenedColumns() {
 		// Column indices are 1-based, so we add 1 to the 0-based slice index
 		if err := t.executeVerticalMerging(column, actualColIndex+1, dataStartRow, ops); err != nil {
@@ -40,23 +40,21 @@ func (t *Table) processMerging(ops TableOperations) error {
 		// Retrieve any custom row options for this row
 		rc, exists := t.RowOptionsMap[rowIndex]
 
-		// Check if this row has custom merge configuration
+		// If row has custom horizontal merge settings, process with those settings
 		if exists && rc.Merge != nil && len(rc.Merge.Horizontal) > 0 {
-			// Row has custom horizontal merge settings - process it with those settings
 			if err := t.executeHorizontalMerging(item, t.Columns, rowNum, 1, &rc, ops); err != nil {
 				return fmt.Errorf("failed to apply row horizontal merging: %w", err)
 			}
 			continue // Skip standard processing for this row
 		}
 
-		// If no custom row merge settings, check if the row is marked as non-mergeable
+		// If row is marked as non-mergeable, skip merging
 		if exists && !rc.Mergeable {
 			continue
 		}
 
 		// Standard horizontal merging processing
 		if err := t.executeHorizontalMerging(item, t.Columns, rowNum, 1, nil, ops); err != nil {
-			// Log the error but continue processing other rows
 			L().Warn("Failed to execute horizontal merging for row", Int("row", rowNum), Error(err))
 		}
 	}
@@ -64,14 +62,15 @@ func (t *Table) processMerging(ops TableOperations) error {
 	return nil
 }
 
-// executeHeaderMerging applies merging operations to header cells
+// executeHeaderMerging applies merging operations to header cells.
+// Handles hierarchical header merging for multi-level headers.
 func (t *Table) executeHeaderMerging(ops TableOperations) error {
 	maxDepth := t.Columns.getMaxDepth()
 	if maxDepth <= 1 {
 		return nil // No merging needed for single-level headers
 	}
 
-	// Process hierarchical header merging
+	// Process hierarchical header merging recursively
 	return t.processHeaderMergingRecursive(t.Columns, 1, maxDepth, 1, ops)
 }
 
@@ -119,9 +118,9 @@ func (t *Table) processHeaderMergingRecursive(columns Columns, currentRow, maxDe
 	return nil
 }
 
-// executeVerticalMergingForColumn handles vertical cell merging for a single column.
+// executeVerticalMerging applies vertical cell merging for a single column.
+// Only columns with vertical merge configuration are processed.
 func (t *Table) executeVerticalMerging(column Column, actualColIndex int, dataStartRow int, ops TableOperations) error {
-	// Check if this column has vertical merge configuration
 	if column.Merge == nil || len(column.Merge.Vertical) == 0 {
 		return nil
 	}
@@ -129,7 +128,7 @@ func (t *Table) executeVerticalMerging(column Column, actualColIndex int, dataSt
 	// Analyze the column data and identify merge ranges
 	mergeRanges := t.findVerticalMergeRanges(actualColIndex, column.Name, column.Format, column.Merge.Vertical, ops)
 
-	//  Execute merge operations for each identified range
+	// Execute merge operations for each identified range
 	for _, mr := range mergeRanges {
 		if len(mr) < 2 {
 			continue // Skip single-cell ranges (nothing to merge)
@@ -141,7 +140,6 @@ func (t *Table) executeVerticalMerging(column Column, actualColIndex int, dataSt
 
 		// Execute the vertical merge operation
 		if err := ops.mergeCells(actualColIndex, startRow, actualColIndex, endRow); err != nil {
-			// Log detailed error information for debugging and continue processing
 			L().Warn("Failed to merge cells vertically",
 				Int("col", actualColIndex),
 				Int("startRow", startRow),
@@ -154,6 +152,7 @@ func (t *Table) executeVerticalMerging(column Column, actualColIndex int, dataSt
 }
 
 // findVerticalMergeRanges identifies ranges of consecutive rows that should be merged vertically.
+// Returns a slice of ranges (each range is a slice of row indices).
 func (t *Table) findVerticalMergeRanges(colIndex int, fieldName string, format string, conditions MergeConditions, ops TableOperations) [][]int {
 	var mergeRanges [][]int   // Collection of merge ranges to return
 	var currentRange []int    // Current range being built
