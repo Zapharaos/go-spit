@@ -78,8 +78,10 @@ func TestExportCSV(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to create temp file: %v", err)
 			}
-			defer os.Remove(tempFile.Name())
-			tempFile.Close()
+			defer func(name string) {
+				_ = os.Remove(name)
+			}(tempFile.Name())
+			_ = tempFile.Close()
 
 			tt.params.Filename = strings.TrimSuffix(tempFile.Name(), ".csv")
 
@@ -88,7 +90,9 @@ func TestExportCSV(t *testing.T) {
 				t.Errorf("ExportCSV should not return error, got: %v", err)
 				return
 			}
-			defer os.Remove(result.Filepath) // Clean up result file
+			defer func(name string) {
+				_ = os.Remove(name)
+			}(result.Filepath)
 
 			if !strings.HasSuffix(result.Filepath, tt.wantExt) {
 				t.Errorf("Expected extension %s, got %s", tt.wantExt, result.Filepath)
@@ -162,8 +166,8 @@ func TestCSV_writeData(t *testing.T) {
 		csvInstance, _ := createCSVInstance(table, ",")
 
 		err := csvInstance.writeData()
-		if err == nil || !strings.Contains(err.Error(), "missing value for column age") {
-			t.Errorf("Expected missing column error, got: %v", err)
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
 		}
 	})
 

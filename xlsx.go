@@ -191,7 +191,10 @@ func (xlsx *xlsx) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol
 // writeCell writes a single cell item to the spreadsheet.
 // Looks up the value, processes formatting, and sets the cell value.
 func (xlsx *xlsx) writeCell(item Data, column Column, colIndex, rowIndex int) error {
-	value, err := item.lookup(column.Name)
+	value, err, found := item.lookup(column.Name)
+	if err == nil && !found {
+		return nil
+	}
 	if err != nil {
 		return fmt.Errorf("error looking up value for column %s: %w", column.Name, err)
 	}

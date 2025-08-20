@@ -1,4 +1,4 @@
-// table_excelize.go - Excelize-based implementation of TableOperations for go-spit
+// excelize_table.go - Excelize-based implementation of TableOperations for go-spit
 //
 // This file provides an adapter for the github.com/xuri/excelize library, enabling table operations
 // such as cell access, merging, styling, and value formatting for Excel spreadsheets.
