@@ -105,7 +105,7 @@ func TestTable_renderStyles(t *testing.T) {
 			tt.setupMock(mockOps)
 
 			// Use the mock directly - no wrapper needed!
-			err := tt.table.renderStyles(mockOps)
+			err := tt.table.RenderStyles(mockOps)
 
 			if tt.expectedError {
 				if err == nil {

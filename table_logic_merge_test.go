@@ -75,11 +75,11 @@ func TestTable_processMerging(t *testing.T) {
 				}
 			},
 			setupMock: func(mock *MockTableOperations) {
-				// Header merging will be called but will fail - this should not cause processMerging to fail
+				// Header merging will be called but will fail - this should not cause ProcessMerging to fail
 				// as the error is logged as a warning and processing continues
 				mock.EXPECT().mergeCells(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("merge failed")).AnyTimes()
 			},
-			expectedError: "", // Changed: processMerging doesn't fail on header merge errors, just logs warnings
+			expectedError: "", // Changed: ProcessMerging doesn't fail on header merge errors, just logs warnings
 			expectedCalls: 1,
 		},
 		{
@@ -142,7 +142,7 @@ func TestTable_processMerging(t *testing.T) {
 			tt.setupMock(mockOps)
 
 			table := tt.setupTable()
-			err := table.processMerging(mockOps)
+			err := table.ProcessMerging(mockOps)
 
 			if tt.expectedError != "" {
 				if err == nil {
@@ -643,7 +643,7 @@ func TestTable_findVerticalMergeRanges(t *testing.T) {
 			expectedRanges: [][]int{},
 		},
 		{
-			name: "Success - field lookup fails",
+			name: "Success - field Lookup fails",
 			setupTable: func() *Table {
 				return &Table{
 					Data: DataSlice{
@@ -1032,7 +1032,7 @@ func TestTable_findHorizontalMergeRanges(t *testing.T) {
 			expectedRanges: [][]int{},
 		},
 		{
-			name: "Success - field lookup fails",
+			name: "Success - field Lookup fails",
 			setupTable: func() *Table {
 				return &Table{}
 			},

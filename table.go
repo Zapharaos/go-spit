@@ -73,25 +73,25 @@ type Table struct {
 	ListSeparator  string         // separator used when rendering slice/array values as strings
 }
 
-// getDataStartRow calculates the starting row number for data based on header configuration.
+// GetDataStartRow calculates the starting row number for data based on header configuration.
 // Accounts for multi-level headers by reserving rows for each level of the column hierarchy.
-func (t *Table) getDataStartRow() int {
+func (t *Table) GetDataStartRow() int {
 	dataStartRow := 1
 	if t.WriteHeader && len(t.Columns) > 0 {
 		// Calculate the maximum depth of the column hierarchy
 		// Each level of nesting requires its own header row
-		maxDepth := t.Columns.getMaxDepth()
+		maxDepth := t.Columns.GetMaxDepth()
 		dataStartRow = maxDepth + 1
 	}
 	return dataStartRow
 }
 
-// getDataIndexFromRowIndex converts a 1-based row index to the corresponding 0-based data slice index.
+// GetDataIndexFromRowIndex converts a 1-based row index to the corresponding 0-based data slice index.
 // Adjusts for header rows if present.
-func (t *Table) getDataIndexFromRowIndex(rowIndex int) int {
+func (t *Table) GetDataIndexFromRowIndex(rowIndex int) int {
 	if t.WriteHeader {
 		// Adjust row index to account for header rows
-		headerShift := t.getDataStartRow()
+		headerShift := t.GetDataStartRow()
 		return rowIndex - headerShift
 	}
 	return rowIndex
@@ -103,9 +103,9 @@ type Data map[string]interface{}
 // DataSlice is a slice of Data rows.
 type DataSlice []Data
 
-// lookup recursively looks up a key in a nested map structure.
+// Lookup recursively looks up a key in a nested map structure.
 // Supports multi-level key access for hierarchical data.
-func (d Data) lookup(ks ...string) (rval interface{}, err error, found bool) {
+func (d Data) Lookup(ks ...string) (rval interface{}, err error, found bool) {
 	var ok bool
 	if len(ks) == 0 {
 		return nil, fmt.Errorf("nestedMapLookup needs at least one key"), false
@@ -117,7 +117,7 @@ func (d Data) lookup(ks ...string) (rval interface{}, err error, found bool) {
 	} else if d, ok = rval.(Data); !ok {
 		return nil, fmt.Errorf("malformed structure at %#v", rval), false
 	} else {
-		return d.lookup(ks[1:]...)
+		return d.Lookup(ks[1:]...)
 	}
 }
 
@@ -134,19 +134,19 @@ type Column struct {
 	Columns Columns     // Sub-columns for hierarchical structures
 }
 
-// hasSubColumns returns true if this column contains nested sub-columns.
-func (c Column) hasSubColumns() bool {
+// HasSubColumns returns true if this column contains nested sub-columns.
+func (c Column) HasSubColumns() bool {
 	return len(c.Columns) > 0
 }
 
-// getColumnCount returns the total number of leaf columns represented by this column.
+// GetColumnCount returns the total number of leaf columns represented by this column.
 // For leaf columns, returns 1. For parent columns, recursively counts all leaf columns in the hierarchy.
-func (c Column) getColumnCount() int {
-	if c.hasSubColumns() {
+func (c Column) GetColumnCount() int {
+	if c.HasSubColumns() {
 		// Recursively count all leaf columns in sub-columns
 		total := 0
 		for _, subCol := range c.Columns {
-			total += subCol.getColumnCount()
+			total += subCol.GetColumnCount()
 		}
 		return total
 	}
@@ -156,23 +156,23 @@ func (c Column) getColumnCount() int {
 // Columns represents a collection of column definitions, possibly hierarchical.
 type Columns []Column
 
-// getTotalColumnCount calculates the total number of leaf columns in the collection.
-func (c Columns) getTotalColumnCount() int {
+// GetTotalColumnCount calculates the total number of leaf columns in the collection.
+func (c Columns) GetTotalColumnCount() int {
 	total := 0
 	for _, column := range c {
-		total += column.getColumnCount()
+		total += column.GetColumnCount()
 	}
 	return total
 }
 
-// getFlattenedColumns returns a flattened list of all leaf columns in the hierarchy.
+// GetFlattenedColumns returns a flattened list of all leaf columns in the hierarchy.
 // Traverses the entire column structure and extracts only columns without sub-columns.
-func (c Columns) getFlattenedColumns() []Column {
+func (c Columns) GetFlattenedColumns() []Column {
 	var flattened []Column
 	for _, column := range c {
-		if column.hasSubColumns() {
+		if column.HasSubColumns() {
 			// Recursively flatten sub-columns
-			flattened = append(flattened, column.Columns.getFlattenedColumns()...)
+			flattened = append(flattened, column.Columns.GetFlattenedColumns()...)
 		} else {
 			// Add leaf column directly
 			flattened = append(flattened, column)
@@ -181,13 +181,13 @@ func (c Columns) getFlattenedColumns() []Column {
 	return flattened
 }
 
-// getMaxDepth returns the maximum depth of the column hierarchy.
-func (c Columns) getMaxDepth() int {
+// GetMaxDepth returns the maximum depth of the column hierarchy.
+func (c Columns) GetMaxDepth() int {
 	maxDepth := 1
 	for _, column := range c {
-		if column.hasSubColumns() {
+		if column.HasSubColumns() {
 			// Recursively calculate depth including this level
-			depth := 1 + column.Columns.getMaxDepth()
+			depth := 1 + column.Columns.GetMaxDepth()
 			if depth > maxDepth {
 				maxDepth = depth
 			}
@@ -248,9 +248,9 @@ type MergeRules struct {
 	Horizontal MergeConditions `json:"horizontal,omitempty"` // Conditions for merging cells horizontally (between columns)
 }
 
-// anyMatch checks if two sets of merge conditions share at least one common condition.
+// AnyMatch checks if two sets of merge conditions share at least one common condition.
 // This is used to determine if two cells or ranges can be merged together based on their configurations.
-func (mc MergeConditions) anyMatch(mc2 []MergeCondition) bool {
+func (mc MergeConditions) AnyMatch(mc2 []MergeCondition) bool {
 	for _, cond1 := range mc {
 		for _, cond2 := range mc2 {
 			if cond1 == cond2 {
@@ -261,8 +261,8 @@ func (mc MergeConditions) anyMatch(mc2 []MergeCondition) bool {
 	return false // No compatible conditions found
 }
 
-// valuesShouldMerge determines if two values should be merged based on the specified conditions.
-func (mc MergeConditions) valuesShouldMerge(value1, value2 interface{}) bool {
+// ValuesShouldMerge determines if two values should be merged based on the specified conditions.
+func (mc MergeConditions) ValuesShouldMerge(value1, value2 interface{}) bool {
 	if len(mc) == 0 {
 		return false // No conditions specified - don't merge
 	}
@@ -321,8 +321,8 @@ type Borders struct {
 	Inner  *Borders // Inner borders for ranges (used in some contexts)
 }
 
-// hasBorders checks if any borders are configured in these Borders.
-func (bc *Borders) hasBorders() bool {
+// HasBorders checks if any borders are configured in these Borders.
+func (bc *Borders) HasBorders() bool {
 	return (bc.Left != nil && bc.Left.Style != BorderStyleNone) ||
 		(bc.Right != nil && bc.Right.Style != BorderStyleNone) ||
 		(bc.Top != nil && bc.Top.Style != BorderStyleNone) ||
@@ -381,8 +381,8 @@ const (
 	AlignmentRightMiddle                   // Right-aligned text, center-aligned vertically
 )
 
-// getAlignmentValues converts Alignment enum to horizontal and vertical alignment strings.
-func (a Alignment) getAlignmentValues() (horizontal, vertical string) {
+// GetAlignmentValues converts Alignment enum to horizontal and vertical alignment strings.
+func (a Alignment) GetAlignmentValues() (horizontal, vertical string) {
 	switch a {
 	case AlignmentLeft:
 		return "left", "top"

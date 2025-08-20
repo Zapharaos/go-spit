@@ -61,9 +61,9 @@ func TestTable_getDataStartRow(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tt.table.getDataStartRow()
+			result := tt.table.GetDataStartRow()
 			if result != tt.expected {
-				t.Errorf("getDataStartRow() = %v, want %v", result, tt.expected)
+				t.Errorf("GetDataStartRow() = %v, want %v", result, tt.expected)
 			}
 		})
 	}
@@ -115,9 +115,9 @@ func TestTable_getDataIndexFromRowIndex(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tt.table.getDataIndexFromRowIndex(tt.rowIndex)
+			result := tt.table.GetDataIndexFromRowIndex(tt.rowIndex)
 			if result != tt.expected {
-				t.Errorf("getDataIndexFromRowIndex() = %v, want %v", result, tt.expected)
+				t.Errorf("GetDataIndexFromRowIndex() = %v, want %v", result, tt.expected)
 			}
 		})
 	}
@@ -143,21 +143,21 @@ func TestData_lookup(t *testing.T) {
 		wantFound bool
 	}{
 		{
-			name:      "Simple key lookup",
+			name:      "Simple key Lookup",
 			keys:      []string{"simple"},
 			expected:  "value1",
 			wantErr:   false,
 			wantFound: true,
 		},
 		{
-			name:      "Nested key lookup",
+			name:      "Nested key Lookup",
 			keys:      []string{"nested", "level2"},
 			expected:  "value2",
 			wantErr:   false,
 			wantFound: true,
 		},
 		{
-			name:      "Deep nested key lookup",
+			name:      "Deep nested key Lookup",
 			keys:      []string{"nested", "deeper", "level3"},
 			expected:  "value3",
 			wantFound: true,
@@ -201,22 +201,22 @@ func TestData_lookup(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err, found := data.lookup(tt.keys...)
+			result, err, found := data.Lookup(tt.keys...)
 			if found != tt.wantFound {
 				if found != tt.wantFound {
-					t.Errorf("lookup() found = %v, want %v (keys: %v)", found, tt.wantFound, tt.keys)
+					t.Errorf("Lookup() found = %v, want %v (keys: %v)", found, tt.wantFound, tt.keys)
 				}
 			}
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("lookup() expected error, got nil")
+					t.Errorf("Lookup() expected error, got nil")
 				}
 			} else {
 				if err != nil {
-					t.Errorf("lookup() unexpected error: %v", err)
+					t.Errorf("Lookup() unexpected error: %v", err)
 				}
 				if result != tt.expected {
-					t.Errorf("lookup() = %v, want %v", result, tt.expected)
+					t.Errorf("Lookup() = %v, want %v", result, tt.expected)
 				}
 			}
 		})
@@ -260,9 +260,9 @@ func TestColumn_hasSubColumns(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tt.column.hasSubColumns()
+			result := tt.column.HasSubColumns()
 			if result != tt.expected {
-				t.Errorf("hasSubColumns() = %v, want %v", result, tt.expected)
+				t.Errorf("HasSubColumns() = %v, want %v", result, tt.expected)
 			}
 		})
 	}
@@ -325,9 +325,9 @@ func TestColumn_getColumnCount(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tt.column.getColumnCount()
+			result := tt.column.GetColumnCount()
 			if result != tt.expected {
-				t.Errorf("getColumnCount() = %v, want %v", result, tt.expected)
+				t.Errorf("GetColumnCount() = %v, want %v", result, tt.expected)
 			}
 		})
 	}
@@ -370,9 +370,9 @@ func TestColumns_getTotalColumnCount(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tt.columns.getTotalColumnCount()
+			result := tt.columns.GetTotalColumnCount()
 			if result != tt.expected {
-				t.Errorf("getTotalColumnCount() = %v, want %v", result, tt.expected)
+				t.Errorf("GetTotalColumnCount() = %v, want %v", result, tt.expected)
 			}
 		})
 	}
@@ -436,9 +436,9 @@ func TestColumns_getFlattenedColumns(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tt.columns.getFlattenedColumns()
+			result := tt.columns.GetFlattenedColumns()
 			if !reflect.DeepEqual(result, tt.expected) {
-				t.Errorf("getFlattenedColumns() = %v, want %v", result, tt.expected)
+				t.Errorf("GetFlattenedColumns() = %v, want %v", result, tt.expected)
 			}
 		})
 	}
@@ -514,9 +514,9 @@ func TestColumns_getMaxDepth(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tt.columns.getMaxDepth()
+			result := tt.columns.GetMaxDepth()
 			if result != tt.expected {
-				t.Errorf("getMaxDepth() = %v, want %v", result, tt.expected)
+				t.Errorf("GetMaxDepth() = %v, want %v", result, tt.expected)
 			}
 		})
 	}
@@ -563,9 +563,9 @@ func TestMergeConditions_anyMatch(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tt.conditions.anyMatch(tt.other)
+			result := tt.conditions.AnyMatch(tt.other)
 			if result != tt.expected {
-				t.Errorf("anyMatch() = %v, want %v", result, tt.expected)
+				t.Errorf("AnyMatch() = %v, want %v", result, tt.expected)
 			}
 		})
 	}
@@ -660,9 +660,9 @@ func TestMergeConditions_valuesShouldMerge(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tt.conditions.valuesShouldMerge(tt.value1, tt.value2)
+			result := tt.conditions.ValuesShouldMerge(tt.value1, tt.value2)
 			if result != tt.expected {
-				t.Errorf("valuesShouldMerge() = %v, want %v", result, tt.expected)
+				t.Errorf("ValuesShouldMerge() = %v, want %v", result, tt.expected)
 			}
 		})
 	}
@@ -736,10 +736,10 @@ func TestBorders_hasBorders(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var result bool
 			if tt.borders != nil {
-				result = tt.borders.hasBorders()
+				result = tt.borders.HasBorders()
 			}
 			if result != tt.expected {
-				t.Errorf("hasBorders() = %v, want %v", result, tt.expected)
+				t.Errorf("HasBorders() = %v, want %v", result, tt.expected)
 			}
 		})
 	}
@@ -829,12 +829,12 @@ func TestAlignment_getAlignmentValues(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			horizontal, vertical := tt.alignment.getAlignmentValues()
+			horizontal, vertical := tt.alignment.GetAlignmentValues()
 			if horizontal != tt.expectedHorizontal {
-				t.Errorf("getAlignmentValues() horizontal = %v, want %v", horizontal, tt.expectedHorizontal)
+				t.Errorf("GetAlignmentValues() horizontal = %v, want %v", horizontal, tt.expectedHorizontal)
 			}
 			if vertical != tt.expectedVertical {
-				t.Errorf("getAlignmentValues() vertical = %v, want %v", vertical, tt.expectedVertical)
+				t.Errorf("GetAlignmentValues() vertical = %v, want %v", vertical, tt.expectedVertical)
 			}
 		})
 	}

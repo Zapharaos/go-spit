@@ -12,9 +12,9 @@ import (
 
 // ExportCSV writes generic table data to a CSV file using the generic file writer.
 func ExportCSV(separator string, t *Table, params FileWriteParams) (*FileWriteResult, error) {
-	// Ensure extension is set for CSV files
-	if params.extension == "" {
-		params.extension = FormatCSV.String()
+	// Ensure Extension is set for CSV files
+	if params.Extension == "" {
+		params.Extension = FormatCSV.String()
 	}
 
 	csvConfig := &csv{
@@ -32,7 +32,7 @@ func ExportCSV(separator string, t *Table, params FileWriteParams) (*FileWriteRe
 	}
 
 	// Use the generic file writer to handle the actual file writing
-	result, err := csvConfig.params.writeToFile(writeFunc)
+	result, err := csvConfig.params.WriteToFile(writeFunc)
 	if err != nil {
 		L().Error("Failed to write CSV to file", Error(err))
 		return nil, err
@@ -71,14 +71,14 @@ func (csv *csv) writeData() error {
 	}
 
 	// Get flattened columns for data processing
-	flatColumns := csv.table.Columns.getFlattenedColumns()
+	flatColumns := csv.table.Columns.GetFlattenedColumns()
 
 	// Write each data row to the CSV
 	for rowIdx, item := range csv.table.Data {
 		record := make([]string, 0, len(flatColumns))
 		for _, column := range flatColumns {
 			// Lookup the value for this column in the current row
-			value, err, found := item.lookup(column.Name)
+			value, err, found := item.Lookup(column.Name)
 			if err == nil && !found {
 				continue
 			}
@@ -113,8 +113,8 @@ func (csv *csv) writeData() error {
 // writeHeaders writes header rows to represent the hierarchical column structure
 // Each row corresponds to a level in the column hierarchy, allowing for grouped headers in the CSV output.
 func (csv *csv) writeHeaders() error {
-	maxDepth := csv.table.Columns.getMaxDepth()
-	totalCols := csv.table.Columns.getTotalColumnCount()
+	maxDepth := csv.table.Columns.GetMaxDepth()
+	totalCols := csv.table.Columns.GetTotalColumnCount()
 	L().Debug("Writing header levels", Int("levels", maxDepth), Int("columns", totalCols))
 
 	// Generate header rows for each level
@@ -135,9 +135,9 @@ func (csv *csv) fillHeaderLevel(headerRow []string, targetLevel int, currentLeve
 	for _, column := range columns {
 		if currentLevel == targetLevel {
 			// This is the level we want to fill
-			if column.hasSubColumns() {
+			if column.HasSubColumns() {
 				// For parent columns, write the label and span across all sub-columns
-				colSpan := column.getColumnCount()
+				colSpan := column.GetColumnCount()
 				if colIndex < len(headerRow) {
 					headerRow[colIndex] = column.Label
 				}
@@ -157,7 +157,7 @@ func (csv *csv) fillHeaderLevel(headerRow []string, targetLevel int, currentLeve
 			}
 		} else if currentLevel < targetLevel {
 			// We need to go deeper
-			if column.hasSubColumns() {
+			if column.HasSubColumns() {
 				// Recurse into sub-columns
 				colIndex = csv.fillHeaderLevel(headerRow, targetLevel, currentLevel+1, colIndex, column.Columns)
 			} else {
@@ -178,12 +178,12 @@ func (csv *csv) processValue(value interface{}, format string) (string, error) {
 	switch v := value.(type) {
 	case []interface{}:
 		if csv.table.ListSeparator != "" {
-			return convertSliceToString(v, format, csv.table.ListSeparator)
+			return ConvertSliceToString(v, format, csv.table.ListSeparator)
 		}
 	default:
 		if format != "" {
 			var err error
-			value, err = formatValue(value, format)
+			value, err = FormatValue(value, format)
 			if err != nil {
 				return "", err
 			}

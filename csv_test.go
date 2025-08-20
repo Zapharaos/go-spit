@@ -95,7 +95,7 @@ func TestExportCSV(t *testing.T) {
 			}(result.Filepath)
 
 			if !strings.HasSuffix(result.Filepath, tt.wantExt) {
-				t.Errorf("Expected extension %s, got %s", tt.wantExt, result.Filepath)
+				t.Errorf("Expected Extension %s, got %s", tt.wantExt, result.Filepath)
 			}
 
 			if tt.contains != "" {

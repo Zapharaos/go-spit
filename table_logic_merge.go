@@ -10,9 +10,9 @@ import (
 	"fmt"
 )
 
-// processMerging applies all cell merging operations to the table.
+// ProcessMerging applies all cell merging operations to the table.
 // Handles header, vertical, and horizontal merging in order. Errors are logged and processing continues for best-effort merging.
-func (t *Table) processMerging(ops TableOperations) error {
+func (t *Table) ProcessMerging(ops TableOperations) error {
 	// Process header merging first
 	if t.WriteHeader && len(t.Columns) > 0 {
 		if err := t.executeHeaderMerging(ops); err != nil {
@@ -21,10 +21,10 @@ func (t *Table) processMerging(ops TableOperations) error {
 	}
 
 	// Calculate where data rows start (after headers, if present)
-	dataStartRow := t.getDataStartRow()
+	dataStartRow := t.GetDataStartRow()
 
 	// Process vertical merging for each flattened column (leaf columns only)
-	for actualColIndex, column := range t.Columns.getFlattenedColumns() {
+	for actualColIndex, column := range t.Columns.GetFlattenedColumns() {
 		// Column indices are 1-based, so we add 1 to the 0-based slice index
 		if err := t.executeVerticalMerging(column, actualColIndex+1, dataStartRow, ops); err != nil {
 			// Log the error but continue processing other columns
@@ -65,7 +65,7 @@ func (t *Table) processMerging(ops TableOperations) error {
 // executeHeaderMerging applies merging operations to header cells.
 // Handles hierarchical header merging for multi-level headers.
 func (t *Table) executeHeaderMerging(ops TableOperations) error {
-	maxDepth := t.Columns.getMaxDepth()
+	maxDepth := t.Columns.GetMaxDepth()
 	if maxDepth <= 1 {
 		return nil // No merging needed for single-level headers
 	}
@@ -79,9 +79,9 @@ func (t *Table) processHeaderMergingRecursive(columns Columns, currentRow, maxDe
 	currentCol := startCol
 
 	for _, column := range columns {
-		if column.hasSubColumns() {
+		if column.HasSubColumns() {
 			// Merge horizontally across sub-columns
-			columnSpan := column.getColumnCount()
+			columnSpan := column.GetColumnCount()
 			endCol := currentCol + columnSpan - 1
 			if endCol > currentCol {
 				if err := ops.MergeCells(currentCol, currentRow, endCol, currentRow); err != nil {
@@ -185,7 +185,7 @@ func (t *Table) findVerticalMergeRanges(colIndex int, fieldName string, format s
 		}
 
 		// Extract the raw value from the data item for this column
-		value, err, found := item.lookup(fieldName)
+		value, err, found := item.Lookup(fieldName)
 		if err != nil || !found {
 			// Can't get value for this row - end current range if it exists
 			if len(currentRange) > 1 {
@@ -209,7 +209,7 @@ func (t *Table) findVerticalMergeRanges(colIndex int, fieldName string, format s
 			lastValue = processedValue
 		} else {
 			// Compare current value with previous value using merge conditions
-			shouldMerge := conditions.valuesShouldMerge(lastValue, processedValue)
+			shouldMerge := conditions.ValuesShouldMerge(lastValue, processedValue)
 
 			if shouldMerge {
 				// Values should merge - add current row to the range
@@ -260,7 +260,7 @@ func (t *Table) executeHorizontalMerging(item Data, columns Columns, rowNum int,
 
 	// Process columns with individual merge configurations
 	// Group consecutive columns that have compatible merge conditions to optimize processing
-	flatColumns := columns.getFlattenedColumns()
+	flatColumns := columns.GetFlattenedColumns()
 	var currentGroup []Column             // Current group of columns being processed
 	var currentGroupStartIndex int        // Starting index of the current group
 	var currentConditions MergeConditions // Merge conditions for the current group
@@ -279,7 +279,7 @@ func (t *Table) executeHorizontalMerging(item Data, columns Columns, rowNum int,
 			currentGroup = []Column{column}
 			currentGroupStartIndex = colIndex
 			currentConditions = columnConditions
-		} else if currentConditions.anyMatch(columnConditions) {
+		} else if currentConditions.AnyMatch(columnConditions) {
 			// Merge conditions are compatible - add column to current group
 			currentGroup = append(currentGroup, column)
 		} else {
@@ -341,7 +341,7 @@ func (t *Table) findHorizontalMergeRanges(item Data, columns Columns, conditions
 	var lastValue interface{} // Previous column's processed value for comparison
 
 	// Use flattened columns since merging only applies to leaf columns
-	flatColumns := columns.getFlattenedColumns()
+	flatColumns := columns.GetFlattenedColumns()
 
 	// Iterate through each column to analyze values and build merge ranges
 	for colIndex, column := range flatColumns {
@@ -360,7 +360,7 @@ func (t *Table) findHorizontalMergeRanges(item Data, columns Columns, conditions
 		}
 
 		// Extract the raw value from the data item for this column
-		value, err, found := item.lookup(column.Name)
+		value, err, found := item.Lookup(column.Name)
 		if err != nil || !found {
 			// Can't get value for this column - end current range if it exists
 			if len(currentRange) > 1 {
@@ -385,7 +385,7 @@ func (t *Table) findHorizontalMergeRanges(item Data, columns Columns, conditions
 			lastValue = processedValue
 		} else {
 			// Compare current value with previous value using merge conditions
-			shouldMerge := conditions.valuesShouldMerge(lastValue, processedValue)
+			shouldMerge := conditions.ValuesShouldMerge(lastValue, processedValue)
 
 			if shouldMerge {
 				// Values should merge - add current column to the range

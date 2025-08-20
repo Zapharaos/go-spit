@@ -13,9 +13,9 @@ import (
 
 // ExportXLSX writes table data to an XLSX file using the generic file writer and a dynamic spreadsheet implementation.
 func ExportXLSX(s Spreadsheet, params FileWriteParams) (*FileWriteResult, error) {
-	// Ensure extension is set for XLSX files
-	if params.extension == "" {
-		params.extension = FormatXSLX.String()
+	// Ensure Extension is set for XLSX files
+	if params.Extension == "" {
+		params.Extension = FormatXSLX.String()
 	}
 
 	xlsxConfig := &xlsx{
@@ -58,7 +58,7 @@ func ExportXLSX(s Spreadsheet, params FileWriteParams) (*FileWriteResult, error)
 	}
 
 	// Use the generic file writer to handle the actual file writing
-	result, err := xlsxConfig.params.writeToFile(writeFunc)
+	result, err := xlsxConfig.params.WriteToFile(writeFunc)
 	if err != nil {
 		L().Error("Failed to write XLSX to file", Error(err))
 		return nil, err
@@ -108,7 +108,7 @@ func (xlsx *xlsx) writeData() error {
 	L().Debug("Writing data rows")
 	for _, item := range t.Data {
 		colIndex := 1
-		flatColumns := t.Columns.getFlattenedColumns()
+		flatColumns := t.Columns.GetFlattenedColumns()
 		for _, column := range flatColumns {
 			if err := xlsx.writeCell(item, column, colIndex, currentRow); err != nil {
 				return fmt.Errorf("failed to write cell: %w", err)
@@ -120,11 +120,11 @@ func (xlsx *xlsx) writeData() error {
 
 	xlsx.autoFitColumns()
 
-	if err := t.processMerging(xlsx.spreadsheet); err != nil {
+	if err := t.ProcessMerging(xlsx.spreadsheet); err != nil {
 		return fmt.Errorf("failed to process merging: %w", err)
 	}
 
-	if err := t.renderStyles(xlsx.spreadsheet); err != nil {
+	if err := t.RenderStyles(xlsx.spreadsheet); err != nil {
 		return fmt.Errorf("failed to render styles: %w", err)
 	}
 
@@ -143,7 +143,7 @@ func (xlsx *xlsx) writeHeaders() (int, error) {
 		return 0, nil
 	}
 
-	maxDepth := t.Columns.getMaxDepth()
+	maxDepth := t.Columns.GetMaxDepth()
 	if maxDepth == 1 {
 		for i, column := range t.Columns {
 			if err := xlsx.spreadsheet.SetCellValue(i+1, 1, column.Label); err != nil {
@@ -170,7 +170,7 @@ func (xlsx *xlsx) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol
 			return fmt.Errorf("failed to set header cell value for column %s at (%d, %d): %w", column.Name, currentCol, currentRow, err)
 		}
 
-		if column.hasSubColumns() {
+		if column.HasSubColumns() {
 			// Process sub-columns recursively for hierarchical headers
 			if currentRow < maxDepth {
 				if err := xlsx.writeHeaderRow(column.Columns, currentRow+1, maxDepth, currentCol); err != nil {
@@ -178,7 +178,7 @@ func (xlsx *xlsx) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol
 				}
 			}
 			// Move to next column position after all sub-columns
-			currentCol += column.getColumnCount()
+			currentCol += column.GetColumnCount()
 		} else {
 			// Simple leaf column - move to next position
 			currentCol++
@@ -191,7 +191,7 @@ func (xlsx *xlsx) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol
 // writeCell writes a single cell item to the spreadsheet.
 // Looks up the value, processes formatting, and sets the cell value.
 func (xlsx *xlsx) writeCell(item Data, column Column, colIndex, rowIndex int) error {
-	value, err, found := item.lookup(column.Name)
+	value, err, found := item.Lookup(column.Name)
 	if err == nil && !found {
 		return nil
 	}
@@ -214,7 +214,7 @@ func (xlsx *xlsx) writeCell(item Data, column Column, colIndex, rowIndex int) er
 // autoFitColumns auto-fits column widths using dynamic operations.
 // Sets a default width for each column for improved readability.
 func (xlsx *xlsx) autoFitColumns() {
-	for i := 1; i <= len(xlsx.spreadsheet.GetTable().Columns.getFlattenedColumns()); i++ {
+	for i := 1; i <= len(xlsx.spreadsheet.GetTable().Columns.GetFlattenedColumns()); i++ {
 		colLetter := xlsx.spreadsheet.GetColumnLetter(i)
 		if err := xlsx.spreadsheet.SetColumnWidth(colLetter, 15); err != nil {
 			L().Warn("Failed to set column width", String("column", colLetter), Error(err))

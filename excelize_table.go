@@ -241,19 +241,6 @@ func (e *TableExcelize) ApplyStyleToRange(startCol, startRow, endCol, endRow int
 	return nil
 }
 
-// getCellStyle retrieves the style of a cell at the given column and row.
-func (e *TableExcelize) getCellStyle(col, row int) (*excelize.Style, error) {
-	cellRef, err := excelize.CoordinatesToCellName(col, row)
-	if err != nil {
-		return nil, err
-	}
-	styleID, err := e.File.GetCellStyle(e.SheetName, cellRef)
-	if err != nil {
-		return nil, err
-	}
-	return e.File.GetStyle(styleID)
-}
-
 // GetColumnLetter returns the Excel-style column letter (A, B, C, ...) for a given column number.
 func (e *TableExcelize) GetColumnLetter(col int) string {
 	letter, _ := excelize.ColumnNumberToName(col)
@@ -266,7 +253,7 @@ func (e *TableExcelize) ProcessValue(value interface{}, format string) (interfac
 	switch v := value.(type) {
 	case []interface{}:
 		if e.Table.ListSeparator != "" {
-			return convertSliceToString(v, format, e.Table.ListSeparator)
+			return ConvertSliceToString(v, format, e.Table.ListSeparator)
 		}
 		return fmt.Sprintf("%v", v), nil
 	case time.Time:
@@ -297,13 +284,26 @@ func (e *TableExcelize) ProcessValue(value interface{}, format string) (interfac
 	default:
 		if format != "" {
 			var err error
-			value, err = formatValue(value, format)
+			value, err = FormatValue(value, format)
 			if err != nil {
 				return "", err
 			}
 		}
 		return fmt.Sprintf("%v", value), nil
 	}
+}
+
+// getCellStyle retrieves the style of a cell at the given column and row.
+func (e *TableExcelize) getCellStyle(col, row int) (*excelize.Style, error) {
+	cellRef, err := excelize.CoordinatesToCellName(col, row)
+	if err != nil {
+		return nil, err
+	}
+	styleID, err := e.File.GetCellStyle(e.SheetName, cellRef)
+	if err != nil {
+		return nil, err
+	}
+	return e.File.GetStyle(styleID)
 }
 
 // convertStyleToExcelizeStyle converts a Style struct to the corresponding Excelize style.
@@ -343,7 +343,7 @@ func convertStyleToExcelizeStyle(style Style) *excelize.Style {
 	}
 
 	if style.Alignment != AlignmentNone {
-		horizontal, vertical := style.Alignment.getAlignmentValues()
+		horizontal, vertical := style.Alignment.GetAlignmentValues()
 		excelStyle.Alignment = &excelize.Alignment{
 			Horizontal: horizontal,
 			Vertical:   vertical,
