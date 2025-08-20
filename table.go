@@ -105,17 +105,17 @@ type DataSlice []Data
 
 // lookup recursively looks up a key in a nested map structure.
 // Supports multi-level key access for hierarchical data.
-func (d Data) lookup(ks ...string) (rval interface{}, err error) {
+func (d Data) lookup(ks ...string) (rval interface{}, err error, found bool) {
 	var ok bool
 	if len(ks) == 0 {
-		return nil, fmt.Errorf("nestedMapLookup needs at least one key")
+		return nil, fmt.Errorf("nestedMapLookup needs at least one key"), false
 	}
 	if rval, ok = d[strings.TrimSpace(ks[0])]; !ok {
-		return nil, fmt.Errorf("key not found; remaining keys: %v", ks)
+		return nil, nil, false
 	} else if len(ks) == 1 {
-		return rval, nil
+		return rval, nil, true
 	} else if d, ok = rval.(Data); !ok {
-		return nil, fmt.Errorf("malformed structure at %#v", rval)
+		return nil, fmt.Errorf("malformed structure at %#v", rval), false
 	} else {
 		return d.lookup(ks[1:]...)
 	}

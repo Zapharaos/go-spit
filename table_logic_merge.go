@@ -185,8 +185,8 @@ func (t *Table) findVerticalMergeRanges(colIndex int, fieldName string, format s
 		}
 
 		// Extract the raw value from the data item for this column
-		value, err := item.lookup(fieldName)
-		if err != nil {
+		value, err, found := item.lookup(fieldName)
+		if err != nil || !found {
 			// Can't get value for this row - end current range if it exists
 			if len(currentRange) > 1 {
 				mergeRanges = append(mergeRanges, currentRange)
@@ -360,8 +360,8 @@ func (t *Table) findHorizontalMergeRanges(item Data, columns Columns, conditions
 		}
 
 		// Extract the raw value from the data item for this column
-		value, err := item.lookup(column.Name)
-		if err != nil {
+		value, err, found := item.lookup(column.Name)
+		if err != nil || !found {
 			// Can't get value for this column - end current range if it exists
 			if len(currentRange) > 1 {
 				mergeRanges = append(mergeRanges, currentRange)

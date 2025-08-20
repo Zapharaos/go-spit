@@ -162,8 +162,8 @@ func TestCSV_writeData(t *testing.T) {
 		csvInstance, _ := createCSVInstance(table, ",")
 
 		err := csvInstance.writeData()
-		if err == nil || !strings.Contains(err.Error(), "missing value for column age") {
-			t.Errorf("Expected missing column error, got: %v", err)
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
 		}
 	})
 

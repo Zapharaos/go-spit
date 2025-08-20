@@ -619,10 +619,9 @@ func TestXlsx_writeCell(t *testing.T) {
 			colIndex: 1,
 			rowIndex: 1,
 			setupMock: func(mock *MockSpreadsheet) {
-				// No expectations as lookup will fail
+				// No expectations as lookup will skip
 			},
-			expectError: true,
-			errorMsg:    "error looking up value for column",
+			expectError: false,
 		},
 		{
 			name: "process_value_error",

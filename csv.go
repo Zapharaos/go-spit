@@ -78,9 +78,12 @@ func (csv *csv) writeData() error {
 		record := make([]string, 0, len(flatColumns))
 		for _, column := range flatColumns {
 			// Lookup the value for this column in the current row
-			value, err := item.lookup(column.Name)
+			value, err, found := item.lookup(column.Name)
+			if err == nil && !found {
+				continue
+			}
 			if err != nil {
-				return fmt.Errorf("missing value for column %s in row %d: %w", column.Name, rowIdx, err)
+				return fmt.Errorf("error looking up value for column %s in row %d: %w", column.Name, rowIdx, err)
 			}
 
 			// Process the value based on column format (e.g., date, number)

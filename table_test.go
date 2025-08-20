@@ -136,64 +136,77 @@ func TestData_lookup(t *testing.T) {
 	}
 
 	tests := []struct {
-		name     string
-		keys     []string
-		expected interface{}
-		wantErr  bool
+		name      string
+		keys      []string
+		expected  interface{}
+		wantErr   bool
+		wantFound bool
 	}{
 		{
-			name:     "Simple key lookup",
-			keys:     []string{"simple"},
-			expected: "value1",
-			wantErr:  false,
+			name:      "Simple key lookup",
+			keys:      []string{"simple"},
+			expected:  "value1",
+			wantErr:   false,
+			wantFound: true,
 		},
 		{
-			name:     "Nested key lookup",
-			keys:     []string{"nested", "level2"},
-			expected: "value2",
-			wantErr:  false,
+			name:      "Nested key lookup",
+			keys:      []string{"nested", "level2"},
+			expected:  "value2",
+			wantErr:   false,
+			wantFound: true,
 		},
 		{
-			name:     "Deep nested key lookup",
-			keys:     []string{"nested", "deeper", "level3"},
-			expected: "value3",
-			wantErr:  false,
+			name:      "Deep nested key lookup",
+			keys:      []string{"nested", "deeper", "level3"},
+			expected:  "value3",
+			wantFound: true,
 		},
 		{
-			name:     "Key with spaces",
-			keys:     []string{" simple "},
-			expected: "value1",
-			wantErr:  false,
+			name:      "Key with spaces",
+			keys:      []string{" simple "},
+			expected:  "value1",
+			wantErr:   false,
+			wantFound: true,
 		},
 		{
-			name:     "No keys provided",
-			keys:     []string{},
-			expected: nil,
-			wantErr:  true,
+			name:      "No keys provided",
+			keys:      []string{},
+			expected:  nil,
+			wantErr:   true,
+			wantFound: false,
 		},
 		{
-			name:     "Key not found",
-			keys:     []string{"nonexistent"},
-			expected: nil,
-			wantErr:  true,
+			name:      "Key not found",
+			keys:      []string{"nonexistent"},
+			expected:  nil,
+			wantErr:   false,
+			wantFound: false,
 		},
 		{
-			name:     "Malformed structure",
-			keys:     []string{"simple", "invalid"},
-			expected: nil,
-			wantErr:  true,
+			name:      "Malformed structure",
+			keys:      []string{"simple", "invalid"},
+			expected:  nil,
+			wantErr:   true,
+			wantFound: false,
 		},
 		{
-			name:     "Nested key not found",
-			keys:     []string{"nested", "nonexistent"},
-			expected: nil,
-			wantErr:  true,
+			name:      "Nested key not found",
+			keys:      []string{"nested", "nonexistent"},
+			expected:  nil,
+			wantErr:   false,
+			wantFound: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := data.lookup(tt.keys...)
+			result, err, found := data.lookup(tt.keys...)
+			if found != tt.wantFound {
+				if found != tt.wantFound {
+					t.Errorf("lookup() found = %v, want %v (keys: %v)", found, tt.wantFound, tt.keys)
+				}
+			}
 			if tt.wantErr {
 				if err == nil {
 					t.Errorf("lookup() expected error, got nil")
