@@ -57,7 +57,7 @@ func (t *Table) applyHeaderStyles(ops TableOperations) error {
 	maxDepth := t.Columns.GetMaxDepth()
 	totalColumns := t.Columns.GetTotalColumnCount()
 
-	borders := NewBorderOptions(BorderStyleThin)
+	borders := NewBordersBoundaries(BorderStyleThin)
 
 	// Apply bottom border to each header row
 	for row := 1; row <= maxDepth; row++ {

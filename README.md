@@ -17,8 +17,8 @@ Go-spit is a Go package for flexible file exporting. It supports multiple format
 - Multiple output formats
 
 ## Supported Formats
-- CSV
-- XLSX
+- **CSV**: Simple tabular data with custom delimiters
+- **XLSX**: Advanced spreadsheets with styling, borders, merging, and hierarchical headers
 
 ## Installation
 
@@ -49,14 +49,17 @@ func main() {
 
     // Define columns with formatting
     columns := spit.Columns{
-        {Name: "name", Label: "Full Name"},
-        {Name: "age", Label: "Age"},
-        {Name: "salary", Label: "Salary"},
+        spit.NewColumn("name", "Full Name"),
+        spit.NewColumn("age", "Age"),
+        spit.NewColumn("salary", "Salary"),
     }
 
-    // Create and export
-    table := &spit.Table{Data: data, Columns: columns, WriteHeader: true}
-    result, err := spit.ExportCSV(",", table, spit.FileWriteParams{Filename: "employees"})
+    // Create table using constructor and fluent API
+    table := spit.NewTable(data, columns, true)
+    
+    result, err := spit.ExportCSV(",", table, spit.FileWriteParams{
+        Filename: "employees",
+    })
     if err != nil {
         log.Fatal(err)
     }
@@ -83,20 +86,20 @@ func main() {
 
     // Define hierarchical columns
     columns := spit.Columns{
-        {Name: "name", Label: "Name"},
-        {
-            Label: "Details",
-            Columns: spit.Columns{
-                {Name: "age", Label: "Age"},
-                {Name: "department", Label: "Department"},
-            },
-        },
+        spit.NewColumn("name", "Employee Name"),
+        spit.NewColumn("", "Details").
+            WithSubColumns(spit.Columns{
+                spit.NewColumn("age", "Age"),
+                spit.NewColumn("department", "Department"),
+            }),
     }
 
-    // Create and export
-    table := &spit.Table{Data: data, Columns: columns, WriteHeader: true}
-    spreadsheet := spit.NewSpreadsheetExcelize("Employees", table)
-    result, err := spit.ExportXLSX(spreadsheet, spit.FileWriteParams{Filename: "employees"})
+    // Create table with row and cell options
+    table := spit.NewTable(data, columns, true)
+    spreadsheet := spit.NewSpreadsheetExcelize("Employee Report", table)
+    result, err := spit.ExportXLSX(spreadsheet, spit.FileWriteParams{
+        Filename: "advanced_report",
+    })
     if err != nil {
         log.Fatal(err)
     }
@@ -142,13 +145,11 @@ make test-unit
 ```
 
 Run linters:
-
 ```shell
 make lint
 ```
 
 Some linter violations can automatically be fixed:
-
 ```shell
 make fmt
 ```

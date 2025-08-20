@@ -73,6 +73,27 @@ type Table struct {
 	ListSeparator  string         // separator used when rendering slice/array values as strings
 }
 
+// NewTable creates a new Table instance with the provided data slice and column definitions.
+func NewTable(slice DataSlice, columns Columns, writeHeader bool) *Table {
+	return &Table{
+		Data:        slice,
+		Columns:     columns,
+		WriteHeader: writeHeader,
+	}
+}
+
+// WithRowOptions allows setting row-specific options for the table.
+func (t *Table) WithRowOptions(rowOptions RowOptionsMap) *Table {
+	t.RowOptionsMap = rowOptions
+	return t
+}
+
+// WithCellOptions allows setting cell-specific options for the table.
+func (t *Table) WithCellOptions(cellOptions CellOptionsMap) *Table {
+	t.CellOptionsMap = cellOptions
+	return t
+}
+
 // GetDataStartRow calculates the starting row number for data based on header configuration.
 // Accounts for multi-level headers by reserving rows for each level of the column hierarchy.
 func (t *Table) GetDataStartRow() int {
@@ -134,19 +155,81 @@ type Column struct {
 	Columns Columns     // Sub-columns for hierarchical structures
 }
 
+// NewColumn creates a new Column with the specified name and label.
+func NewColumn(name, label string) *Column {
+	return &Column{
+		Name:  name,
+		Label: label,
+	}
+}
+
+// WithFormat sets the format for this column.
+func (c *Column) WithFormat(format string) *Column {
+	c.Format = format
+	return c
+}
+
+// WithMerge sets the merge rules for this column.
+func (c *Column) WithMerge(merge *MergeRules) *Column {
+	c.Merge = merge
+	return c
+}
+
+// WithBorders sets the borders for this column.
+func (c *Column) WithBorders(borders *Borders) *Column {
+	c.Borders = borders
+	return c
+}
+
+// WithStyle sets the style for this column.
+func (c *Column) WithStyle(style *Style) *Column {
+	c.Style = style
+	return c
+}
+
+// WithSubColumns sets the sub-columns for this column.
+func (c *Column) WithSubColumns(subColumns Columns) *Column {
+	c.Columns = subColumns
+	return c
+}
+
+// AddSubColumn adds a new sub-column to this column.
+func (c *Column) AddSubColumn(subColumn *Column) *Column {
+	// Initialize sub-columns if not already set
+	if c.Columns == nil {
+		c.Columns = make(Columns, 0)
+	}
+	// Append the new sub-column
+	c.Columns = append(c.Columns, subColumn)
+	return c
+}
+
+// RemoveSubColumn removes a sub-column by name from this column.
+func (c *Column) RemoveSubColumn(name string) *Column {
+	// Filter out the sub-column with the specified name
+	newColumns := make(Columns, 0)
+	for _, subCol := range c.Columns {
+		if subCol.Name != name {
+			newColumns = append(newColumns, subCol)
+		}
+	}
+	c.Columns = newColumns
+	return c
+}
+
 // HasSubColumns returns true if this column contains nested sub-columns.
-func (c Column) HasSubColumns() bool {
+func (c *Column) HasSubColumns() bool {
 	return len(c.Columns) > 0
 }
 
-// GetColumnCount returns the total number of leaf columns represented by this column.
+// CountSubColumns returns the total number of leaf columns represented by this column.
 // For leaf columns, returns 1. For parent columns, recursively counts all leaf columns in the hierarchy.
-func (c Column) GetColumnCount() int {
+func (c *Column) CountSubColumns() int {
 	if c.HasSubColumns() {
 		// Recursively count all leaf columns in sub-columns
 		total := 0
 		for _, subCol := range c.Columns {
-			total += subCol.GetColumnCount()
+			total += subCol.CountSubColumns()
 		}
 		return total
 	}
@@ -154,21 +237,21 @@ func (c Column) GetColumnCount() int {
 }
 
 // Columns represents a collection of column definitions, possibly hierarchical.
-type Columns []Column
+type Columns []*Column
 
 // GetTotalColumnCount calculates the total number of leaf columns in the collection.
 func (c Columns) GetTotalColumnCount() int {
 	total := 0
 	for _, column := range c {
-		total += column.GetColumnCount()
+		total += column.CountSubColumns()
 	}
 	return total
 }
 
 // GetFlattenedColumns returns a flattened list of all leaf columns in the hierarchy.
 // Traverses the entire column structure and extracts only columns without sub-columns.
-func (c Columns) GetFlattenedColumns() []Column {
-	var flattened []Column
+func (c Columns) GetFlattenedColumns() Columns {
+	var flattened Columns
 	for _, column := range c {
 		if column.HasSubColumns() {
 			// Recursively flatten sub-columns
@@ -210,6 +293,37 @@ type RowOptions struct {
 	Mergeable bool        // Whether this row cells can participate in merge operations
 }
 
+// NewRowOptions creates a new RowOptions instance for the specified row index.
+func NewRowOptions(rowIndex int) *RowOptions {
+	return &RowOptions{
+		RowIndex: rowIndex,
+	}
+}
+
+// WithBorder sets the border configuration for this row.
+func (rowOptions *RowOptions) WithBorder(border *Borders) *RowOptions {
+	rowOptions.Border = border
+	return rowOptions
+}
+
+// WithStyle sets the style configuration for this row.
+func (rowOptions *RowOptions) WithStyle(style *Style) *RowOptions {
+	rowOptions.Style = style
+	return rowOptions
+}
+
+// WithMerge sets the merge rules for this row, overriding any column-level settings.
+func (rowOptions *RowOptions) WithMerge(merge *MergeRules) *RowOptions {
+	rowOptions.Merge = merge
+	return rowOptions
+}
+
+// WithMergeable sets whether this row's cells can participate in external merge operations.
+func (rowOptions *RowOptions) WithMergeable(mergeable bool) *RowOptions {
+	rowOptions.Mergeable = mergeable
+	return rowOptions
+}
+
 // CellOptionsMap provides cell-level option mapping.
 // The outer map keys are column indices, inner map keys are row indices.
 type CellOptionsMap map[int]map[int]CellOptions
@@ -223,6 +337,32 @@ type CellOptions struct {
 	Border    *Borders // Optional border configuration for this cell
 	Style     *Style   // Optional style configuration for this cell
 	Mergeable bool     // Whether this cell can participate in merge operations
+}
+
+// NewCellOptions creates a new CellOptions instance for the specified row and column indices.
+func NewCellOptions(rowIndex, colIndex int) *CellOptions {
+	return &CellOptions{
+		RowIndex: rowIndex,
+		ColIndex: colIndex,
+	}
+}
+
+// WithBorder sets the border configuration for this cell.
+func (cellOptions *CellOptions) WithBorder(border *Borders) *CellOptions {
+	cellOptions.Border = border
+	return cellOptions
+}
+
+// WithStyle sets the style configuration for this cell.
+func (cellOptions *CellOptions) WithStyle(style *Style) *CellOptions {
+	cellOptions.Style = style
+	return cellOptions
+}
+
+// WithMergeable sets whether this cell can participate in external merge operations.
+func (cellOptions *CellOptions) WithMergeable(mergeable bool) *CellOptions {
+	cellOptions.Mergeable = mergeable
+	return cellOptions
 }
 
 type MergeConditions []MergeCondition
@@ -239,14 +379,6 @@ const (
 	// MergeConditionEmpty merges cells when both values are empty or nil
 	MergeConditionEmpty MergeCondition = "empty"
 )
-
-// MergeRules holds merge conditions for columns and rows.
-// It defines when and how cells should be merged based on their content.
-// Empty conditions arrays mean no merging will be applied.
-type MergeRules struct {
-	Vertical   MergeConditions `json:"vertical,omitempty"`   // Conditions for merging cells vertically (between rows)
-	Horizontal MergeConditions `json:"horizontal,omitempty"` // Conditions for merging cells horizontally (between columns)
-}
 
 // AnyMatch checks if two sets of merge conditions share at least one common condition.
 // This is used to determine if two cells or ranges can be merged together based on their configurations.
@@ -293,6 +425,22 @@ func (mc MergeConditions) ValuesShouldMerge(value1, value2 interface{}) bool {
 	return false // No conditions matched
 }
 
+// MergeRules holds merge conditions for columns and rows.
+// It defines when and how cells should be merged based on their content.
+// Empty conditions arrays mean no merging will be applied.
+type MergeRules struct {
+	Vertical   MergeConditions `json:"vertical,omitempty"`   // Conditions for merging cells vertically (between rows)
+	Horizontal MergeConditions `json:"horizontal,omitempty"` // Conditions for merging cells horizontally (between columns)
+}
+
+// NewMergeRules creates a new MergeRules instance with specified vertical and horizontal conditions.
+func NewMergeRules(vertical, horizontal MergeConditions) *MergeRules {
+	return &MergeRules{
+		Vertical:   vertical,
+		Horizontal: horizontal,
+	}
+}
+
 // BorderStyle represents the visual style of entity borders.
 // These constants correspond to common border styles available in document applications.
 type BorderStyle int
@@ -312,6 +460,12 @@ type Border struct {
 	Style BorderStyle // The visual style to apply to this border side
 }
 
+func NewBorder(style BorderStyle) *Border {
+	return &Border{
+		Style: style,
+	}
+}
+
 // Borders represents all borders configuration for an entity.
 type Borders struct {
 	Left   *Border  // Left border configuration
@@ -319,6 +473,27 @@ type Borders struct {
 	Top    *Border  // Top border configuration
 	Bottom *Border  // Bottom border configuration
 	Inner  *Borders // Inner borders for ranges (used in some contexts)
+}
+
+// NewBorders creates a Borders with the individual style per edge.
+func NewBorders(left, right, top, bottom BorderStyle) *Borders {
+	return &Borders{
+		Left:   NewBorder(left),
+		Right:  NewBorder(right),
+		Top:    NewBorder(top),
+		Bottom: NewBorder(bottom),
+	}
+}
+
+// NewBordersBoundaries creates a Borders with the same style applied to all edges.
+func NewBordersBoundaries(style BorderStyle) *Borders {
+	border := NewBorder(style)
+	return &Borders{
+		Left:   border,
+		Right:  border,
+		Top:    border,
+		Bottom: border,
+	}
 }
 
 // HasBorders checks if any borders are configured in these Borders.
@@ -329,10 +504,71 @@ func (bc *Borders) HasBorders() bool {
 		(bc.Bottom != nil && bc.Bottom.Style != BorderStyleNone)
 }
 
+// SetBoundaries sets all borders (left, right, top, bottom) to the same style.
+func (bc *Borders) SetBoundaries(style BorderStyle) *Borders {
+	bc.SetVertical(style)
+	bc.SetHorizontal(style)
+	return bc
+}
+
+// SetVertical sets both left and right borders to the same style.
+func (bc *Borders) SetVertical(style BorderStyle) *Borders {
+	bc.SetLeft(style)
+	bc.SetRight(style)
+	return bc
+}
+
+// SetHorizontal sets both top and bottom borders to the same style.
+func (bc *Borders) SetHorizontal(style BorderStyle) *Borders {
+	bc.SetTop(style)
+	bc.SetBottom(style)
+	return bc
+}
+
+// SetLeft sets the left border style.
+func (bc *Borders) SetLeft(style BorderStyle) *Borders {
+	if bc.Left == nil {
+		bc.Left = NewBorder(style)
+	} else {
+		bc.Left.Style = style
+	}
+	return bc
+}
+
+// SetRight sets the right border style.
+func (bc *Borders) SetRight(style BorderStyle) *Borders {
+	if bc.Right == nil {
+		bc.Right = NewBorder(style)
+	} else {
+		bc.Right.Style = style
+	}
+	return bc
+}
+
+// SetTop sets the top border style.
+func (bc *Borders) SetTop(style BorderStyle) *Borders {
+	if bc.Top == nil {
+		bc.Top = NewBorder(style)
+	} else {
+		bc.Top.Style = style
+	}
+	return bc
+}
+
+// SetBottom sets the bottom border style.
+func (bc *Borders) SetBottom(style BorderStyle) *Borders {
+	if bc.Bottom == nil {
+		bc.Bottom = NewBorder(style)
+	} else {
+		bc.Bottom.Style = style
+	}
+	return bc
+}
+
 // SetInner creates inner border configuration with the same style for all edges.
 // Note: When applied to a table column, this will only be applied if the column has no sub-columns.
 func (bc *Borders) SetInner(style BorderStyle) *Borders {
-	border := &Border{Style: style}
+	border := NewBorder(style)
 	bc.Inner = &Borders{
 		Left:   border,
 		Right:  border,
@@ -340,17 +576,6 @@ func (bc *Borders) SetInner(style BorderStyle) *Borders {
 		Bottom: border,
 	}
 	return bc
-}
-
-// NewBorderOptions creates a Borders with the same style applied to all edges.
-func NewBorderOptions(style BorderStyle) *Borders {
-	border := &Border{Style: style}
-	return &Borders{
-		Left:   border,
-		Right:  border,
-		Top:    border,
-		Bottom: border,
-	}
 }
 
 // Style represents comprehensive styling configuration.

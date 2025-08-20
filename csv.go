@@ -137,7 +137,7 @@ func (csv *csv) fillHeaderLevel(headerRow []string, targetLevel int, currentLeve
 			// This is the level we want to fill
 			if column.HasSubColumns() {
 				// For parent columns, write the label and span across all sub-columns
-				colSpan := column.GetColumnCount()
+				colSpan := column.CountSubColumns()
 				if colIndex < len(headerRow) {
 					headerRow[colIndex] = column.Label
 				}

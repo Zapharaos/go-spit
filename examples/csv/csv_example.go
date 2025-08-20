@@ -11,14 +11,14 @@ import (
 )
 
 func main() {
-	// Define columns
-	columns := []spit.Column{
-		{Name: "name", Label: "Full Name"},
-		{Name: "age", Label: "Age"},
-		{Name: "email", Label: "Email Address"},
-		{Name: "department", Label: "Department"},
-		{Name: "salary", Label: "Salary", Format: "$%.2f"},
-		{Name: "created_at", Label: "Created At", Format: time.RFC1123Z},
+	// Define columns using the new fluent API constructors and setters
+	columns := spit.Columns{
+		spit.NewColumn("name", "Full Name"),
+		spit.NewColumn("age", "Age"),
+		spit.NewColumn("email", "Email Address"),
+		spit.NewColumn("department", "Department"),
+		spit.NewColumn("salary", "Salary").WithFormat("$%.2f"),
+		spit.NewColumn("created_at", "Created At").WithFormat(time.RFC1123Z),
 	}
 
 	// Create sample data
@@ -51,12 +51,8 @@ func main() {
 		data[i]["created_at"] = time.Unix(rand.Int63n(time.Now().Unix()), 0).UTC()
 	}
 
-	// Create a table with the data and columns
-	table := &spit.Table{
-		Data:        data,
-		Columns:     columns,
-		WriteHeader: true,
-	}
+	// Create a table using the new constructor and fluent API
+	table := spit.NewTable(data, columns, true)
 
 	// File parameters for writing CSV
 	params := spit.FileWriteParams{

@@ -4,6 +4,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"github.com/Zapharaos/go-spit"
 )
@@ -18,193 +19,165 @@ func getBasicStyle() *spit.Style {
 // Column definitions
 func getMainColumns() spit.Columns {
 	return spit.Columns{
-		// Column without subcolumns, no borders
-		{
-			Name:  "name",
-			Label: "Name",
-			Style: getBasicStyle(),
-		},
-		// Column with subcolumns, subcolumns with dedicated borders
-		{
-			Label: "Personal Info",
-			Columns: spit.Columns{
-				{
-					Name:    "age",
-					Label:   "Age",
-					Style:   getBasicStyle(),
-					Borders: spit.NewBorderOptions(spit.BorderStyleThin),
-				},
-				{
-					Name:    "email",
-					Label:   "Email",
-					Style:   getBasicStyle(),
-					Borders: spit.NewBorderOptions(spit.BorderStyleThin),
-				},
-			},
-		},
-		// Column with subcolumns and inner borders
-		{
-			Label:   "Work Info",
-			Borders: spit.NewBorderOptions(spit.BorderStyleThin),
-			Columns: spit.Columns{
-				{
-					Name:    "department",
-					Label:   "Department",
-					Style:   getBasicStyle(),
-					Borders: spit.NewBorderOptions(spit.BorderStyleThin).SetInner(spit.BorderStyleDouble),
-					Merge: &spit.MergeRules{
-						Vertical: spit.MergeConditions{spit.MergeConditionIdentical},
-					}, // Show vertical merge
-				},
-				{
-					Name:    "status",
-					Label:   "Status",
-					Style:   getBasicStyle(),
-					Borders: spit.NewBorderOptions(spit.BorderStyleThin).SetInner(spit.BorderStyleDashed),
-				},
-			},
-		},
+		// Simple column with style
+		spit.NewColumn("name", "Employee Name").
+			WithStyle(getBasicStyle()),
+
+		// Hierarchical column with sub-columns
+		spit.NewColumn("", "Personal Information").
+			WithSubColumns(spit.Columns{
+				spit.NewColumn("age", "Age").
+					WithStyle(getBasicStyle()).
+					WithBorders(spit.NewBordersBoundaries(spit.BorderStyleThin)),
+				spit.NewColumn("email", "Email Address").
+					WithStyle(getBasicStyle()).
+					WithBorders(spit.NewBordersBoundaries(spit.BorderStyleThin)),
+			}),
+
+		spit.NewColumn("", "Work Information").
+			WithSubColumns(spit.Columns{
+				spit.NewColumn("department", "Department").
+					WithStyle(getBasicStyle()).
+					WithMerge(spit.NewMergeRules(spit.MergeConditions{spit.MergeConditionIdentical}, nil)).
+					WithBorders(spit.NewBordersBoundaries(spit.BorderStyleThin).SetInner(spit.BorderStyleDouble)),
+				spit.NewColumn("start_date", "Start Date").
+					WithFormat("2006-01-02").
+					WithStyle(getBasicStyle()).
+					WithBorders(spit.NewBordersBoundaries(spit.BorderStyleThin)),
+			}),
 	}
 }
 
-// Simple sample data
+// Sample data with various scenarios
 func getSampleData() spit.DataSlice {
 	return spit.DataSlice{
 		{
 			"name":       "John Doe",
 			"age":        30,
-			"email":      "john@example.com",
+			"email":      "john@company.com",
 			"department": "Engineering",
-			"status":     "Active",
+			"start_date": time.Date(2020, 3, 15, 0, 0, 0, 0, time.UTC),
 		},
 		{
 			"name":       "Jane Smith",
 			"age":        28,
-			"email":      "jane@example.com",
+			"email":      "jane@company.com",
 			"department": "Engineering",
-			"status":     "Active",
+			"start_date": time.Date(2013, 7, 29, 0, 0, 0, 0, time.UTC),
 		},
 		{
 			"name":       "Sam Taylor",
 			"age":        40,
 			"email":      "sam.taylor@example.com",
 			"department": "Engineering",
-			"status":     "Disabled",
+			"start_date": time.Date(2024, 6, 11, 0, 0, 0, 0, time.UTC),
 		},
 		{
 			"name":       "Lisa Brown",
 			"age":        27,
 			"email":      "lisa.brown@example.com",
 			"department": "Engineering",
-			"status":     "Disabled",
+			"start_date": time.Date(2019, 8, 22, 0, 0, 0, 0, time.UTC),
 		},
 		{
 			"name":       "Bob Johnson",
 			"age":        35,
-			"email":      "bob@example.com",
+			"email":      "bob@company.com",
 			"department": "Marketing",
-			"status":     "Active",
+			"start_date": time.Date(2021, 1, 10, 0, 0, 0, 0, time.UTC),
 		},
 		{
-			"name":       "Alice Wilson",
+			"name":       "Alice Brown",
 			"age":        32,
-			"email":      "alice@example.com",
-			"department": "Marketing",
-			"status":     "Active",
+			"email":      "alice@company.com",
+			"department": "Engineering",
+			"start_date": time.Date(2018, 11, 5, 0, 0, 0, 0, time.UTC),
 		},
 		{
 			"name":       "N/A",
 			"age":        0,
 			"email":      "N/A",
 			"department": "N/A",
-			"status":     "N/A",
+			"start_date": "N/A",
 		},
 	}
 }
 
-// Minimal row options - just background color
+// Create row options using the new fluent API
 func getRowOptions() spit.RowOptionsMap {
 	return spit.RowOptionsMap{
-		1: spit.RowOptions{
-			RowIndex: 1,
-			Style: &spit.Style{
+		1: *spit.NewRowOptions(1).
+			WithStyle(&spit.Style{
 				BackgroundColor: "#FFE6E6",
 				Alignment:       spit.AlignmentCenterMiddle,
-			},
-			Border:    spit.NewBorderOptions(spit.BorderStyleThick),
-			Mergeable: false, // Cancel any column merge behavior for this row
-		},
-		6: spit.RowOptions{
-			RowIndex: 6,
-			Style: &spit.Style{
+			}).
+			WithBorder(spit.NewBordersBoundaries(spit.BorderStyleThick)),
+
+		6: *spit.NewRowOptions(6).
+			WithStyle(&spit.Style{
 				BackgroundColor: "#FFE6E6",
 				Alignment:       spit.AlignmentCenterMiddle,
-			},
-			Merge: &spit.MergeRules{
-				Horizontal: spit.MergeConditions{spit.MergeConditionIdentical},
-			}, // Show horizontal merge
-			Border: spit.NewBorderOptions(spit.BorderStyleThin),
-		},
+			}).
+			WithMerge(spit.NewMergeRules(nil, spit.MergeConditions{spit.MergeConditionIdentical})).
+			WithBorder(spit.NewBordersBoundaries(spit.BorderStyleThin)),
 	}
 }
 
-// Minimal cell options - just background color
+// Create cell options using the new fluent API
 func getCellOptions() spit.CellOptionsMap {
 	return spit.CellOptionsMap{
 		4: { // Column index 4 (department column)
-			5: spit.CellOptions{ // Row index 5 (sixth data row)
-				RowIndex: 5,
-				ColIndex: 4,
-				Style: &spit.Style{
+			5: *spit.NewCellOptions(5, 4).
+				WithStyle(&spit.Style{
 					BackgroundColor: "#FFFF99",
 					Alignment:       spit.AlignmentCenterMiddle,
-				},
-				Mergeable: false, // Refuses to merge this cell
-				Border:    spit.NewBorderOptions(spit.BorderStyleThick),
-			},
+				}).
+				WithBorder(spit.NewBordersBoundaries(spit.BorderStyleThick)).
+				WithMergeable(false),
 		},
 		2: { // Column index 2 (department column)
-			6: spit.CellOptions{ // Row index 6 (seventh data row)
-				RowIndex: 6,
-				ColIndex: 2,
-				Style: &spit.Style{
+			6: *spit.NewCellOptions(6, 2).
+				WithStyle(&spit.Style{
 					BackgroundColor: "#FFFF99",
 					Alignment:       spit.AlignmentCenterMiddle,
-				},
-				Mergeable: false, // Refuses to merge this cell
-				Border:    spit.NewBorderOptions(spit.BorderStyleThick),
-			},
+				}).
+				WithBorder(spit.NewBordersBoundaries(spit.BorderStyleThick)).
+				WithMergeable(false),
 		},
 	}
 }
 
 func main() {
-	// Create a simple table with focused features
-	table := &spit.Table{
-		Data:           getSampleData(),
-		Columns:        getMainColumns(),
-		RowOptionsMap:  getRowOptions(),
-		CellOptionsMap: getCellOptions(),
-		WriteHeader:    true,
-		Limit:          0,
-	}
+	// Get sample data and columns
+	data := getSampleData()
+	columns := getMainColumns()
 
-	// File parameters
+	// Create table using the new constructor and fluent API
+	table := spit.NewTable(data, columns, true).
+		WithRowOptions(getRowOptions()).
+		WithCellOptions(getCellOptions())
+
+	// Create spreadsheet
+	spreadsheet := spit.NewSpreadsheetExcelize("Employee Report", table)
+
+	// Export with advanced file options
 	params := spit.FileWriteParams{
-		Filename:    "simplified_xlsx_example",
-		UseTempFile: true,
+		Filename:      "advanced_employee_report",
+		UseTempFile:   false,
+		OverwriteFile: true,
 	}
 
-	// Create and export
-	spreadsheet := spit.NewSpreadsheetExcelize("Simple XLSX Demo", table)
 	result, err := spit.ExportXLSX(spreadsheet, params)
 	if err != nil {
 		log.Fatalf("Error writing XLSX file: %v", err)
 	}
 
-	defer func() {
-		if closeErr := result.RemoveFile(); closeErr != nil {
-			log.Printf("Failed to remove XLSX file: %v", closeErr)
-		}
-	}()
+	log.Printf("Successfully created XLSX file: %s", result.Filepath)
+
+	// Uncomment to remove the file after creation
+	// defer func() {
+	//     if closeErr := result.RemoveFile(); closeErr != nil {
+	//         log.Printf("Failed to remove XLSX file: %v", closeErr)
+	//     }
+	// }()
 }

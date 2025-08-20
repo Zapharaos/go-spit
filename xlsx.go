@@ -178,7 +178,7 @@ func (xlsx *xlsx) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol
 				}
 			}
 			// Move to next column position after all sub-columns
-			currentCol += column.GetColumnCount()
+			currentCol += column.CountSubColumns()
 		} else {
 			// Simple leaf column - move to next position
 			currentCol++
@@ -190,7 +190,7 @@ func (xlsx *xlsx) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol
 
 // writeCell writes a single cell item to the spreadsheet.
 // Looks up the value, processes formatting, and sets the cell value.
-func (xlsx *xlsx) writeCell(item Data, column Column, colIndex, rowIndex int) error {
+func (xlsx *xlsx) writeCell(item Data, column *Column, colIndex, rowIndex int) error {
 	value, err, found := item.Lookup(column.Name)
 	if err == nil && !found {
 		return nil
