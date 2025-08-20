@@ -61,7 +61,9 @@ func TestTableExcelize_getTable(t *testing.T) {
 
 func TestTableExcelize_getCellValue(t *testing.T) {
 	file := excelize.NewFile()
-	defer file.Close()
+	defer func(file *excelize.File) {
+		_ = file.Close()
+	}(file)
 
 	sheetName := "Sheet1"
 	tableExcel := NewTableExcelize(sheetName, &Table{}).WithFile(file)
@@ -122,7 +124,9 @@ func TestTableExcelize_getCellValue(t *testing.T) {
 
 func TestTableExcelize_setCellValue(t *testing.T) {
 	file := excelize.NewFile()
-	defer file.Close()
+	defer func(file *excelize.File) {
+		_ = file.Close()
+	}(file)
 
 	sheetName := "Sheet1"
 	tableExcel := NewTableExcelize(sheetName, &Table{}).WithFile(file)
@@ -203,7 +207,9 @@ func TestTableExcelize_setCellValue(t *testing.T) {
 
 func TestTableExcelize_mergeCells(t *testing.T) {
 	file := excelize.NewFile()
-	defer file.Close()
+	defer func(file *excelize.File) {
+		_ = file.Close()
+	}(file)
 
 	sheetName := "Sheet1"
 	tableExcel := NewTableExcelize(sheetName, &Table{}).WithFile(file)
@@ -268,7 +274,9 @@ func TestTableExcelize_mergeCells(t *testing.T) {
 
 func TestTableExcelize_isCellMerged(t *testing.T) {
 	file := excelize.NewFile()
-	defer file.Close()
+	defer func(file *excelize.File) {
+		_ = file.Close()
+	}(file)
 
 	sheetName := "Sheet1"
 	tableExcel := NewTableExcelize(sheetName, &Table{}).WithFile(file)
@@ -347,7 +355,9 @@ func TestTableExcelize_isCellMerged(t *testing.T) {
 
 func TestTableExcelize_isCellMergedHorizontally(t *testing.T) {
 	file := excelize.NewFile()
-	defer file.Close()
+	defer func(file *excelize.File) {
+		_ = file.Close()
+	}(file)
 
 	sheetName := "Sheet1"
 	tableExcel := NewTableExcelize(sheetName, &Table{}).WithFile(file)
@@ -422,7 +432,9 @@ func TestTableExcelize_isCellMergedHorizontally(t *testing.T) {
 
 func TestTableExcelize_applyBorderToCell(t *testing.T) {
 	file := excelize.NewFile()
-	defer file.Close()
+	defer func(file *excelize.File) {
+		_ = file.Close()
+	}(file)
 
 	sheetName := "Sheet1"
 	tableExcel := NewTableExcelize(sheetName, &Table{}).WithFile(file)
@@ -520,7 +532,9 @@ func TestTableExcelize_applyBorderToCell(t *testing.T) {
 // Add comprehensive test for applyBorderToCell error handling
 func TestTableExcelize_applyBorderToCell_ErrorHandling(t *testing.T) {
 	file := excelize.NewFile()
-	defer file.Close()
+	defer func(file *excelize.File) {
+		_ = file.Close()
+	}(file)
 
 	sheetName := "Sheet1"
 	tableExcel := NewTableExcelize(sheetName, &Table{}).WithFile(file)
@@ -604,7 +618,9 @@ func TestTableExcelize_applyBorderToCell_ErrorHandling(t *testing.T) {
 
 func TestTableExcelize_applyBordersToRange(t *testing.T) {
 	file := excelize.NewFile()
-	defer file.Close()
+	defer func(file *excelize.File) {
+		_ = file.Close()
+	}(file)
 
 	sheetName := "Sheet1"
 	tableExcel := NewTableExcelize(sheetName, &Table{}).WithFile(file)
@@ -787,7 +803,9 @@ func TestTableExcelize_applyBordersToRange(t *testing.T) {
 
 func TestTableExcelize_hasExistingBorder(t *testing.T) {
 	file := excelize.NewFile()
-	defer file.Close()
+	defer func(file *excelize.File) {
+		_ = file.Close()
+	}(file)
 
 	sheetName := "Sheet1"
 	tableExcel := NewTableExcelize(sheetName, &Table{}).WithFile(file)
@@ -861,7 +879,9 @@ func TestTableExcelize_hasExistingBorder(t *testing.T) {
 
 func TestTableExcelize_applyStyleToCell(t *testing.T) {
 	file := excelize.NewFile()
-	defer file.Close()
+	defer func(file *excelize.File) {
+		_ = file.Close()
+	}(file)
 
 	sheetName := "Sheet1"
 	tableExcel := NewTableExcelize(sheetName, &Table{}).WithFile(file)
@@ -1021,7 +1041,9 @@ func TestTableExcelize_applyStyleToCell(t *testing.T) {
 // Test specific conditions for applyStyleToCell error handling
 func TestTableExcelize_applyStyleToCell_ErrorConditions(t *testing.T) {
 	file := excelize.NewFile()
-	defer file.Close()
+	defer func(file *excelize.File) {
+		_ = file.Close()
+	}(file)
 
 	sheetName := "Sheet1"
 	tableExcel := NewTableExcelize(sheetName, &Table{}).WithFile(file)
@@ -1071,7 +1093,9 @@ func TestTableExcelize_applyStyleToCell_ErrorConditions(t *testing.T) {
 
 func TestTableExcelize_applyStyleToRange(t *testing.T) {
 	file := excelize.NewFile()
-	defer file.Close()
+	defer func(file *excelize.File) {
+		_ = file.Close()
+	}(file)
 
 	sheetName := "Sheet1"
 	tableExcel := NewTableExcelize(sheetName, &Table{}).WithFile(file)
@@ -1231,7 +1255,9 @@ func TestTableExcelize_applyStyleToRange(t *testing.T) {
 
 func TestTableExcelize_getCellStyle(t *testing.T) {
 	file := excelize.NewFile()
-	defer file.Close()
+	defer func(file *excelize.File) {
+		_ = file.Close()
+	}(file)
 
 	sheetName := "Sheet1"
 	tableExcel := NewTableExcelize(sheetName, &Table{}).WithFile(file)
