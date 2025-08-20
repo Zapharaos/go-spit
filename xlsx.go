@@ -13,9 +13,9 @@ import (
 
 // ExportXLSX writes table data to an XLSX file using the generic file writer and a dynamic spreadsheet implementation.
 func ExportXLSX(s Spreadsheet, params FileWriteParams) (*FileWriteResult, error) {
-	// Ensure extension is set for XLSX files
-	if params.extension == "" {
-		params.extension = FormatXSLX.String()
+	// Ensure Extension is set for XLSX files
+	if params.Extension == "" {
+		params.Extension = FormatXSLX.String()
 	}
 
 	xlsxConfig := &xlsx{
@@ -24,16 +24,16 @@ func ExportXLSX(s Spreadsheet, params FileWriteParams) (*FileWriteResult, error)
 	}
 
 	// Ensure the spreadsheet file is initialized
-	f := xlsxConfig.spreadsheet.getFile()
+	f := xlsxConfig.spreadsheet.GetFile()
 	if f == nil || reflect.ValueOf(f).IsNil() {
 		L().Debug("No existing spreadsheet file found, creating new one")
-		if err := xlsxConfig.spreadsheet.createNewFile(); err != nil {
+		if err := xlsxConfig.spreadsheet.CreateNewFile(); err != nil {
 			L().Error("Failed to create new XLSX file", Error(err))
 			return nil, fmt.Errorf("failed to create new XLSX file: %w", err)
 		}
 
 		defer func() {
-			if err := xlsxConfig.spreadsheet.close(); err != nil {
+			if err := xlsxConfig.spreadsheet.Close(); err != nil {
 				L().Warn("Error closing spreadsheet", Error(err))
 			}
 		}()
@@ -50,7 +50,7 @@ func ExportXLSX(s Spreadsheet, params FileWriteParams) (*FileWriteResult, error)
 		}
 
 		L().Debug("Saving Excel file to writer")
-		if err := xlsxConfig.spreadsheet.saveToWriter(writer); err != nil {
+		if err := xlsxConfig.spreadsheet.SaveToWriter(writer); err != nil {
 			return fmt.Errorf("failed to write XLSX to writer: %w", err)
 		}
 
@@ -58,7 +58,7 @@ func ExportXLSX(s Spreadsheet, params FileWriteParams) (*FileWriteResult, error)
 	}
 
 	// Use the generic file writer to handle the actual file writing
-	result, err := xlsxConfig.params.writeToFile(writeFunc)
+	result, err := xlsxConfig.params.WriteToFile(writeFunc)
 	if err != nil {
 		L().Error("Failed to write XLSX to file", Error(err))
 		return nil, err
@@ -77,20 +77,20 @@ type xlsx struct {
 // writeData writes the provided table data to the XLSX file.
 // Handles sheet creation, header writing, data rows, merging, styling, and auto-fitting columns.
 func (xlsx *xlsx) writeData() error {
-	if xlsx.spreadsheet.getSheetName() == "" {
-		xlsx.spreadsheet.setSheetName("Sheet1")
+	if xlsx.spreadsheet.GetSheetName() == "" {
+		xlsx.spreadsheet.SetSheetName("Sheet1")
 	}
 
 	L().Debug("Creating sheet")
-	if err := xlsx.spreadsheet.createSheet(); err != nil {
+	if err := xlsx.spreadsheet.CreateSheet(); err != nil {
 		return fmt.Errorf("failed to create sheet: %w", err)
 	}
 
-	if err := xlsx.spreadsheet.setActiveSheet(); err != nil {
+	if err := xlsx.spreadsheet.SetActiveSheet(); err != nil {
 		return fmt.Errorf("failed to set active sheet: %w", err)
 	}
 
-	t := xlsx.spreadsheet.getTable()
+	t := xlsx.spreadsheet.GetTable()
 	if t == nil {
 		return fmt.Errorf("no table data provided")
 	}
@@ -108,7 +108,7 @@ func (xlsx *xlsx) writeData() error {
 	L().Debug("Writing data rows")
 	for _, item := range t.Data {
 		colIndex := 1
-		flatColumns := t.Columns.getFlattenedColumns()
+		flatColumns := t.Columns.GetFlattenedColumns()
 		for _, column := range flatColumns {
 			if err := xlsx.writeCell(item, column, colIndex, currentRow); err != nil {
 				return fmt.Errorf("failed to write cell: %w", err)
@@ -120,11 +120,11 @@ func (xlsx *xlsx) writeData() error {
 
 	xlsx.autoFitColumns()
 
-	if err := t.processMerging(xlsx.spreadsheet); err != nil {
+	if err := t.ProcessMerging(xlsx.spreadsheet); err != nil {
 		return fmt.Errorf("failed to process merging: %w", err)
 	}
 
-	if err := t.renderStyles(xlsx.spreadsheet); err != nil {
+	if err := t.RenderStyles(xlsx.spreadsheet); err != nil {
 		return fmt.Errorf("failed to render styles: %w", err)
 	}
 
@@ -135,7 +135,7 @@ func (xlsx *xlsx) writeData() error {
 // writeHeaders writes multi-level headers to the Excel sheet.
 // Returns the number of header rows written and error if any header cell fails to write.
 func (xlsx *xlsx) writeHeaders() (int, error) {
-	t := xlsx.spreadsheet.getTable()
+	t := xlsx.spreadsheet.GetTable()
 	nbColumns := len(t.Columns)
 
 	if nbColumns == 0 {
@@ -143,10 +143,10 @@ func (xlsx *xlsx) writeHeaders() (int, error) {
 		return 0, nil
 	}
 
-	maxDepth := t.Columns.getMaxDepth()
+	maxDepth := t.Columns.GetMaxDepth()
 	if maxDepth == 1 {
 		for i, column := range t.Columns {
-			if err := xlsx.spreadsheet.setCellValue(i+1, 1, column.Label); err != nil {
+			if err := xlsx.spreadsheet.SetCellValue(i+1, 1, column.Label); err != nil {
 				return 0, fmt.Errorf("failed to set header cell value for column %s: %w", column.Name, err)
 			}
 		}
@@ -166,11 +166,11 @@ func (xlsx *xlsx) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol
 	currentCol := startCol
 
 	for _, column := range columns {
-		if err := xlsx.spreadsheet.setCellValue(currentCol, currentRow, column.Label); err != nil {
+		if err := xlsx.spreadsheet.SetCellValue(currentCol, currentRow, column.Label); err != nil {
 			return fmt.Errorf("failed to set header cell value for column %s at (%d, %d): %w", column.Name, currentCol, currentRow, err)
 		}
 
-		if column.hasSubColumns() {
+		if column.HasSubColumns() {
 			// Process sub-columns recursively for hierarchical headers
 			if currentRow < maxDepth {
 				if err := xlsx.writeHeaderRow(column.Columns, currentRow+1, maxDepth, currentCol); err != nil {
@@ -178,7 +178,7 @@ func (xlsx *xlsx) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol
 				}
 			}
 			// Move to next column position after all sub-columns
-			currentCol += column.getColumnCount()
+			currentCol += column.GetColumnCount()
 		} else {
 			// Simple leaf column - move to next position
 			currentCol++
@@ -191,7 +191,7 @@ func (xlsx *xlsx) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol
 // writeCell writes a single cell item to the spreadsheet.
 // Looks up the value, processes formatting, and sets the cell value.
 func (xlsx *xlsx) writeCell(item Data, column Column, colIndex, rowIndex int) error {
-	value, err, found := item.lookup(column.Name)
+	value, err, found := item.Lookup(column.Name)
 	if err == nil && !found {
 		return nil
 	}
@@ -199,12 +199,12 @@ func (xlsx *xlsx) writeCell(item Data, column Column, colIndex, rowIndex int) er
 		return fmt.Errorf("error looking up value for column %s: %w", column.Name, err)
 	}
 
-	processedValue, err := xlsx.spreadsheet.processValue(value, column.Format)
+	processedValue, err := xlsx.spreadsheet.ProcessValue(value, column.Format)
 	if err != nil {
 		return fmt.Errorf("error processing value %s for column %s: %w", value, column.Name, err)
 	}
 
-	if err = xlsx.spreadsheet.setCellValue(colIndex, rowIndex, processedValue); err != nil {
+	if err = xlsx.spreadsheet.SetCellValue(colIndex, rowIndex, processedValue); err != nil {
 		return fmt.Errorf("error setting cell value for column %s at (%d, %d): %w", column.Name, colIndex, rowIndex, err)
 	}
 
@@ -214,9 +214,9 @@ func (xlsx *xlsx) writeCell(item Data, column Column, colIndex, rowIndex int) er
 // autoFitColumns auto-fits column widths using dynamic operations.
 // Sets a default width for each column for improved readability.
 func (xlsx *xlsx) autoFitColumns() {
-	for i := 1; i <= len(xlsx.spreadsheet.getTable().Columns.getFlattenedColumns()); i++ {
-		colLetter := xlsx.spreadsheet.getColumnLetter(i)
-		if err := xlsx.spreadsheet.setColumnWidth(colLetter, 15); err != nil {
+	for i := 1; i <= len(xlsx.spreadsheet.GetTable().Columns.GetFlattenedColumns()); i++ {
+		colLetter := xlsx.spreadsheet.GetColumnLetter(i)
+		if err := xlsx.spreadsheet.SetColumnWidth(colLetter, 15); err != nil {
 			L().Warn("Failed to set column width", String("column", colLetter), Error(err))
 		}
 	}

@@ -37,47 +37,47 @@ func (e *SpreadsheetExcelize) WithFile(file *excelize.File) *SpreadsheetExcelize
 	return e
 }
 
-// getTable returns the underlying Table object.
-func (e *SpreadsheetExcelize) getTable() *Table {
-	return e.Table.getTable()
+// GetTable returns the underlying Table object.
+func (e *SpreadsheetExcelize) GetTable() *Table {
+	return e.Table.GetTable()
 }
 
-// getFile returns the underlying Excelize file object.
-func (e *SpreadsheetExcelize) getFile() interface{} {
+// GetFile returns the underlying Excelize file object.
+func (e *SpreadsheetExcelize) GetFile() interface{} {
 	return e.File
 }
 
-// createNewFile initializes a new Excelize file and syncs it with the TableExcelize adapter.
-func (e *SpreadsheetExcelize) createNewFile() error {
+// CreateNewFile initializes a new Excelize file and syncs it with the TableExcelize adapter.
+func (e *SpreadsheetExcelize) CreateNewFile() error {
 	f := excelize.NewFile()
 	e.WithFile(f)
 	e.Table.WithFile(f)
 	return nil
 }
 
-// saveToWriter writes the Excelize file to an io.Writer (e.g., file, buffer).
-func (e *SpreadsheetExcelize) saveToWriter(writer io.Writer) error {
+// SaveToWriter writes the Excelize file to an io.Writer (e.g., file, buffer).
+func (e *SpreadsheetExcelize) SaveToWriter(writer io.Writer) error {
 	_, err := e.File.WriteTo(writer)
 	return err
 }
 
-// close releases resources associated with the Excelize file.
-func (e *SpreadsheetExcelize) close() error {
+// Close releases resources associated with the Excelize file.
+func (e *SpreadsheetExcelize) Close() error {
 	return e.File.Close()
 }
 
-// getSheetName returns the current sheet name.
-func (e *SpreadsheetExcelize) getSheetName() string {
+// GetSheetName returns the current sheet name.
+func (e *SpreadsheetExcelize) GetSheetName() string {
 	return e.SheetName
 }
 
-// setSheetName sets the active sheet name.
-func (e *SpreadsheetExcelize) setSheetName(name string) {
+// SetSheetName sets the active sheet name.
+func (e *SpreadsheetExcelize) SetSheetName(name string) {
 	e.SheetName = name
 }
 
-// createSheet creates a new sheet with the current sheet name if it does not already exist.
-func (e *SpreadsheetExcelize) createSheet() error {
+// CreateSheet creates a new sheet with the current sheet name if it does not already exist.
+func (e *SpreadsheetExcelize) CreateSheet() error {
 	index, err := e.File.GetSheetIndex(e.SheetName)
 	if err != nil || index == -1 {
 		_, err = e.File.NewSheet(e.SheetName)
@@ -88,8 +88,8 @@ func (e *SpreadsheetExcelize) createSheet() error {
 	return nil
 }
 
-// setActiveSheet sets the active sheet for subsequent operations.
-func (e *SpreadsheetExcelize) setActiveSheet() error {
+// SetActiveSheet sets the active sheet for subsequent operations.
+func (e *SpreadsheetExcelize) SetActiveSheet() error {
 	index, err := e.File.GetSheetIndex(e.SheetName)
 	if err != nil {
 		return fmt.Errorf("failed to get sheet index: %w", err)
@@ -98,70 +98,70 @@ func (e *SpreadsheetExcelize) setActiveSheet() error {
 	return nil
 }
 
-// setColumnWidth sets the width of a column by its letter (e.g., "A", "B").
-func (e *SpreadsheetExcelize) setColumnWidth(colLetter string, width float64) error {
+// SetColumnWidth sets the width of a column by its letter (e.g., "A", "B").
+func (e *SpreadsheetExcelize) SetColumnWidth(colLetter string, width float64) error {
 	return e.File.SetColWidth(e.SheetName, colLetter, colLetter, width)
 }
 
 // Delegation to Excelize table operations
 // These methods delegate to the TableExcelize adapter for cell and range operations.
 
-// getCellValue returns the value of a cell at the given column and row.
-func (e *SpreadsheetExcelize) getCellValue(col, row int) (string, error) {
-	return e.Table.getCellValue(col, row)
+// GetCellValue returns the value of a cell at the given column and row.
+func (e *SpreadsheetExcelize) GetCellValue(col, row int) (string, error) {
+	return e.Table.GetCellValue(col, row)
 }
 
-// setCellValue sets the value of a cell at the given column and row.
-func (e *SpreadsheetExcelize) setCellValue(col, row int, value interface{}) error {
-	return e.Table.setCellValue(col, row, value)
+// SetCellValue sets the value of a cell at the given column and row.
+func (e *SpreadsheetExcelize) SetCellValue(col, row int, value interface{}) error {
+	return e.Table.SetCellValue(col, row, value)
 }
 
-// mergeCells merges a range of cells from startCol/startRow to endCol/endRow.
-func (e *SpreadsheetExcelize) mergeCells(startCol, startRow, endCol, endRow int) error {
-	return e.Table.mergeCells(startCol, startRow, endCol, endRow)
+// MergeCells merges a range of cells from startCol/startRow to endCol/endRow.
+func (e *SpreadsheetExcelize) MergeCells(startCol, startRow, endCol, endRow int) error {
+	return e.Table.MergeCells(startCol, startRow, endCol, endRow)
 }
 
-// isCellMerged checks if a cell is part of a merged range.
-func (e *SpreadsheetExcelize) isCellMerged(col, row int) bool {
-	return e.Table.isCellMerged(col, row)
+// IsCellMerged checks if a cell is part of a merged range.
+func (e *SpreadsheetExcelize) IsCellMerged(col, row int) bool {
+	return e.Table.IsCellMerged(col, row)
 }
 
-// isCellMergedHorizontally checks if a cell is merged horizontally.
-func (e *SpreadsheetExcelize) isCellMergedHorizontally(col, row int) bool {
-	return e.Table.isCellMergedHorizontally(col, row)
+// IsCellMergedHorizontally checks if a cell is merged horizontally.
+func (e *SpreadsheetExcelize) IsCellMergedHorizontally(col, row int) bool {
+	return e.Table.IsCellMergedHorizontally(col, row)
 }
 
-// applyBorderToCell applies a border to a specific side of a cell.
-func (e *SpreadsheetExcelize) applyBorderToCell(col, row int, side string, border *Border) error {
-	return e.Table.applyBorderToCell(col, row, side, border)
+// ApplyBorderToCell applies a border to a specific side of a cell.
+func (e *SpreadsheetExcelize) ApplyBorderToCell(col, row int, side string, border *Border) error {
+	return e.Table.ApplyBorderToCell(col, row, side, border)
 }
 
-// applyBordersToRange applies borders to a range of cells.
-func (e *SpreadsheetExcelize) applyBordersToRange(startCol, startRow, endCol, endRow int, borders Borders) error {
-	return e.Table.applyBordersToRange(startCol, startRow, endCol, endRow, borders)
+// ApplyBordersToRange applies borders to a range of cells.
+func (e *SpreadsheetExcelize) ApplyBordersToRange(startCol, startRow, endCol, endRow int, borders Borders) error {
+	return e.Table.ApplyBordersToRange(startCol, startRow, endCol, endRow, borders)
 }
 
-// hasExistingBorder checks if a cell already has a border on a specific side.
-func (e *SpreadsheetExcelize) hasExistingBorder(col, row int, side string) bool {
-	return e.Table.hasExistingBorder(col, row, side)
+// HasExistingBorder checks if a cell already has a border on a specific side.
+func (e *SpreadsheetExcelize) HasExistingBorder(col, row int, side string) bool {
+	return e.Table.HasExistingBorder(col, row, side)
 }
 
-// applyStyleToCell applies a style to a specific cell.
-func (e *SpreadsheetExcelize) applyStyleToCell(col, row int, style Style) error {
-	return e.Table.applyStyleToCell(col, row, style)
+// ApplyStyleToCell applies a style to a specific cell.
+func (e *SpreadsheetExcelize) ApplyStyleToCell(col, row int, style Style) error {
+	return e.Table.ApplyStyleToCell(col, row, style)
 }
 
-// applyStyleToRange applies a style to a range of cells.
-func (e *SpreadsheetExcelize) applyStyleToRange(startCol, startRow, endCol, endRow int, style Style) error {
-	return e.Table.applyStyleToRange(startCol, startRow, endCol, endRow, style)
+// ApplyStyleToRange applies a style to a range of cells.
+func (e *SpreadsheetExcelize) ApplyStyleToRange(startCol, startRow, endCol, endRow int, style Style) error {
+	return e.Table.ApplyStyleToRange(startCol, startRow, endCol, endRow, style)
 }
 
-// getColumnLetter returns the Excel column letter for a given column index.
-func (e *SpreadsheetExcelize) getColumnLetter(col int) string {
-	return e.Table.getColumnLetter(col)
+// GetColumnLetter returns the Excel column letter for a given column index.
+func (e *SpreadsheetExcelize) GetColumnLetter(col int) string {
+	return e.Table.GetColumnLetter(col)
 }
 
-// processValue processes a value according to the specified format for Excel output.
-func (e *SpreadsheetExcelize) processValue(value interface{}, format string) (interface{}, error) {
-	return e.Table.processValue(value, format)
+// ProcessValue processes a value according to the specified format for Excel output.
+func (e *SpreadsheetExcelize) ProcessValue(value interface{}, format string) (interface{}, error) {
+	return e.Table.ProcessValue(value, format)
 }

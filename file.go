@@ -17,12 +17,12 @@ import (
 
 // FileWriteParams contains generic parameters for file writing
 type FileWriteParams struct {
-	Filename      string // Desired filename (without extension)
+	Filename      string // Desired filename (without Extension)
 	Filepath      string // Directory to write file to (used if UseTempFile is false)
 	UseTempFile   bool   // Optional: use temp file (default: false)
 	UseGzip       bool   // Optional: compress with gzip
 	OverwriteFile bool   // Optional: overwrite existing file (default: false)
-	extension     string // File extension (e.g., ".csv", ".json")
+	Extension     string // File Extension (e.g., ".csv", ".json")
 }
 
 // FileWriteResult contains the result of file writing operation
@@ -32,7 +32,7 @@ type FileWriteResult struct {
 }
 
 // SanitizeFilename sanitizes a string to be safe for use as a filename.
-func (fwo FileWriteParams) SanitizeFilename() string {
+func SanitizeFilename(filename string) string {
 	// First handle accented characters and special Unicode characters
 	result := strings.Map(func(r rune) rune {
 		switch r {
@@ -75,7 +75,7 @@ func (fwo FileWriteParams) SanitizeFilename() string {
 			// Replace other characters with underscore
 			return '_'
 		}
-	}, fwo.Filename)
+	}, filename)
 
 	// Now handle filesystem-problematic characters specifically
 	// (in case any slipped through or were originally ASCII)
@@ -100,19 +100,19 @@ func (fwo FileWriteParams) SanitizeFilename() string {
 	return result
 }
 
-// writeToFile writes data to a file with generic options and returns file info.
+// WriteToFile writes data to a file with generic options and returns file info.
 // Handles temp file creation, directory management, gzip compression, and file overwriting.
 // Uses the provided writeFunc to write data to the file (or gzip stream).
-func (fwo FileWriteParams) writeToFile(writeFunc func(io.Writer) error) (*FileWriteResult, error) {
+func (fwo FileWriteParams) WriteToFile(writeFunc func(io.Writer) error) (*FileWriteResult, error) {
 	// Sanitize the filename to ensure it's safe for use
-	fwo.Filename = fwo.SanitizeFilename()
+	fwo.Filename = SanitizeFilename(fwo.Filename)
 
 	if fwo.Filename == "" {
 		return nil, fmt.Errorf("filename is empty after sanitization")
 	}
 
-	// Construct filename with extension
-	extension := "." + fwo.extension
+	// Construct filename with Extension
+	extension := "." + fwo.Extension
 	fileName := fwo.Filename + extension
 	tempFilePattern := fwo.Filename + "_*" + extension
 

@@ -619,7 +619,7 @@ func TestXlsx_writeCell(t *testing.T) {
 			colIndex: 1,
 			rowIndex: 1,
 			setupMock: func(mock *MockSpreadsheet) {
-				// No expectations as lookup will skip
+				// No expectations as Lookup will skip
 			},
 			expectError: false,
 		},

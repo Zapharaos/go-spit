@@ -24,8 +24,7 @@ func TestFileWriteParams_SanitizeFilename(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fwp := FileWriteParams{Filename: tt.input}
-			got := fwp.SanitizeFilename()
+			got := SanitizeFilename(tt.input)
 			if got != tt.expected {
 				t.Errorf("SanitizeFilename(%q) = %q, want %q", tt.input, got, tt.expected)
 			}
@@ -48,7 +47,7 @@ func TestFileWriteParams_writeToFile(t *testing.T) {
 			params: FileWriteParams{
 				Filename:      "testfile",
 				Filepath:      tmpDir,
-				extension:     "txt",
+				Extension:     "txt",
 				UseTempFile:   false,
 				UseGzip:       false,
 				OverwriteFile: true,
@@ -66,7 +65,7 @@ func TestFileWriteParams_writeToFile(t *testing.T) {
 			params: FileWriteParams{
 				Filename:      "gzfile",
 				Filepath:      tmpDir,
-				extension:     "log",
+				Extension:     "log",
 				UseTempFile:   false,
 				UseGzip:       true,
 				OverwriteFile: true,
@@ -84,7 +83,7 @@ func TestFileWriteParams_writeToFile(t *testing.T) {
 			params: FileWriteParams{
 				Filename:      "tempfile",
 				Filepath:      tmpDir,
-				extension:     "tmp",
+				Extension:     "tmp",
 				UseTempFile:   true,
 				UseGzip:       false,
 				OverwriteFile: false,
@@ -102,7 +101,7 @@ func TestFileWriteParams_writeToFile(t *testing.T) {
 			params: FileWriteParams{
 				Filename:      "",
 				Filepath:      tmpDir,
-				extension:     "txt",
+				Extension:     "txt",
 				UseTempFile:   false,
 				UseGzip:       false,
 				OverwriteFile: false,
@@ -117,7 +116,7 @@ func TestFileWriteParams_writeToFile(t *testing.T) {
 			params: FileWriteParams{
 				Filename:      "existsfile",
 				Filepath:      tmpDir,
-				extension:     "txt",
+				Extension:     "txt",
 				UseTempFile:   false,
 				UseGzip:       false,
 				OverwriteFile: false,
@@ -137,7 +136,7 @@ func TestFileWriteParams_writeToFile(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := tt.params.writeToFile(tt.writeFunc)
+			res, err := tt.params.WriteToFile(tt.writeFunc)
 			if tt.expectErr {
 				if err == nil {
 					t.Errorf("expected error, got nil")
@@ -154,7 +153,7 @@ func TestFileWriteParams_writeToFile(t *testing.T) {
 			if _, err := os.Stat(res.Filepath); err != nil {
 				t.Errorf("file not created: %v", err)
 			}
-			// Optionally check for gzip extension
+			// Optionally check for gzip Extension
 			if tt.expectGzip && !strings.HasSuffix(res.Filename, ".gz") {
 				t.Errorf("expected gzip file, got %s", res.Filename)
 			}

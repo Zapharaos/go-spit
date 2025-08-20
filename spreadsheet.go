@@ -16,29 +16,29 @@ type Spreadsheet interface {
 	TableOperations // Embeds table-related operations (see TableOperations interface)
 
 	// GetFile returns the underlying file object (implementation-specific).
-	getFile() interface{}
+	GetFile() interface{}
 
 	// CreateNewFile initializes a new spreadsheet file.
-	createNewFile() error
+	CreateNewFile() error
 
 	// SaveToWriter writes the spreadsheet to an io.Writer (e.g., file, buffer).
-	saveToWriter(writer io.Writer) error
+	SaveToWriter(writer io.Writer) error
 
 	// Close releases resources associated with the spreadsheet file.
-	close() error
+	Close() error
 
 	// GetSheetName returns the current sheet name.
-	getSheetName() string
+	GetSheetName() string
 
 	// SetSheetName sets the active sheet name.
-	setSheetName(name string)
+	SetSheetName(name string)
 
-	// createSheet creates a new sheet with the current sheet name.
-	createSheet() error
+	// CreateSheet creates a new sheet with the current sheet name.
+	CreateSheet() error
 
-	// setActiveSheet sets the active sheet for subsequent operations.
-	setActiveSheet() error
+	// SetActiveSheet sets the active sheet for subsequent operations.
+	SetActiveSheet() error
 
-	// setColumnWidth sets the width of a column by its letter (e.g., "A", "B").
-	setColumnWidth(colLetter string, width float64) error
+	// SetColumnWidth sets the width of a column by its letter (e.g., "A", "B").
+	SetColumnWidth(colLetter string, width float64) error
 }
