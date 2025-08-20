@@ -1,4 +1,4 @@
-// spreadsheet_excelize.go - Excelize-based implementation of the spreadsheet interface.
+// excelize_spreadsheet.go - Excelize-based implementation of the spreadsheet interface.
 //
 // This file provides an adapter for the github.com/xuri/excelize library, enabling spreadsheet operations
 // such as file creation, sheet management, cell formatting, and table manipulation in Excel files.
