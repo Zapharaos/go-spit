@@ -42,7 +42,7 @@ func TestConvertSliceToString(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := convertSliceToString(tt.slice, tt.format, tt.sep)
+			result, err := ConvertSliceToString(tt.slice, tt.format, tt.sep)
 			if tt.wantErr {
 				if err == nil {
 					t.Fatalf("expected error, got nil")
@@ -99,7 +99,7 @@ func TestFormatValue(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			val, err := formatValue(tt.value, tt.format)
+			val, err := FormatValue(tt.value, tt.format)
 			if tt.wantErr {
 				if err == nil {
 					t.Errorf("expected error, got nil")
@@ -148,17 +148,17 @@ func TestParseDate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			date, err := parseDate(tt.input)
+			date, err := ParseDate(tt.input)
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("parseDate(%q) expected error, got nil", tt.input)
+					t.Errorf("ParseDate(%q) expected error, got nil", tt.input)
 				}
 			} else {
 				if err != nil {
-					t.Errorf("parseDate(%q) unexpected error: %v", tt.input, err)
+					t.Errorf("ParseDate(%q) unexpected error: %v", tt.input, err)
 				}
 				if date.Year() != tt.wantYear {
-					t.Errorf("parseDate(%q) got year %d, want %d", tt.input, date.Year(), tt.wantYear)
+					t.Errorf("ParseDate(%q) got year %d, want %d", tt.input, date.Year(), tt.wantYear)
 				}
 			}
 		})
