@@ -93,7 +93,7 @@ func (t *Table) applyHeaderCellStyles(ops TableOperations) error {
 	}
 
 	// Apply header styling to all header rows
-	if err := ops.applyStyleToRange(1, 1, totalColumns, maxDepth, headerStyle); err != nil {
+	if err := ops.ApplyStyleToRange(1, 1, totalColumns, maxDepth, headerStyle); err != nil {
 		L().Warn("Failed to apply header range style", Error(err))
 		return err
 	}
@@ -164,7 +164,7 @@ func (t *Table) applyCellStyle(style *Style, colIndex, rowIndex int, ops TableOp
 	}
 
 	// Apply the style using the operations interface
-	if err := ops.applyStyleToCell(colIndex, rowIndex, *style); err != nil {
+	if err := ops.ApplyStyleToCell(colIndex, rowIndex, *style); err != nil {
 		return fmt.Errorf("failed to apply style to cell (%d,%d): %w", colIndex, rowIndex, err)
 	}
 
@@ -297,22 +297,22 @@ func (t *Table) applyCellSpecificBorders(dataStartRow int, ops TableOperations) 
 // Each border (left, right, top, bottom) is applied if present.
 func (t *Table) applyBordersToCell(col, row int, borders *Borders, ops TableOperations) error {
 	if borders.Left != nil {
-		if err := ops.applyBorderToCell(col, row, "left", borders.Left); err != nil {
+		if err := ops.ApplyBorderToCell(col, row, "left", borders.Left); err != nil {
 			return fmt.Errorf("failed to apply left border: %w", err)
 		}
 	}
 	if borders.Right != nil {
-		if err := ops.applyBorderToCell(col, row, "right", borders.Right); err != nil {
+		if err := ops.ApplyBorderToCell(col, row, "right", borders.Right); err != nil {
 			return fmt.Errorf("failed to apply right border: %w", err)
 		}
 	}
 	if borders.Top != nil {
-		if err := ops.applyBorderToCell(col, row, "top", borders.Top); err != nil {
+		if err := ops.ApplyBorderToCell(col, row, "top", borders.Top); err != nil {
 			return fmt.Errorf("failed to apply top border: %w", err)
 		}
 	}
 	if borders.Bottom != nil {
-		if err := ops.applyBorderToCell(col, row, "bottom", borders.Bottom); err != nil {
+		if err := ops.ApplyBorderToCell(col, row, "bottom", borders.Bottom); err != nil {
 			return fmt.Errorf("failed to apply bottom border: %w", err)
 		}
 	}

@@ -55,7 +55,7 @@ func TestSpreadsheetExcelize_WithFile(t *testing.T) {
 	}
 }
 
-// Test getTable function
+// Test GetTable function
 func TestSpreadsheetExcelize_getTable(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -64,14 +64,14 @@ func TestSpreadsheetExcelize_getTable(t *testing.T) {
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
 
-	result := se.getTable()
+	result := se.GetTable()
 
 	if result != table {
-		t.Error("getTable should return the original table")
+		t.Error("GetTable should return the original table")
 	}
 }
 
-// Test getFile function
+// Test GetFile function
 func TestSpreadsheetExcelize_getFile(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -82,14 +82,14 @@ func TestSpreadsheetExcelize_getFile(t *testing.T) {
 	file := excelize.NewFile()
 	se.WithFile(file)
 
-	result := se.getFile()
+	result := se.GetFile()
 
 	if result != file {
-		t.Error("getFile should return the excelize file")
+		t.Error("GetFile should return the excelize file")
 	}
 }
 
-// Test createNewFile function
+// Test CreateNewFile function
 func TestSpreadsheetExcelize_createNewFile(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -98,17 +98,17 @@ func TestSpreadsheetExcelize_createNewFile(t *testing.T) {
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
 
-	err := se.createNewFile()
+	err := se.CreateNewFile()
 
 	if err != nil {
-		t.Errorf("createNewFile should not return error, got: %v", err)
+		t.Errorf("CreateNewFile should not return error, got: %v", err)
 	}
 	if se.File == nil {
 		t.Error("File should be created")
 	}
 }
 
-// Test saveToWriter function
+// Test SaveToWriter function
 func TestSpreadsheetExcelize_saveToWriter(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -116,22 +116,22 @@ func TestSpreadsheetExcelize_saveToWriter(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	if err := se.createNewFile(); err != nil {
+	if err := se.CreateNewFile(); err != nil {
 		t.Fatalf("failed to create new file: %v", err)
 	}
 
 	var buf bytes.Buffer
-	err := se.saveToWriter(&buf)
+	err := se.SaveToWriter(&buf)
 
 	if err != nil {
-		t.Errorf("saveToWriter should not return error, got: %v", err)
+		t.Errorf("SaveToWriter should not return error, got: %v", err)
 	}
 	if buf.Len() == 0 {
 		t.Error("Buffer should contain data after writing")
 	}
 }
 
-// Test close function
+// Test Close function
 func TestSpreadsheetExcelize_close(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -139,18 +139,18 @@ func TestSpreadsheetExcelize_close(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	if err := se.createNewFile(); err != nil {
+	if err := se.CreateNewFile(); err != nil {
 		t.Fatalf("failed to create new file: %v", err)
 	}
 
-	err := se.close()
+	err := se.Close()
 
 	if err != nil {
-		t.Errorf("close should not return error, got: %v", err)
+		t.Errorf("Close should not return error, got: %v", err)
 	}
 }
 
-// Test getSheetName function
+// Test GetSheetName function
 func TestSpreadsheetExcelize_getSheetName(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -160,14 +160,14 @@ func TestSpreadsheetExcelize_getSheetName(t *testing.T) {
 	sheetName := "TestSheet"
 	se := NewSpreadsheetExcelize(sheetName, table)
 
-	result := se.getSheetName()
+	result := se.GetSheetName()
 
 	if result != sheetName {
 		t.Errorf("Expected sheet name %s, got %s", sheetName, result)
 	}
 }
 
-// Test setSheetName function
+// Test SetSheetName function
 func TestSpreadsheetExcelize_setSheetName(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -177,14 +177,14 @@ func TestSpreadsheetExcelize_setSheetName(t *testing.T) {
 	se := NewSpreadsheetExcelize("InitialSheet", table)
 	newSheetName := "NewSheet"
 
-	se.setSheetName(newSheetName)
+	se.SetSheetName(newSheetName)
 
 	if se.SheetName != newSheetName {
 		t.Errorf("Expected sheet name %s, got %s", newSheetName, se.SheetName)
 	}
 }
 
-// Test createSheet function
+// Test CreateSheet function
 func TestSpreadsheetExcelize_createSheet(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -192,14 +192,14 @@ func TestSpreadsheetExcelize_createSheet(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	if err := se.createNewFile(); err != nil {
+	if err := se.CreateNewFile(); err != nil {
 		t.Fatalf("failed to create new file: %v", err)
 	}
 
-	err := se.createSheet()
+	err := se.CreateSheet()
 
 	if err != nil {
-		t.Errorf("createSheet should not return error, got: %v", err)
+		t.Errorf("CreateSheet should not return error, got: %v", err)
 	}
 
 	// Verify sheet exists
@@ -212,7 +212,7 @@ func TestSpreadsheetExcelize_createSheet(t *testing.T) {
 	}
 }
 
-// Test createSheet function with existing sheet
+// Test CreateSheet function with existing sheet
 func TestSpreadsheetExcelize_createSheet_ExistingSheet(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -220,18 +220,18 @@ func TestSpreadsheetExcelize_createSheet_ExistingSheet(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("Sheet1", table) // Use default sheet name
-	if err := se.createNewFile(); err != nil {
+	if err := se.CreateNewFile(); err != nil {
 		t.Fatalf("failed to create new file: %v", err)
 	}
 
-	err := se.createSheet()
+	err := se.CreateSheet()
 
 	if err != nil {
-		t.Errorf("createSheet should not return error for existing sheet, got: %v", err)
+		t.Errorf("CreateSheet should not return error for existing sheet, got: %v", err)
 	}
 }
 
-// Test setActiveSheet function
+// Test SetActiveSheet function
 func TestSpreadsheetExcelize_setActiveSheet(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -239,17 +239,17 @@ func TestSpreadsheetExcelize_setActiveSheet(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	if err := se.createNewFile(); err != nil {
+	if err := se.CreateNewFile(); err != nil {
 		t.Fatalf("failed to create new file: %v", err)
 	}
-	if err := se.createSheet(); err != nil {
+	if err := se.CreateSheet(); err != nil {
 		t.Fatalf("failed to create sheet: %v", err)
 	}
 
-	err := se.setActiveSheet()
+	err := se.SetActiveSheet()
 
 	if err != nil {
-		t.Errorf("setActiveSheet should not return error, got: %v", err)
+		t.Errorf("SetActiveSheet should not return error, got: %v", err)
 	}
 
 	// Verify the sheet is active
@@ -260,7 +260,7 @@ func TestSpreadsheetExcelize_setActiveSheet(t *testing.T) {
 	}
 }
 
-// Test setActiveSheet function with non-existent sheet
+// Test SetActiveSheet function with non-existent sheet
 func TestSpreadsheetExcelize_setActiveSheet_NonExistentSheet(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -268,16 +268,16 @@ func TestSpreadsheetExcelize_setActiveSheet_NonExistentSheet(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("NonExistentSheet", table)
-	if err := se.createNewFile(); err != nil {
+	if err := se.CreateNewFile(); err != nil {
 		t.Fatalf("failed to create new file: %v", err)
 	}
 
-	err := se.setActiveSheet()
+	err := se.SetActiveSheet()
 
 	// The current implementation doesn't return an error for non-existent sheets
-	// It calls setActiveSheet with index -1, but Excel may default to sheet 0
+	// It calls SetActiveSheet with index -1, but Excel may default to sheet 0
 	if err != nil {
-		t.Errorf("setActiveSheet returned unexpected error: %v", err)
+		t.Errorf("SetActiveSheet returned unexpected error: %v", err)
 	}
 
 	// Verify that the active sheet index remains at the default (0)
@@ -288,7 +288,7 @@ func TestSpreadsheetExcelize_setActiveSheet_NonExistentSheet(t *testing.T) {
 	}
 }
 
-// Test setColumnWidth function
+// Test SetColumnWidth function
 func TestSpreadsheetExcelize_setColumnWidth(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -296,17 +296,17 @@ func TestSpreadsheetExcelize_setColumnWidth(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	if err := se.createNewFile(); err != nil {
+	if err := se.CreateNewFile(); err != nil {
 		t.Fatalf("failed to create new file: %v", err)
 	}
-	if err := se.createSheet(); err != nil {
+	if err := se.CreateSheet(); err != nil {
 		t.Fatalf("failed to create sheet: %v", err)
 	}
 
-	err := se.setColumnWidth("A", 20.5)
+	err := se.SetColumnWidth("A", 20.5)
 
 	if err != nil {
-		t.Errorf("setColumnWidth should not return error, got: %v", err)
+		t.Errorf("SetColumnWidth should not return error, got: %v", err)
 	}
 
 	// Verify the column width was set
@@ -319,7 +319,7 @@ func TestSpreadsheetExcelize_setColumnWidth(t *testing.T) {
 	}
 }
 
-// Test getCellValue function
+// Test GetCellValue function
 func TestSpreadsheetExcelize_getCellValue(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -327,10 +327,10 @@ func TestSpreadsheetExcelize_getCellValue(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	if err := se.createNewFile(); err != nil {
+	if err := se.CreateNewFile(); err != nil {
 		t.Fatalf("failed to create new file: %v", err)
 	}
-	if err := se.createSheet(); err != nil {
+	if err := se.CreateSheet(); err != nil {
 		t.Fatalf("failed to create sheet: %v", err)
 	}
 
@@ -339,17 +339,17 @@ func TestSpreadsheetExcelize_getCellValue(t *testing.T) {
 		t.Fatalf("failed to set cell value: %v", err)
 	}
 
-	value, err := se.getCellValue(1, 1)
+	value, err := se.GetCellValue(1, 1)
 
 	if err != nil {
-		t.Errorf("getCellValue should not return error, got: %v", err)
+		t.Errorf("GetCellValue should not return error, got: %v", err)
 	}
 	if value != "TestValue" {
 		t.Errorf("Expected value 'TestValue', got '%s'", value)
 	}
 }
 
-// Test setCellValue function
+// Test SetCellValue function
 func TestSpreadsheetExcelize_setCellValue(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -357,17 +357,17 @@ func TestSpreadsheetExcelize_setCellValue(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	if err := se.createNewFile(); err != nil {
+	if err := se.CreateNewFile(); err != nil {
 		t.Fatalf("failed to create new file: %v", err)
 	}
-	if err := se.createSheet(); err != nil {
+	if err := se.CreateSheet(); err != nil {
 		t.Fatalf("failed to create sheet: %v", err)
 	}
 
-	err := se.setCellValue(1, 1, "TestValue")
+	err := se.SetCellValue(1, 1, "TestValue")
 
 	if err != nil {
-		t.Errorf("setCellValue should not return error, got: %v", err)
+		t.Errorf("SetCellValue should not return error, got: %v", err)
 	}
 
 	// Verify the value was set
@@ -380,7 +380,7 @@ func TestSpreadsheetExcelize_setCellValue(t *testing.T) {
 	}
 }
 
-// Test mergeCells function
+// Test MergeCells function
 func TestSpreadsheetExcelize_mergeCells(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -388,17 +388,17 @@ func TestSpreadsheetExcelize_mergeCells(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	if err := se.createNewFile(); err != nil {
+	if err := se.CreateNewFile(); err != nil {
 		t.Fatalf("failed to create new file: %v", err)
 	}
-	if err := se.createSheet(); err != nil {
+	if err := se.CreateSheet(); err != nil {
 		t.Fatalf("failed to create sheet: %v", err)
 	}
 
-	err := se.mergeCells(1, 1, 2, 2)
+	err := se.MergeCells(1, 1, 2, 2)
 
 	if err != nil {
-		t.Errorf("mergeCells should not return error, got: %v", err)
+		t.Errorf("MergeCells should not return error, got: %v", err)
 	}
 
 	// Verify cells are merged by checking merge list
@@ -411,7 +411,7 @@ func TestSpreadsheetExcelize_mergeCells(t *testing.T) {
 	}
 }
 
-// Test isCellMerged function
+// Test IsCellMerged function
 func TestSpreadsheetExcelize_isCellMerged(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -419,32 +419,32 @@ func TestSpreadsheetExcelize_isCellMerged(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	if err := se.createNewFile(); err != nil {
+	if err := se.CreateNewFile(); err != nil {
 		t.Fatalf("failed to create new file: %v", err)
 	}
-	if err := se.createSheet(); err != nil {
+	if err := se.CreateSheet(); err != nil {
 		t.Fatalf("failed to create sheet: %v", err)
 	}
 
 	// Merge cells first
-	if err := se.mergeCells(1, 1, 2, 2); err != nil {
+	if err := se.MergeCells(1, 1, 2, 2); err != nil {
 		t.Fatalf("failed to merge cells: %v", err)
 	}
 
-	result := se.isCellMerged(1, 1)
+	result := se.IsCellMerged(1, 1)
 
 	if !result {
 		t.Error("Cell should be merged")
 	}
 
 	// Test non-merged cell
-	result = se.isCellMerged(3, 3)
+	result = se.IsCellMerged(3, 3)
 	if result {
 		t.Error("Cell should not be merged")
 	}
 }
 
-// Test isCellMergedHorizontally function
+// Test IsCellMergedHorizontally function
 func TestSpreadsheetExcelize_isCellMergedHorizontally(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -452,32 +452,32 @@ func TestSpreadsheetExcelize_isCellMergedHorizontally(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	if err := se.createNewFile(); err != nil {
+	if err := se.CreateNewFile(); err != nil {
 		t.Fatalf("failed to create new file: %v", err)
 	}
-	if err := se.createSheet(); err != nil {
+	if err := se.CreateSheet(); err != nil {
 		t.Fatalf("failed to create sheet: %v", err)
 	}
 
 	// Merge cells horizontally
-	if err := se.mergeCells(1, 1, 3, 1); err != nil {
+	if err := se.MergeCells(1, 1, 3, 1); err != nil {
 		t.Fatalf("failed to merge cells: %v", err)
 	}
 
-	result := se.isCellMergedHorizontally(1, 1)
+	result := se.IsCellMergedHorizontally(1, 1)
 
 	if !result {
 		t.Error("Cell should be merged horizontally")
 	}
 
 	// Test non-merged cell
-	result = se.isCellMergedHorizontally(1, 2)
+	result = se.IsCellMergedHorizontally(1, 2)
 	if result {
 		t.Error("Cell should not be merged horizontally")
 	}
 }
 
-// Test applyBorderToCell function
+// Test ApplyBorderToCell function
 func TestSpreadsheetExcelize_applyBorderToCell(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -485,23 +485,23 @@ func TestSpreadsheetExcelize_applyBorderToCell(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	if err := se.createNewFile(); err != nil {
+	if err := se.CreateNewFile(); err != nil {
 		t.Fatalf("failed to create new file: %v", err)
 	}
-	if err := se.createSheet(); err != nil {
+	if err := se.CreateSheet(); err != nil {
 		t.Fatalf("failed to create sheet: %v", err)
 	}
 
 	border := &Border{Style: BorderStyleThin}
 
-	err := se.applyBorderToCell(1, 1, "top", border)
+	err := se.ApplyBorderToCell(1, 1, "top", border)
 
 	if err != nil {
-		t.Errorf("applyBorderToCell should not return error, got: %v", err)
+		t.Errorf("ApplyBorderToCell should not return error, got: %v", err)
 	}
 }
 
-// Test applyBordersToRange function
+// Test ApplyBordersToRange function
 func TestSpreadsheetExcelize_applyBordersToRange(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -509,10 +509,10 @@ func TestSpreadsheetExcelize_applyBordersToRange(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	if err := se.createNewFile(); err != nil {
+	if err := se.CreateNewFile(); err != nil {
 		t.Fatalf("failed to create new file: %v", err)
 	}
-	if err := se.createSheet(); err != nil {
+	if err := se.CreateSheet(); err != nil {
 		t.Fatalf("failed to create sheet: %v", err)
 	}
 
@@ -523,14 +523,14 @@ func TestSpreadsheetExcelize_applyBordersToRange(t *testing.T) {
 		Right:  &Border{Style: BorderStyleThin},
 	}
 
-	err := se.applyBordersToRange(1, 1, 2, 2, borders)
+	err := se.ApplyBordersToRange(1, 1, 2, 2, borders)
 
 	if err != nil {
-		t.Errorf("applyBordersToRange should not return error, got: %v", err)
+		t.Errorf("ApplyBordersToRange should not return error, got: %v", err)
 	}
 }
 
-// Test hasExistingBorder function
+// Test HasExistingBorder function
 func TestSpreadsheetExcelize_hasExistingBorder(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -538,33 +538,33 @@ func TestSpreadsheetExcelize_hasExistingBorder(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	if err := se.createNewFile(); err != nil {
+	if err := se.CreateNewFile(); err != nil {
 		t.Fatalf("failed to create new file: %v", err)
 	}
-	if err := se.createSheet(); err != nil {
+	if err := se.CreateSheet(); err != nil {
 		t.Fatalf("failed to create sheet: %v", err)
 	}
 
 	// Apply a border first
 	border := &Border{Style: BorderStyleThin}
-	if err := se.applyBorderToCell(1, 1, "top", border); err != nil {
+	if err := se.ApplyBorderToCell(1, 1, "top", border); err != nil {
 		t.Fatalf("failed to apply border: %v", err)
 	}
 
-	result := se.hasExistingBorder(1, 1, "top")
+	result := se.HasExistingBorder(1, 1, "top")
 
 	if !result {
 		t.Error("Cell should have existing border")
 	}
 
 	// Test cell without border
-	result = se.hasExistingBorder(2, 2, "top")
+	result = se.HasExistingBorder(2, 2, "top")
 	if result {
 		t.Error("Cell should not have existing border")
 	}
 }
 
-// Test applyStyleToCell function
+// Test ApplyStyleToCell function
 func TestSpreadsheetExcelize_applyStyleToCell(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -572,10 +572,10 @@ func TestSpreadsheetExcelize_applyStyleToCell(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	if err := se.createNewFile(); err != nil {
+	if err := se.CreateNewFile(); err != nil {
 		t.Fatalf("failed to create new file: %v", err)
 	}
-	if err := se.createSheet(); err != nil {
+	if err := se.CreateSheet(); err != nil {
 		t.Fatalf("failed to create sheet: %v", err)
 	}
 
@@ -586,14 +586,14 @@ func TestSpreadsheetExcelize_applyStyleToCell(t *testing.T) {
 		BackgroundColor: "#FFFFFF",
 	}
 
-	err := se.applyStyleToCell(1, 1, style)
+	err := se.ApplyStyleToCell(1, 1, style)
 
 	if err != nil {
-		t.Errorf("applyStyleToCell should not return error, got: %v", err)
+		t.Errorf("ApplyStyleToCell should not return error, got: %v", err)
 	}
 }
 
-// Test applyStyleToRange function
+// Test ApplyStyleToRange function
 func TestSpreadsheetExcelize_applyStyleToRange(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -601,10 +601,10 @@ func TestSpreadsheetExcelize_applyStyleToRange(t *testing.T) {
 		},
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
-	if err := se.createNewFile(); err != nil {
+	if err := se.CreateNewFile(); err != nil {
 		t.Fatalf("failed to create new file: %v", err)
 	}
-	if err := se.createSheet(); err != nil {
+	if err := se.CreateSheet(); err != nil {
 		t.Fatalf("failed to create sheet: %v", err)
 	}
 
@@ -615,14 +615,14 @@ func TestSpreadsheetExcelize_applyStyleToRange(t *testing.T) {
 		BackgroundColor: "#FFFFFF",
 	}
 
-	err := se.applyStyleToRange(1, 1, 2, 2, style)
+	err := se.ApplyStyleToRange(1, 1, 2, 2, style)
 
 	if err != nil {
-		t.Errorf("applyStyleToRange should not return error, got: %v", err)
+		t.Errorf("ApplyStyleToRange should not return error, got: %v", err)
 	}
 }
 
-// Test getColumnLetter function
+// Test GetColumnLetter function
 func TestSpreadsheetExcelize_getColumnLetter(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -642,14 +642,14 @@ func TestSpreadsheetExcelize_getColumnLetter(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		result := se.getColumnLetter(tc.col)
+		result := se.GetColumnLetter(tc.col)
 		if result != tc.expected {
-			t.Errorf("getColumnLetter(%d): expected %s, got %s", tc.col, tc.expected, result)
+			t.Errorf("GetColumnLetter(%d): expected %s, got %s", tc.col, tc.expected, result)
 		}
 	}
 }
 
-// Test processValue function
+// Test ProcessValue function
 func TestSpreadsheetExcelize_processValue(t *testing.T) {
 	table := &Table{
 		Columns: Columns{
@@ -670,15 +670,15 @@ func TestSpreadsheetExcelize_processValue(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		result, err := se.processValue(tc.value, tc.format)
+		result, err := se.ProcessValue(tc.value, tc.format)
 		if tc.hasError && err == nil {
-			t.Errorf("processValue(%v, %s): expected error but got none", tc.value, tc.format)
+			t.Errorf("ProcessValue(%v, %s): expected error but got none", tc.value, tc.format)
 		}
 		if !tc.hasError && err != nil {
-			t.Errorf("processValue(%v, %s): unexpected error: %v", tc.value, tc.format, err)
+			t.Errorf("ProcessValue(%v, %s): unexpected error: %v", tc.value, tc.format, err)
 		}
 		if !tc.hasError && result == nil {
-			t.Errorf("processValue(%v, %s): expected result but got nil", tc.value, tc.format)
+			t.Errorf("ProcessValue(%v, %s): expected result but got nil", tc.value, tc.format)
 		}
 	}
 }

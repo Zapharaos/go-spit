@@ -108,10 +108,10 @@ func TestTable_processMerging(t *testing.T) {
 				}
 			},
 			setupMock: func(mock *MockTableOperations) {
-				// Expect processValue calls for row 0 with identical values that should merge
+				// Expect ProcessValue calls for row 0 with identical values that should merge
 				mock.EXPECT().processValue("A", "").Return("A", nil).Times(2)
 				mock.EXPECT().mergeCells(1, 1, 2, 1).Return(nil)
-				// No processValue calls expected for row 1 since it's not mergeable
+				// No ProcessValue calls expected for row 1 since it's not mergeable
 			},
 			expectedError: "",
 			expectedCalls: 1,
@@ -800,10 +800,10 @@ func TestTable_executeHorizontalMerging(t *testing.T) {
 			startColIndex: 1,
 			rowOptions:    nil,
 			setupMock: func(mock *MockTableOperations) {
-				// Only expect processValue calls for columns with merge configuration
+				// Only expect ProcessValue calls for columns with merge configuration
 				mock.EXPECT().processValue("A", "").Return("A", nil).Times(2)
 				mock.EXPECT().mergeCells(1, 1, 2, 1).Return(nil)
-				// No processValue call expected for col3 since it has no merge configuration
+				// No ProcessValue call expected for col3 since it has no merge configuration
 			},
 			expectedError: "",
 		},
