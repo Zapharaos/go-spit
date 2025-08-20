@@ -17,7 +17,7 @@ func main() {
 		spit.NewColumn("age", "Age"),
 		spit.NewColumn("email", "Email Address"),
 		spit.NewColumn("department", "Department"),
-		spit.NewColumn("salary", "Salary").WithFormat("$%.2f"),
+		spit.NewColumn("salary", "Salary"),
 		spit.NewColumn("created_at", "Created At").WithFormat(time.RFC1123Z),
 	}
 
@@ -56,8 +56,7 @@ func main() {
 
 	// File parameters for writing CSV
 	params := spit.FileWriteParams{
-		Filename:    "employees",
-		UseTempFile: true,
+		Filename: "employees",
 	}
 
 	// Create CSV instance with NewCsv
@@ -66,9 +65,12 @@ func main() {
 		log.Fatalf("Error writing CSV file: %v", err)
 	}
 
-	defer func() {
-		if closeErr := result.RemoveFile(); closeErr != nil {
-			log.Printf("Failed to remove CSV file: %v", closeErr)
-		}
-	}()
+	log.Printf("Successfully created XLSX file: %s", result.Filepath)
+
+	// Uncomment to remove the file after creation
+	// defer func() {
+	//     if closeErr := result.RemoveFile(); closeErr != nil {
+	//         log.Printf("Failed to remove XLSX file: %v", closeErr)
+	//     }
+	// }()
 }
