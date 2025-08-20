@@ -81,7 +81,7 @@ func (t *Table) processHeaderMergingRecursive(columns Columns, currentRow, maxDe
 	for _, column := range columns {
 		if column.HasSubColumns() {
 			// Merge horizontally across sub-columns
-			columnSpan := column.GetColumnCount()
+			columnSpan := column.CountSubColumns()
 			endCol := currentCol + columnSpan - 1
 			if endCol > currentCol {
 				if err := ops.MergeCells(currentCol, currentRow, endCol, currentRow); err != nil {
@@ -120,7 +120,7 @@ func (t *Table) processHeaderMergingRecursive(columns Columns, currentRow, maxDe
 
 // executeVerticalMerging applies vertical cell merging for a single column.
 // Only columns with vertical merge configuration are processed.
-func (t *Table) executeVerticalMerging(column Column, actualColIndex int, dataStartRow int, ops TableOperations) error {
+func (t *Table) executeVerticalMerging(column *Column, actualColIndex int, dataStartRow int, ops TableOperations) error {
 	if column.Merge == nil || len(column.Merge.Vertical) == 0 {
 		return nil
 	}
@@ -261,7 +261,7 @@ func (t *Table) executeHorizontalMerging(item Data, columns Columns, rowNum int,
 	// Process columns with individual merge configurations
 	// Group consecutive columns that have compatible merge conditions to optimize processing
 	flatColumns := columns.GetFlattenedColumns()
-	var currentGroup []Column             // Current group of columns being processed
+	var currentGroup Columns              // Current group of columns being processed
 	var currentGroupStartIndex int        // Starting index of the current group
 	var currentConditions MergeConditions // Merge conditions for the current group
 
@@ -276,7 +276,7 @@ func (t *Table) executeHorizontalMerging(item Data, columns Columns, rowNum int,
 		// Group logic: start new group or add to existing group based on compatibility
 		if len(currentGroup) == 0 {
 			// Initialize the first group with this column
-			currentGroup = []Column{column}
+			currentGroup = Columns{column}
 			currentGroupStartIndex = colIndex
 			currentConditions = columnConditions
 		} else if currentConditions.AnyMatch(columnConditions) {
@@ -292,7 +292,7 @@ func (t *Table) executeHorizontalMerging(item Data, columns Columns, rowNum int,
 			}
 
 			// Start a new group with the current column
-			currentGroup = []Column{column}
+			currentGroup = Columns{column}
 			currentGroupStartIndex = colIndex
 			currentConditions = columnConditions
 		}

@@ -402,7 +402,7 @@ func TestTable_executeVerticalMerging(t *testing.T) {
 	tests := []struct {
 		name           string
 		setupTable     func() *Table
-		column         Column
+		column         *Column
 		actualColIndex int
 		dataStartRow   int
 		setupMock      func(*MockTableOperations)
@@ -418,7 +418,7 @@ func TestTable_executeVerticalMerging(t *testing.T) {
 					},
 				}
 			},
-			column: Column{
+			column: &Column{
 				Name:  "col1",
 				Label: "Column 1",
 			},
@@ -440,7 +440,7 @@ func TestTable_executeVerticalMerging(t *testing.T) {
 					},
 				}
 			},
-			column: Column{
+			column: &Column{
 				Name:  "col1",
 				Label: "Column 1",
 				Merge: &MergeRules{
@@ -466,7 +466,7 @@ func TestTable_executeVerticalMerging(t *testing.T) {
 					},
 				}
 			},
-			column: Column{
+			column: &Column{
 				Name:  "col1",
 				Label: "Column 1",
 				Merge: &MergeRules{
@@ -492,7 +492,7 @@ func TestTable_executeVerticalMerging(t *testing.T) {
 					},
 				}
 			},
-			column: Column{
+			column: &Column{
 				Name:   "col1",
 				Label:  "Column 1",
 				Format: "string",

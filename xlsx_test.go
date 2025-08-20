@@ -566,7 +566,7 @@ func TestXlsx_writeCell(t *testing.T) {
 		name        string
 		xlsx        *xlsx
 		item        Data
-		column      Column
+		column      *Column
 		colIndex    int
 		rowIndex    int
 		setupMock   func(*MockSpreadsheet)
@@ -577,7 +577,7 @@ func TestXlsx_writeCell(t *testing.T) {
 			name: "successful_cell_write",
 			xlsx: &xlsx{},
 			item: Data{"name": "John", "age": 30},
-			column: Column{
+			column: &Column{
 				Name:   "name",
 				Label:  "Name",
 				Format: "",
@@ -594,7 +594,7 @@ func TestXlsx_writeCell(t *testing.T) {
 			name: "successful_cell_write_with_format",
 			xlsx: &xlsx{},
 			item: Data{"price": 123.45},
-			column: Column{
+			column: &Column{
 				Name:   "price",
 				Label:  "Price",
 				Format: "currency",
@@ -611,7 +611,7 @@ func TestXlsx_writeCell(t *testing.T) {
 			name: "missing_column_data",
 			xlsx: &xlsx{},
 			item: Data{"age": 30},
-			column: Column{
+			column: &Column{
 				Name:   "name",
 				Label:  "Name",
 				Format: "",
@@ -627,7 +627,7 @@ func TestXlsx_writeCell(t *testing.T) {
 			name: "process_value_error",
 			xlsx: &xlsx{},
 			item: Data{"name": "John"},
-			column: Column{
+			column: &Column{
 				Name:   "name",
 				Label:  "Name",
 				Format: "invalid_format",
@@ -644,7 +644,7 @@ func TestXlsx_writeCell(t *testing.T) {
 			name: "set_cell_value_error",
 			xlsx: &xlsx{},
 			item: Data{"name": "John"},
-			column: Column{
+			column: &Column{
 				Name:   "name",
 				Label:  "Name",
 				Format: "",
@@ -662,7 +662,7 @@ func TestXlsx_writeCell(t *testing.T) {
 			name: "nil_value_handling",
 			xlsx: &xlsx{},
 			item: Data{"name": nil},
-			column: Column{
+			column: &Column{
 				Name:   "name",
 				Label:  "Name",
 				Format: "",
