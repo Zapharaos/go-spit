@@ -1,10 +1,10 @@
-[![PkgGoDev](https://pkg.go.dev/badge/mod/github.com/zapharaos/go-spit)](https://pkg.go.dev/mod/github.com/zapharaos/go-spit)
+[![PkgGoDev](https://pkg.go.dev/badge/mod/github.com/Zapharaos/go-spit)](https://pkg.go.dev/mod/github.com/Zapharaos/go-spit)
 ![Go Version](https://img.shields.io/badge/go%20version-%3E=1.24.1-61CFDD.svg?style=flat-square)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Zapharaos/go-spit)](https://goreportcard.com/report/github.com/Zapharaos/go-spit)
-![GitHub License](https://img.shields.io/github/license/zapharaos/go-spit)
+![GitHub License](https://img.shields.io/github/license/Zapharaos/go-spit)
 
-![GitHub Release](https://img.shields.io/github/v/release/zapharaos/go-spit)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/zapharaos/go-spit/golang.yml)
+![GitHub Release](https://img.shields.io/github/v/release/Zapharaos/go-spit)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Zapharaos/go-spit/golang.yml)
 [![codecov](https://codecov.io/gh/Zapharaos/go-spit/graph/badge.svg?token=VNQGKOP6ZX)](https://codecov.io/gh/Zapharaos/go-spit)
 
 # go-spit
