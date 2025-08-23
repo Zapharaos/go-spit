@@ -48,13 +48,7 @@ func FormatValue(value interface{}, format string) (interface{}, error) {
 		// Skip formatting for string values, even if format is specified
 		// This prevents format conflicts (e.g., "Total" being formatted as date)
 		return v, nil
-	case int, int8, int16, int32, int64:
-		return v, nil
-	case uint, uint8, uint16, uint32, uint64:
-		return v, nil
-	case float32, float64:
-		return v, nil
-	case bool:
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64, bool:
 		return v, nil
 	}
 	return value, nil
