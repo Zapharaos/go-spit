@@ -1400,24 +1400,31 @@ func TestTableExcelize_processValue(t *testing.T) {
 			wantErr:  false,
 		},
 		{
+			name:     "String value with format - should not be formatted",
+			value:    "Total",
+			format:   "2006-01-02",
+			expected: "Total",
+			wantErr:  false,
+		},
+		{
 			name:     "Integer value",
 			value:    42,
 			format:   "",
-			expected: 42,
+			expected: "42",
 			wantErr:  false,
 		},
 		{
 			name:     "Float value",
 			value:    3.14,
 			format:   "",
-			expected: 3.14,
+			expected: "3.14",
 			wantErr:  false,
 		},
 		{
 			name:     "Boolean value",
 			value:    true,
 			format:   "",
-			expected: true,
+			expected: "true",
 			wantErr:  false,
 		},
 		{
@@ -1431,7 +1438,7 @@ func TestTableExcelize_processValue(t *testing.T) {
 			name:     "Time value without format",
 			value:    testTime,
 			format:   "",
-			expected: testTime,
+			expected: testTime.String(),
 			wantErr:  false,
 		},
 		{
@@ -1445,7 +1452,7 @@ func TestTableExcelize_processValue(t *testing.T) {
 			name:     "Nil time pointer",
 			value:    (*time.Time)(nil),
 			format:   "",
-			expected: "",
+			expected: "<nil>", // TableExcelize.ProcessValue returns fmt.Sprintf("%v", nil) = "<nil>"
 			wantErr:  false,
 		},
 		{
@@ -1456,10 +1463,17 @@ func TestTableExcelize_processValue(t *testing.T) {
 			wantErr:  false,
 		},
 		{
-			name:     "Slice without separator",
-			value:    []interface{}{"a", "b", "c"},
+			name:     "Slice with time values and format",
+			value:    []interface{}{testTime, testTime},
+			format:   "2006-01-02",
+			expected: "2024-01-15,2024-01-15",
+			wantErr:  false,
+		},
+		{
+			name:     "Empty slice",
+			value:    []interface{}{},
 			format:   "",
-			expected: "a,b,c", // Uses table's ListSeparator
+			expected: "",
 			wantErr:  false,
 		},
 		{

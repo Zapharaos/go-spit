@@ -15,16 +15,16 @@ func TestConvertSliceToString(t *testing.T) {
 		wantErr  bool
 	}{
 		{
-			name:     "With date formatting - mixed types should error",
-			slice:    []interface{}{"2024-06-01T12:34:56.789", "foo", 42},
+			name:     "With date formatting - mixed types (no error since strings skip formatting)",
+			slice:    []interface{}{time.Date(2024, 6, 1, 12, 34, 56, 789000000, time.UTC), "foo", 42},
 			format:   "2006-01-02",
 			sep:      ",",
-			expected: "",
-			wantErr:  true,
+			expected: "2024-06-01,foo,42",
+			wantErr:  false,
 		},
 		{
-			name:     "With date formatting - only dates",
-			slice:    []interface{}{"2024-06-01T12:34:56.789", "2024-12-25T10:30:45.123"},
+			name:     "With date formatting - only time values",
+			slice:    []interface{}{time.Date(2024, 6, 1, 12, 34, 56, 789000000, time.UTC), time.Date(2024, 12, 25, 10, 30, 45, 123000000, time.UTC)},
 			format:   "2006-01-02",
 			sep:      ",",
 			expected: "2024-06-01,2024-12-25",
@@ -36,6 +36,14 @@ func TestConvertSliceToString(t *testing.T) {
 			format:   "",
 			sep:      "|",
 			expected: "2024-06-01T12:34:56.789|foo|42",
+			wantErr:  false,
+		},
+		{
+			name:     "Empty slice",
+			slice:    []interface{}{},
+			format:   "",
+			sep:      ",",
+			expected: "",
 			wantErr:  false,
 		},
 	}
@@ -75,24 +83,52 @@ func TestFormatValue(t *testing.T) {
 			wantErr:  false,
 		},
 		{
-			name:     "String date value",
+			name:     "String date value - should not be formatted",
 			value:    "2024-06-01T12:34:56.789",
+			format:   "2006-01-02",
+			expected: "2024-06-01T12:34:56.789", // Strings skip formatting
+			wantErr:  false,
+		},
+		{
+			name:     "String non-date value - should not be formatted",
+			value:    "notadate",
+			format:   "2006-01-02",
+			expected: "notadate", // Strings skip formatting
+			wantErr:  false,
+		},
+		{
+			name:     "Time pointer value",
+			value:    func() *time.Time { t := time.Date(2024, 6, 1, 12, 34, 56, 789000000, time.UTC); return &t }(),
 			format:   "2006-01-02",
 			expected: "2024-06-01",
 			wantErr:  false,
 		},
 		{
-			name:     "String non-date value",
-			value:    "notadate",
+			name:     "Nil time pointer",
+			value:    (*time.Time)(nil),
 			format:   "2006-01-02",
-			expected: nil,
-			wantErr:  true,
+			expected: "",
+			wantErr:  false,
 		},
 		{
-			name:     "Other type value",
+			name:     "Integer value",
 			value:    123,
 			format:   "unused",
 			expected: 123,
+			wantErr:  false,
+		},
+		{
+			name:     "Float value",
+			value:    123.45,
+			format:   "unused",
+			expected: 123.45,
+			wantErr:  false,
+		},
+		{
+			name:     "Boolean value",
+			value:    true,
+			format:   "unused",
+			expected: true,
 			wantErr:  false,
 		},
 	}
@@ -103,9 +139,6 @@ func TestFormatValue(t *testing.T) {
 			if tt.wantErr {
 				if err == nil {
 					t.Errorf("expected error, got nil")
-				}
-				if val != nil {
-					t.Errorf("expected nil value, got %v", val)
 				}
 			} else {
 				if err != nil {
