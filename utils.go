@@ -32,13 +32,24 @@ func ConvertSliceToString(slice []interface{}, format string, separator string) 
 func FormatValue(value interface{}, format string) (interface{}, error) {
 	switch v := value.(type) {
 	case time.Time:
-		return v.Format(format), nil
-	case string:
-		date, err := ParseDate(v)
-		if err == nil {
-			return date.Format(format), nil
+		if format != "" {
+			return v.Format(format), nil
 		}
-		return nil, err
+		return v, nil
+	case *time.Time:
+		if v != nil {
+			if format != "" {
+				return v.Format(format), nil
+			}
+			return *v, nil
+		}
+		return "", nil
+	case string:
+		// Skip formatting for string values, even if format is specified
+		// This prevents format conflicts (e.g., "Total" being formatted as date)
+		return v, nil
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64, bool:
+		return v, nil
 	}
 	return value, nil
 }

@@ -3,6 +3,7 @@ package spit
 import (
 	"bytes"
 	"testing"
+	"time"
 
 	"github.com/xuri/excelize/v2"
 )
@@ -655,30 +656,104 @@ func TestSpreadsheetExcelize_processValue(t *testing.T) {
 		Columns: Columns{
 			{Name: "TestColumn", Label: "Test Column"},
 		},
+		ListSeparator: ",", // Add list separator for slice tests
 	}
 	se := NewSpreadsheetExcelize("TestSheet", table)
 
+	testTime := time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)
+	testTimePtr := &testTime
+
 	testCases := []struct {
+		name     string
 		value    interface{}
 		format   string
+		expected interface{}
 		hasError bool
 	}{
-		{"test string", "", false},
-		{123, "", false},
-		{123.45, "", false},
-		{true, "", false},
+		{
+			name:     "String value",
+			value:    "test string",
+			format:   "",
+			expected: "test string",
+			hasError: false,
+		},
+		{
+			name:     "String value with format - should not be formatted",
+			value:    "Total",
+			format:   "2006-01-02",
+			expected: "Total",
+			hasError: false,
+		},
+		{
+			name:     "Integer value",
+			value:    123,
+			format:   "",
+			expected: "123", // TableExcelize.ProcessValue converts to string
+			hasError: false,
+		},
+		{
+			name:     "Float value",
+			value:    123.45,
+			format:   "",
+			expected: "123.45", // TableExcelize.ProcessValue converts to string
+			hasError: false,
+		},
+		{
+			name:     "Boolean value",
+			value:    true,
+			format:   "",
+			expected: "true", // TableExcelize.ProcessValue converts to string
+			hasError: false,
+		},
+		{
+			name:     "Time value with format",
+			value:    testTime,
+			format:   "2006-01-02",
+			expected: "2024-01-15",
+			hasError: false,
+		},
+		{
+			name:     "Time value without format",
+			value:    testTime,
+			format:   "",
+			expected: "2024-01-15 10:30:00 +0000 UTC", // TableExcelize.ProcessValue converts to string
+			hasError: false,
+		},
+		{
+			name:     "Time pointer with format",
+			value:    testTimePtr,
+			format:   "2006-01-02",
+			expected: "2024-01-15",
+			hasError: false,
+		},
+		{
+			name:     "Nil time pointer",
+			value:    (*time.Time)(nil),
+			format:   "",
+			expected: "<nil>", // TableExcelize.ProcessValue returns "<nil>" for nil values
+			hasError: false,
+		},
+		{
+			name:     "Slice value",
+			value:    []interface{}{"a", "b", "c"},
+			format:   "",
+			expected: "a,b,c", // Since table has ListSeparator = ","
+			hasError: false,
+		},
 	}
 
 	for _, tc := range testCases {
-		result, err := se.ProcessValue(tc.value, tc.format)
-		if tc.hasError && err == nil {
-			t.Errorf("ProcessValue(%v, %s): expected error but got none", tc.value, tc.format)
-		}
-		if !tc.hasError && err != nil {
-			t.Errorf("ProcessValue(%v, %s): unexpected error: %v", tc.value, tc.format, err)
-		}
-		if !tc.hasError && result == nil {
-			t.Errorf("ProcessValue(%v, %s): expected result but got nil", tc.value, tc.format)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := se.ProcessValue(tc.value, tc.format)
+			if tc.hasError && err == nil {
+				t.Errorf("ProcessValue(%v, %s): expected error but got none", tc.value, tc.format)
+			}
+			if !tc.hasError && err != nil {
+				t.Errorf("ProcessValue(%v, %s): unexpected error: %v", tc.value, tc.format, err)
+			}
+			if !tc.hasError && result != tc.expected {
+				t.Errorf("ProcessValue(%v, %s): expected %v (%T), got %v (%T)", tc.value, tc.format, tc.expected, tc.expected, result, result)
+			}
+		})
 	}
 }

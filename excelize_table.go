@@ -7,7 +7,6 @@ package spit
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/xuri/excelize/v2"
 )
@@ -256,31 +255,6 @@ func (e *TableExcelize) ProcessValue(value interface{}, format string) (interfac
 			return ConvertSliceToString(v, format, e.Table.ListSeparator)
 		}
 		return fmt.Sprintf("%v", v), nil
-	case time.Time:
-		if format != "" {
-			return v.Format(format), nil
-		}
-		return v, nil
-	case *time.Time:
-		if v != nil {
-			if format != "" {
-				return v.Format(format), nil
-			}
-			return *v, nil
-		}
-		return "", nil
-	case string:
-		// Skip formatting for string values, even if format is specified
-		// This prevents format conflicts (e.g., "Total" being formatted as date)
-		return v, nil
-	case int, int8, int16, int32, int64:
-		return v, nil
-	case uint, uint8, uint16, uint32, uint64:
-		return v, nil
-	case float32, float64:
-		return v, nil
-	case bool:
-		return v, nil
 	default:
 		if format != "" {
 			var err error
