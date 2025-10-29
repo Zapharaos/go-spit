@@ -57,8 +57,8 @@ type TableOperations interface {
 	// GetColumnLetter Returns the Excel-style column letter (e.g., "A", "B") for a given column index.
 	GetColumnLetter(col int) string
 
-	// ProcessValue Processes a value for output, applying formatting if needed.
-	ProcessValue(value interface{}, format string) (interface{}, error)
+	// ProcessValue Processes a value for output, applying formatting and data type conversion if needed.
+	ProcessValue(value interface{}, format string, dataType DataType) (interface{}, error)
 }
 
 // Table represents a structured data table with configuration for export operations.
@@ -142,17 +142,29 @@ func (d Data) Lookup(ks ...string) (rval interface{}, err error, found bool) {
 	}
 }
 
+// DataType represents the data type for a column value.
+type DataType string
+
+const (
+	DataTypeAuto   DataType = "auto"   // Automatically detect type (default)
+	DataTypeString DataType = "string" // Force string type
+	DataTypeNumber DataType = "number" // Numeric type (int, float)
+	DataTypeBool   DataType = "bool"   // Boolean type
+	DataTypeDate   DataType = "date"   // Date/time type
+)
+
 // Column represents a single column definition for table exports.
 // Columns can be nested to create hierarchical structures, allowing for
 // complex header layouts and grouped data organization.
 type Column struct {
-	Name    string      // Field name in the data source (for leaf columns)
-	Label   string      // Display label for headers
-	Format  string      // Format specification for value processing (e.g., date format)
-	Merge   *MergeRules // Optional merge configuration for this column
-	Borders *Borders    // Borders configuration
-	Style   *Style      // Optional content style
-	Columns Columns     // Sub-columns for hierarchical structures
+	Name     string      // Field name in the data source (for leaf columns)
+	Label    string      // Display label for headers
+	Format   string      // Format specification for value processing (e.g., date format)
+	DataType DataType    // Data type for the column (auto, string, number, bool, date)
+	Merge    *MergeRules // Optional merge configuration for this column
+	Borders  *Borders    // Borders configuration
+	Style    *Style      // Optional content style (applied to data cells, not headers)
+	Columns  Columns     // Sub-columns for hierarchical structures
 }
 
 // NewColumn creates a new Column with the specified name and label.
@@ -166,6 +178,12 @@ func NewColumn(name, label string) *Column {
 // WithFormat sets the format for this column.
 func (c *Column) WithFormat(format string) *Column {
 	c.Format = format
+	return c
+}
+
+// WithDataType sets the data type for this column.
+func (c *Column) WithDataType(dataType DataType) *Column {
+	c.DataType = dataType
 	return c
 }
 

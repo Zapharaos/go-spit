@@ -246,24 +246,66 @@ func (e *TableExcelize) GetColumnLetter(col int) string {
 	return letter
 }
 
-// ProcessValue processes and formats a value according to its type and the specified format.
-// Supports basic types, time.Time, and slices. Formats value for Excel export.
-func (e *TableExcelize) ProcessValue(value interface{}, format string) (interface{}, error) {
+// ProcessValue processes and formats a value according to its type, data type, and the specified format.
+// Supports basic types, time.Time, and slices. Preserves native types for Excel when possible.
+func (e *TableExcelize) ProcessValue(value interface{}, format string, dataType DataType) (interface{}, error) {
+	// Handle nil values
+	if value == nil {
+		return nil, nil
+	}
+
+	// Handle slices/arrays
 	switch v := value.(type) {
 	case []interface{}:
 		if e.Table.ListSeparator != "" {
 			return ConvertSliceToString(v, format, e.Table.ListSeparator)
 		}
 		return fmt.Sprintf("%v", v), nil
-	default:
-		if format != "" {
-			var err error
-			value, err = FormatValue(value, format)
-			if err != nil {
-				return "", err
-			}
+	}
+
+	// Apply formatting if specified
+	if format != "" {
+		var err error
+		value, err = FormatValue(value, format)
+		if err != nil {
+			return "", err
 		}
+	}
+
+	// Handle data type conversion
+	switch dataType {
+	case DataTypeString:
+		// Force string representation
 		return fmt.Sprintf("%v", value), nil
+
+	case DataTypeNumber:
+		// Try to preserve as numeric type
+		return convertToNumber(value)
+
+	case DataTypeBool:
+		// Try to preserve as boolean
+		return convertToBool(value)
+
+	case DataTypeDate:
+		// For dates, if already formatted as string, return as is
+		// Otherwise return the value (could be time.Time which Excelize handles)
+		return value, nil
+
+	case DataTypeAuto:
+		fallthrough
+	default:
+		// Auto-detect: preserve native types that Excelize can handle
+		switch value.(type) {
+		case int, int8, int16, int32, int64,
+			uint, uint8, uint16, uint32, uint64,
+			float32, float64,
+			bool:
+			// Return numeric and boolean types as-is
+			return value, nil
+		default:
+			// Convert other types to string
+			return fmt.Sprintf("%v", value), nil
+		}
 	}
 }
 
@@ -343,4 +385,53 @@ func isCellInRange(cellRef, startRef, endRef string) bool {
 		return false
 	}
 	return col >= startCol && col <= endCol && row >= startRow && row <= endRow
+}
+
+// convertToNumber attempts to convert a value to a numeric type (int64 or float64).
+// Returns the numeric value if successful, or the original value as string if conversion fails.
+func convertToNumber(value interface{}) (interface{}, error) {
+	switch v := value.(type) {
+	case int, int8, int16, int32, int64:
+		return v, nil
+	case uint, uint8, uint16, uint32, uint64:
+		return v, nil
+	case float32, float64:
+		return v, nil
+	case string:
+		// Try to parse as integer first
+		if intVal, err := parseAsInt(v); err == nil {
+			return intVal, nil
+		}
+		// Try to parse as float
+		if floatVal, err := parseAsFloat(v); err == nil {
+			return floatVal, nil
+		}
+		// If parsing fails, return as string
+		return v, nil
+	default:
+		// For other types, convert to string
+		return fmt.Sprintf("%v", value), nil
+	}
+}
+
+// convertToBool attempts to convert a value to a boolean.
+// Returns the boolean value if successful, or the original value if conversion fails.
+func convertToBool(value interface{}) (interface{}, error) {
+	switch v := value.(type) {
+	case bool:
+		return v, nil
+	case string:
+		// Try to parse as boolean
+		if boolVal, err := parseAsBool(v); err == nil {
+			return boolVal, nil
+		}
+		return v, nil
+	case int, int8, int16, int32, int64:
+		// Treat 0 as false, non-zero as true
+		return v != 0, nil
+	case uint, uint8, uint16, uint32, uint64:
+		return v != 0, nil
+	default:
+		return fmt.Sprintf("%v", value), nil
+	}
 }
