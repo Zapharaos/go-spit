@@ -72,3 +72,43 @@ func ParseDate(dateStr string) (time.Time, error) {
 
 	return time.Time{}, fmt.Errorf("failed to parse date string: %s", dateStr)
 }
+
+// parseAsInt attempts to parse a string as an integer.
+// Returns the parsed int64 value or an error if parsing fails.
+func parseAsInt(s string) (int64, error) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return 0, fmt.Errorf("empty string")
+	}
+
+	var result int64
+	_, err := fmt.Sscanf(s, "%d", &result)
+	return result, err
+}
+
+// parseAsFloat attempts to parse a string as a floating-point number.
+// Returns the parsed float64 value or an error if parsing fails.
+func parseAsFloat(s string) (float64, error) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return 0, fmt.Errorf("empty string")
+	}
+
+	var result float64
+	_, err := fmt.Sscanf(s, "%f", &result)
+	return result, err
+}
+
+// parseAsBool attempts to parse a string as a boolean.
+// Recognizes common boolean string representations (true/false, yes/no, 1/0).
+func parseAsBool(s string) (bool, error) {
+	s = strings.TrimSpace(strings.ToLower(s))
+	switch s {
+	case "true", "yes", "1", "t", "y":
+		return true, nil
+	case "false", "no", "0", "f", "n":
+		return false, nil
+	default:
+		return false, fmt.Errorf("cannot parse '%s' as boolean", s)
+	}
+}

@@ -744,7 +744,7 @@ func TestSpreadsheetExcelize_processValue(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result, err := se.ProcessValue(tc.value, tc.format)
+			result, err := se.ProcessValue(tc.value, tc.format, DataTypeAuto)
 			if tc.hasError && err == nil {
 				t.Errorf("ProcessValue(%v, %s): expected error but got none", tc.value, tc.format)
 			}

@@ -161,7 +161,7 @@ func (e *SpreadsheetExcelize) GetColumnLetter(col int) string {
 	return e.Table.GetColumnLetter(col)
 }
 
-// ProcessValue processes a value according to the specified format for Excel output.
-func (e *SpreadsheetExcelize) ProcessValue(value interface{}, format string) (interface{}, error) {
-	return e.Table.ProcessValue(value, format)
+// ProcessValue processes a value according to the specified format and data type for Excel output.
+func (e *SpreadsheetExcelize) ProcessValue(value interface{}, format string, dataType DataType) (interface{}, error) {
+	return e.Table.ProcessValue(value, format, dataType)
 }

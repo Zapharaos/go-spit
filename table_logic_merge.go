@@ -126,7 +126,11 @@ func (t *Table) executeVerticalMerging(column *Column, actualColIndex int, dataS
 	}
 
 	// Analyze the column data and identify merge ranges
-	mergeRanges := t.findVerticalMergeRanges(actualColIndex, column.Name, column.Format, column.Merge.Vertical, ops)
+	dataType := column.DataType
+	if dataType == "" {
+		dataType = DataTypeAuto
+	}
+	mergeRanges := t.findVerticalMergeRanges(actualColIndex, column.Name, column.Format, dataType, column.Merge.Vertical, ops)
 
 	// Execute merge operations for each identified range
 	for _, mr := range mergeRanges {
@@ -153,7 +157,7 @@ func (t *Table) executeVerticalMerging(column *Column, actualColIndex int, dataS
 
 // findVerticalMergeRanges identifies ranges of consecutive rows that should be merged vertically.
 // Returns a slice of ranges (each range is a slice of row indices).
-func (t *Table) findVerticalMergeRanges(colIndex int, fieldName string, format string, conditions MergeConditions, ops TableOperations) [][]int {
+func (t *Table) findVerticalMergeRanges(colIndex int, fieldName string, format string, dataType DataType, conditions MergeConditions, ops TableOperations) [][]int {
 	var mergeRanges [][]int   // Collection of merge ranges to return
 	var currentRange []int    // Current range being built
 	var lastValue interface{} // Previous row's processed value for comparison
@@ -198,7 +202,7 @@ func (t *Table) findVerticalMergeRanges(colIndex int, fieldName string, format s
 
 		// Process the value according to the column's format specification
 		// This ensures consistent formatting for merge comparison
-		processedValue, err := ops.ProcessValue(value, format)
+		processedValue, err := ops.ProcessValue(value, format, dataType)
 		if err != nil {
 			continue // Skip this row if value processing fails
 		}
@@ -373,7 +377,11 @@ func (t *Table) findHorizontalMergeRanges(item Data, columns Columns, conditions
 
 		// Process the value according to the column's format specification
 		// This ensures consistent formatting for merge comparison
-		processedValue, err := ops.ProcessValue(value, column.Format)
+		dataType := column.DataType
+		if dataType == "" {
+			dataType = DataTypeAuto
+		}
+		processedValue, err := ops.ProcessValue(value, column.Format, dataType)
 		if err != nil {
 			// Use raw value if processing fails
 			processedValue = value

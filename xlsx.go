@@ -199,7 +199,13 @@ func (xlsx *xlsx) writeCell(item Data, column *Column, colIndex, rowIndex int) e
 		return fmt.Errorf("error looking up value for column %s: %w", column.Name, err)
 	}
 
-	processedValue, err := xlsx.spreadsheet.ProcessValue(value, column.Format)
+	// Use DataTypeAuto if not specified
+	dataType := column.DataType
+	if dataType == "" {
+		dataType = DataTypeAuto
+	}
+
+	processedValue, err := xlsx.spreadsheet.ProcessValue(value, column.Format, dataType)
 	if err != nil {
 		return fmt.Errorf("error processing value %s for column %s: %w", value, column.Name, err)
 	}
