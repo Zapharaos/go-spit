@@ -218,6 +218,9 @@ func (e *TableExcelize) ApplyStyleToCell(col, row int, style Style) error {
 		if inputStyle.Alignment != nil {
 			excelStyle.Alignment = inputStyle.Alignment
 		}
+		if inputStyle.CustomNumFmt != nil {
+			excelStyle.CustomNumFmt = inputStyle.CustomNumFmt
+		}
 	}
 
 	styleID, err := e.File.NewStyle(excelStyle)
@@ -355,6 +358,10 @@ func convertStyleToExcelizeStyle(style Style) *excelize.Style {
 			Horizontal: horizontal,
 			Vertical:   vertical,
 		}
+	}
+
+	if style.NumFmt != "" {
+		excelStyle.CustomNumFmt = &style.NumFmt
 	}
 
 	return excelStyle

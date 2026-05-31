@@ -57,6 +57,30 @@ func TestTable_getDataStartRow(t *testing.T) {
 			},
 			expected: 3,
 		},
+		{
+			name: "Preamble rows only, no header",
+			table: Table{
+				WriteHeader: false,
+				Preamble: PreambleRows{
+					NewPreambleRow("Title"),
+					NewPreambleRow("Subtitle"),
+				},
+			},
+			expected: 3,
+		},
+		{
+			name: "Preamble rows with header",
+			table: Table{
+				WriteHeader: true,
+				Columns: Columns{
+					{Name: "col1", Label: "Column 1"},
+				},
+				Preamble: PreambleRows{
+					NewPreambleRow("Title"),
+				},
+			},
+			expected: 3,
+		},
 	}
 
 	for _, tt := range tests {
@@ -1549,5 +1573,94 @@ func TestAlignment_GetAlignmentValues(t *testing.T) {
 				t.Errorf("GetAlignmentValues() vertical = %v, want %v", vertical, tt.expectedVertical)
 			}
 		})
+	}
+}
+
+func TestTable_getHeaderStartRow(t *testing.T) {
+	tests := []struct {
+		name     string
+		table    Table
+		expected int
+	}{
+		{
+			name:     "No preamble",
+			table:    Table{},
+			expected: 1,
+		},
+		{
+			name: "One preamble row",
+			table: Table{
+				Preamble: PreambleRows{NewPreambleRow("Title")},
+			},
+			expected: 2,
+		},
+		{
+			name: "Two preamble rows",
+			table: Table{
+				Preamble: PreambleRows{
+					NewPreambleRow("Title"),
+					NewPreambleRow("Subtitle"),
+				},
+			},
+			expected: 3,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.table.GetHeaderStartRow()
+			if result != tt.expected {
+				t.Errorf("GetHeaderStartRow() = %v, want %v", result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestNewPreambleRow(t *testing.T) {
+	row := NewPreambleRow("Title", 42, true)
+	if len(row.Values) != 3 {
+		t.Fatalf("NewPreambleRow() len = %d, want 3", len(row.Values))
+	}
+	if row.Values[0] != "Title" {
+		t.Errorf("Values[0] = %v, want Title", row.Values[0])
+	}
+	if row.Values[1] != 42 {
+		t.Errorf("Values[1] = %v, want 42", row.Values[1])
+	}
+	if row.Values[2] != true {
+		t.Errorf("Values[2] = %v, want true", row.Values[2])
+	}
+	if row.Style != nil {
+		t.Errorf("Style should be nil by default")
+	}
+}
+
+func TestPreambleRow_WithStyle(t *testing.T) {
+	style := &Style{Bold: true}
+	row := NewPreambleRow("Title").WithStyle(style)
+	if row.Style != style {
+		t.Errorf("WithStyle() did not set style correctly")
+	}
+}
+
+func TestTable_WithPreamble(t *testing.T) {
+	preamble := PreambleRows{NewPreambleRow("Title")}
+	table := NewTable(nil, nil, false).WithPreamble(preamble)
+	if len(table.Preamble) != 1 {
+		t.Errorf("WithPreamble() len = %d, want 1", len(table.Preamble))
+	}
+}
+
+func TestColumn_WithWidth(t *testing.T) {
+	col := NewColumn("price", "Price").WithWidth(25.5)
+	if col.Width != 25.5 {
+		t.Errorf("WithWidth() = %v, want 25.5", col.Width)
+	}
+}
+
+func TestStyle_NumFmt(t *testing.T) {
+	style := Style{NumFmt: "#,##0.00 €"}
+	if style.NumFmt != "#,##0.00 €" {
+		t.Errorf("NumFmt = %v, want #,##0.00 €", style.NumFmt)
 	}
 }
