@@ -1584,6 +1584,22 @@ func TestConvertStyleToExcelizeStyle(t *testing.T) {
 				return s.Font != nil && s.Font.Bold
 			},
 		},
+		{
+			name: "NumFmt sets CustomNumFmt",
+			style: Style{
+				NumFmt: "#,##0.00 €",
+			},
+			validate: func(s *excelize.Style) bool {
+				return s.CustomNumFmt != nil && *s.CustomNumFmt == "#,##0.00 €"
+			},
+		},
+		{
+			name: "Empty NumFmt leaves CustomNumFmt nil",
+			style: Style{},
+			validate: func(s *excelize.Style) bool {
+				return s.CustomNumFmt == nil
+			},
+		},
 	}
 
 	for _, tt := range tests {

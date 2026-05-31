@@ -11,12 +11,19 @@ import (
 )
 
 // RenderStyles applies all styling and border operations to the table.
-// It processes header styles, data cell styles, column borders, row borders, and cell-specific borders in order.
+// It processes preamble styles, header styles, data cell styles, column borders, row borders, and cell-specific borders in order.
 // Errors are wrapped and returned, but processing continues for best-effort styling.
 func (t *Table) RenderStyles(ops TableOperations) error {
 	dataStartRow := t.GetDataStartRow()
 	totalColumns := t.Columns.GetTotalColumnCount()
 	dataEndRow := dataStartRow + len(t.Data) - 1
+
+	// Apply preamble styles
+	if len(t.Preamble) > 0 {
+		if err := t.applyPreambleStyles(ops); err != nil {
+			return fmt.Errorf("failed to apply preamble styles: %w", err)
+		}
+	}
 
 	// Apply header styles and borders
 	if t.WriteHeader && len(t.Columns) > 0 {
@@ -56,6 +63,7 @@ func (t *Table) RenderStyles(ops TableOperations) error {
 func (t *Table) applyHeaderStyles(ops TableOperations) error {
 	maxDepth := t.Columns.GetMaxDepth()
 	totalColumns := t.Columns.GetTotalColumnCount()
+	headerStartRow := t.GetHeaderStartRow()
 
 	// Use user-provided borders or fall back to default thin boundary borders
 	borders := NewBordersBoundaries(BorderStyleThin)
@@ -64,7 +72,7 @@ func (t *Table) applyHeaderStyles(ops TableOperations) error {
 	}
 
 	// Apply borders to each header row
-	for row := 1; row <= maxDepth; row++ {
+	for row := headerStartRow; row < headerStartRow+maxDepth; row++ {
 		for col := 1; col <= totalColumns; col++ {
 			if err := t.applyBordersToCell(col, row, borders, ops); err != nil {
 				L().Warn("Failed to apply header cell-specific border",
@@ -88,6 +96,7 @@ func (t *Table) applyHeaderStyles(ops TableOperations) error {
 func (t *Table) applyHeaderCellStyles(ops TableOperations) error {
 	maxDepth := t.Columns.GetMaxDepth()
 	totalColumns := t.Columns.GetTotalColumnCount()
+	headerStartRow := t.GetHeaderStartRow()
 
 	// Default header style configuration
 	headerStyle := Style{
@@ -102,7 +111,7 @@ func (t *Table) applyHeaderCellStyles(ops TableOperations) error {
 	}
 
 	// Apply header styling to all header rows
-	if err := ops.ApplyStyleToRange(1, 1, totalColumns, maxDepth, headerStyle); err != nil {
+	if err := ops.ApplyStyleToRange(1, headerStartRow, totalColumns, headerStartRow+maxDepth-1, headerStyle); err != nil {
 		L().Warn("Failed to apply header range style", Error(err))
 		return err
 	}
@@ -323,6 +332,26 @@ func (t *Table) applyBordersToCell(col, row int, borders *Borders, ops TableOper
 	if borders.Bottom != nil {
 		if err := ops.ApplyBorderToCell(col, row, "bottom", borders.Bottom); err != nil {
 			return fmt.Errorf("failed to apply bottom border: %w", err)
+		}
+	}
+	return nil
+}
+
+// applyPreambleStyles applies optional styles to preamble rows.
+// Each preamble row's style is applied to all cells in that row.
+func (t *Table) applyPreambleStyles(ops TableOperations) error {
+	for i, row := range t.Preamble {
+		if row.Style == nil {
+			continue
+		}
+		actualRow := i + 1
+		for col := range row.Values {
+			if err := ops.ApplyStyleToCell(col+1, actualRow, *row.Style); err != nil {
+				L().Warn("Failed to apply preamble cell style",
+					Int("column", col+1),
+					Int("row", actualRow),
+					Error(err))
+			}
 		}
 	}
 	return nil

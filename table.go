@@ -77,6 +77,7 @@ type Table struct {
 	RowOptionsMap  RowOptionsMap  // Row-specific options (styling, merging, borders)
 	CellOptionsMap CellOptionsMap // Cell-specific options for fine-grained control
 	HeaderOptions  *HeaderOptions // Optional header configuration (style and borders)
+	Preamble       PreambleRows   // Optional free-form rows written above the header/data area
 	WriteHeader    bool           // Whether to generate headers from column definitions
 	Limit          int64          // Maximum number of data rows to export (0 = no limit)
 	ListSeparator  string         // separator used when rendering slice/array values as strings
@@ -109,6 +110,33 @@ func (t *Table) WithHeaderOptions(headerOptions *HeaderOptions) *Table {
 	return t
 }
 
+// WithPreamble sets the preamble rows written above the header/data area.
+func (t *Table) WithPreamble(preamble PreambleRows) *Table {
+	t.Preamble = preamble
+	return t
+}
+
+// PreambleRow represents a single free-form row written above the table header.
+// Each row can carry an arbitrary number of cell values and an optional style.
+type PreambleRow struct {
+	Values []interface{} // Cell values for this row (one entry per column position)
+	Style  *Style        // Optional style applied to every non-empty cell in this row
+}
+
+// PreambleRows is a slice of PreambleRow.
+type PreambleRows []*PreambleRow
+
+// NewPreambleRow creates a new PreambleRow with the given cell values.
+func NewPreambleRow(values ...interface{}) *PreambleRow {
+	return &PreambleRow{Values: values}
+}
+
+// WithStyle sets the style for this preamble row.
+func (p *PreambleRow) WithStyle(style *Style) *PreambleRow {
+	p.Style = style
+	return p
+}
+
 // HeaderOptions represents option settings for table header rows.
 // When configured, it overrides the default header style and border settings.
 type HeaderOptions struct {
@@ -133,15 +161,21 @@ func (h *HeaderOptions) WithBorders(borders *Borders) *HeaderOptions {
 	return h
 }
 
+// GetHeaderStartRow returns the 1-based row number where the header (or data, if no header)
+// begins. It equals the number of preamble rows plus 1.
+func (t *Table) GetHeaderStartRow() int {
+	return len(t.Preamble) + 1
+}
+
 // GetDataStartRow calculates the starting row number for data based on header configuration.
-// Accounts for multi-level headers by reserving rows for each level of the column hierarchy.
+// Accounts for preamble rows and multi-level headers by reserving rows for each level of the column hierarchy.
 func (t *Table) GetDataStartRow() int {
-	dataStartRow := 1
+	dataStartRow := t.GetHeaderStartRow()
 	if t.WriteHeader && len(t.Columns) > 0 {
 		// Calculate the maximum depth of the column hierarchy
 		// Each level of nesting requires its own header row
 		maxDepth := t.Columns.GetMaxDepth()
-		dataStartRow = maxDepth + 1
+		dataStartRow += maxDepth
 	}
 	return dataStartRow
 }
@@ -154,7 +188,7 @@ func (t *Table) GetDataIndexFromRowIndex(rowIndex int) int {
 		headerShift := t.GetDataStartRow()
 		return rowIndex - headerShift
 	}
-	return rowIndex
+	return rowIndex - len(t.Preamble)
 }
 
 // Data represents a single row of table data as a map from column name to value.
@@ -188,6 +222,7 @@ type Column struct {
 	Name    string      // Field name in the data source (for leaf columns)
 	Label   string      // Display label for headers
 	Format  string      // Format specification for value processing (e.g., date format)
+	Width   float64     // Optional column width in character units (0 = use default)
 	Merge   *MergeRules // Optional merge configuration for this column
 	Borders *Borders    // Borders configuration
 	Style   *Style      // Optional content style
@@ -205,6 +240,13 @@ func NewColumn(name, label string) *Column {
 // WithFormat sets the format for this column.
 func (c *Column) WithFormat(format string) *Column {
 	c.Format = format
+	return c
+}
+
+// WithWidth sets the column width in character units for this column.
+// A value of 0 (the default) falls back to the global default width in autoFitColumns.
+func (c *Column) WithWidth(width float64) *Column {
+	c.Width = width
 	return c
 }
 
@@ -627,6 +669,7 @@ type Style struct {
 	FontSize        float64   // Font size in points
 	FontFamily      string    // Font family name (e.g., "Arial", "Times New Roman")
 	Alignment       Alignment // Text alignment
+	NumFmt          string    // Excel number-format string (e.g. "#,##0.00 €"). Keeps values numeric while controlling display.
 }
 
 // Alignment represents the alignment options for content.

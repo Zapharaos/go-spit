@@ -125,9 +125,18 @@ func (xlsx *xlsx) writeData() error {
 	}
 
 	currentRow := 1
+	if len(t.Preamble) > 0 {
+		L().Debug("Writing preamble rows")
+		preambleRows, err := xlsx.writePreamble(currentRow)
+		if err != nil {
+			return fmt.Errorf("failed to write preamble: %w", err)
+		}
+		currentRow += preambleRows
+	}
+
 	if len(t.Columns) > 0 {
 		L().Debug("Writing headers")
-		headerRows, err := xlsx.writeHeaders()
+		headerRows, err := xlsx.writeHeaders(currentRow)
 		if err != nil {
 			return fmt.Errorf("failed to write headers: %w", err)
 		}
@@ -161,9 +170,9 @@ func (xlsx *xlsx) writeData() error {
 	return nil
 }
 
-// writeHeaders writes multi-level headers to the Excel sheet.
+// writeHeaders writes multi-level headers to the Excel sheet starting at the given row.
 // Returns the number of header rows written and error if any header cell fails to write.
-func (xlsx *xlsx) writeHeaders() (int, error) {
+func (xlsx *xlsx) writeHeaders(startRow int) (int, error) {
 	t := xlsx.spreadsheet.GetTable()
 	nbColumns := len(t.Columns)
 
@@ -175,7 +184,7 @@ func (xlsx *xlsx) writeHeaders() (int, error) {
 	maxDepth := t.Columns.GetMaxDepth()
 	if maxDepth == 1 {
 		for i, column := range t.Columns {
-			if err := xlsx.spreadsheet.SetCellValue(i+1, 1, column.Label); err != nil {
+			if err := xlsx.spreadsheet.SetCellValue(i+1, startRow, column.Label); err != nil {
 				return 0, fmt.Errorf("failed to set header cell value for column %s: %w", column.Name, err)
 			}
 		}
@@ -183,7 +192,7 @@ func (xlsx *xlsx) writeHeaders() (int, error) {
 	}
 
 	L().Debug("Writing multi-level headers", Int("maxDepth", maxDepth))
-	if err := xlsx.writeHeaderRow(t.Columns, 1, maxDepth, 1); err != nil {
+	if err := xlsx.writeHeaderRow(t.Columns, startRow, startRow+maxDepth-1, 1); err != nil {
 		return 0, err
 	}
 	return maxDepth, nil
@@ -191,7 +200,7 @@ func (xlsx *xlsx) writeHeaders() (int, error) {
 
 // writeHeaderRow writes a specific header row, handling hierarchical structure.
 // Recursively processes sub-columns for multi-level headers.
-func (xlsx *xlsx) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol int) error {
+func (xlsx *xlsx) writeHeaderRow(columns Columns, currentRow, maxRow, startCol int) error {
 	currentCol := startCol
 
 	for _, column := range columns {
@@ -201,8 +210,8 @@ func (xlsx *xlsx) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol
 
 		if column.HasSubColumns() {
 			// Process sub-columns recursively for hierarchical headers
-			if currentRow < maxDepth {
-				if err := xlsx.writeHeaderRow(column.Columns, currentRow+1, maxDepth, currentCol); err != nil {
+			if currentRow < maxRow {
+				if err := xlsx.writeHeaderRow(column.Columns, currentRow+1, maxRow, currentCol); err != nil {
 					return err
 				}
 			}
@@ -215,6 +224,20 @@ func (xlsx *xlsx) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol
 	}
 
 	return nil
+}
+
+// writePreamble writes free-form preamble rows to the sheet starting at startRow.
+// Returns the number of rows written.
+func (xlsx *xlsx) writePreamble(startRow int) (int, error) {
+	t := xlsx.spreadsheet.GetTable()
+	for i, row := range t.Preamble {
+		for j, val := range row.Values {
+			if err := xlsx.spreadsheet.SetCellValue(j+1, startRow+i, val); err != nil {
+				return 0, fmt.Errorf("failed to write preamble cell at (%d, %d): %w", j+1, startRow+i, err)
+			}
+		}
+	}
+	return len(t.Preamble), nil
 }
 
 // writeCell writes a single cell item to the spreadsheet.
@@ -258,11 +281,17 @@ func (xlsx *xlsx) writeCell(item Data, column *Column, colIndex, rowIndex int) e
 }
 
 // autoFitColumns auto-fits column widths using dynamic operations.
-// Sets a default width for each column for improved readability.
+// Uses the column-specific width when set, otherwise falls back to a default width of 15.
 func (xlsx *xlsx) autoFitColumns() {
-	for i := 1; i <= len(xlsx.spreadsheet.GetTable().Columns.GetFlattenedColumns()); i++ {
-		colLetter := xlsx.spreadsheet.GetColumnLetter(i)
-		if err := xlsx.spreadsheet.SetColumnWidth(colLetter, 15); err != nil {
+	const defaultWidth = 15
+	flatColumns := xlsx.spreadsheet.GetTable().Columns.GetFlattenedColumns()
+	for i, column := range flatColumns {
+		colLetter := xlsx.spreadsheet.GetColumnLetter(i + 1)
+		width := column.Width
+		if width <= 0 {
+			width = defaultWidth
+		}
+		if err := xlsx.spreadsheet.SetColumnWidth(colLetter, width); err != nil {
 			L().Warn("Failed to set column width", String("column", colLetter), Error(err))
 		}
 	}

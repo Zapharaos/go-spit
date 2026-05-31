@@ -20,6 +20,11 @@ var (
 
 // Logger defines the interface for logging implementations.
 // Compatible with popular loggers like Zap, Logrus, etc.
+//
+// Note: the default logger is StdLogger, which writes to stdout at INFO level using
+// the standard "log" package. This means every export call will print "Starting XLSX
+// export" and "XLSX export completed" messages unless you either wire a custom logger
+// via SetLogger or silence output by calling DisableLogger / SetLogLevel(LevelOff).
 type Logger interface {
 	Debug(msg string, fields ...Field)
 	Info(msg string, fields ...Field)

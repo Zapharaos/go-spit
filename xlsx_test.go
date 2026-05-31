@@ -422,7 +422,7 @@ func TestXlsx_writeHeaders(t *testing.T) {
 			tt.xlsx.spreadsheet = mockSpreadsheet
 			tt.setupMock(mockSpreadsheet)
 
-			rows, err := tt.xlsx.writeHeaders()
+			rows, err := tt.xlsx.writeHeaders(1)
 
 			if tt.expectError {
 				if err == nil {
@@ -901,6 +901,23 @@ func TestXlsx_autoFitColumns(t *testing.T) {
 				mock.EXPECT().SetColumnWidth("E", 15.0).Return(nil)
 			},
 		},
+		{
+			name: "custom_column_width",
+			xlsx: &xlsx{},
+			setupMock: func(mock *MockSpreadsheet) {
+				table := &Table{
+					Columns: Columns{
+						{Name: "short", Label: "Short", Width: 0},  // 0 → default 15
+						{Name: "long", Label: "Long Description", Width: 40},
+					},
+				}
+				mock.EXPECT().GetTable().Return(table).AnyTimes()
+				mock.EXPECT().GetColumnLetter(1).Return("A")
+				mock.EXPECT().SetColumnWidth("A", 15.0).Return(nil)
+				mock.EXPECT().GetColumnLetter(2).Return("B")
+				mock.EXPECT().SetColumnWidth("B", 40.0).Return(nil)
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -914,6 +931,199 @@ func TestXlsx_autoFitColumns(t *testing.T) {
 
 			// autoFitColumns doesn't return an error, so we just call it
 			tt.xlsx.autoFitColumns()
+		})
+	}
+}
+
+// TestXlsx_writePreamble tests the writePreamble method
+func TestXlsx_writePreamble(t *testing.T) {
+	tests := []struct {
+		name         string
+		xlsx         *xlsx
+		startRow     int
+		setupMock    func(*MockSpreadsheet)
+		expectError  bool
+		errorMsg     string
+		expectedRows int
+	}{
+		{
+			name:     "no_preamble_rows",
+			xlsx:     &xlsx{},
+			startRow: 1,
+			setupMock: func(mock *MockSpreadsheet) {
+				mock.EXPECT().GetTable().Return(&Table{}).AnyTimes()
+			},
+			expectedRows: 0,
+		},
+		{
+			name:     "single_preamble_row",
+			xlsx:     &xlsx{},
+			startRow: 1,
+			setupMock: func(mock *MockSpreadsheet) {
+				table := &Table{
+					Preamble: PreambleRows{
+						NewPreambleRow("Report Title"),
+					},
+				}
+				mock.EXPECT().GetTable().Return(table).AnyTimes()
+				mock.EXPECT().SetCellValue(1, 1, "Report Title").Return(nil)
+			},
+			expectedRows: 1,
+		},
+		{
+			name:     "multiple_preamble_rows_with_multiple_values",
+			xlsx:     &xlsx{},
+			startRow: 1,
+			setupMock: func(mock *MockSpreadsheet) {
+				table := &Table{
+					Preamble: PreambleRows{
+						NewPreambleRow("Title", "Date"),
+						NewPreambleRow("Subtitle"),
+					},
+				}
+				mock.EXPECT().GetTable().Return(table).AnyTimes()
+				mock.EXPECT().SetCellValue(1, 1, "Title").Return(nil)
+				mock.EXPECT().SetCellValue(2, 1, "Date").Return(nil)
+				mock.EXPECT().SetCellValue(1, 2, "Subtitle").Return(nil)
+			},
+			expectedRows: 2,
+		},
+		{
+			name:     "preamble_with_offset_start_row",
+			xlsx:     &xlsx{},
+			startRow: 3,
+			setupMock: func(mock *MockSpreadsheet) {
+				table := &Table{
+					Preamble: PreambleRows{
+						NewPreambleRow("Title"),
+					},
+				}
+				mock.EXPECT().GetTable().Return(table).AnyTimes()
+				mock.EXPECT().SetCellValue(1, 3, "Title").Return(nil)
+			},
+			expectedRows: 1,
+		},
+		{
+			name:     "preamble_cell_write_error",
+			xlsx:     &xlsx{},
+			startRow: 1,
+			setupMock: func(mock *MockSpreadsheet) {
+				table := &Table{
+					Preamble: PreambleRows{
+						NewPreambleRow("Title"),
+					},
+				}
+				mock.EXPECT().GetTable().Return(table).AnyTimes()
+				mock.EXPECT().SetCellValue(1, 1, "Title").Return(errors.New("write error"))
+			},
+			expectError: true,
+			errorMsg:    "failed to write preamble cell",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockSpreadsheet := NewMockSpreadsheet(ctrl)
+			tt.xlsx.spreadsheet = mockSpreadsheet
+			tt.setupMock(mockSpreadsheet)
+
+			rows, err := tt.xlsx.writePreamble(tt.startRow)
+
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected error but got none")
+				} else if tt.errorMsg != "" && !contains(err.Error(), tt.errorMsg) {
+					t.Errorf("Expected error message to contain %q, got %q", tt.errorMsg, err.Error())
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Unexpected error: %v", err)
+				}
+				if rows != tt.expectedRows {
+					t.Errorf("Expected %d rows, got %d", tt.expectedRows, rows)
+				}
+			}
+		})
+	}
+}
+
+// TestXlsx_writeHeaders_withPreamble tests writeHeaders when preamble rows push headers down
+func TestXlsx_writeHeaders_withPreamble(t *testing.T) {
+	tests := []struct {
+		name         string
+		xlsx         *xlsx
+		startRow     int
+		setupMock    func(*MockSpreadsheet)
+		expectError  bool
+		expectedRows int
+	}{
+		{
+			name:     "headers_start_at_row_2_due_to_preamble",
+			xlsx:     &xlsx{},
+			startRow: 2,
+			setupMock: func(mock *MockSpreadsheet) {
+				table := &Table{
+					Columns: Columns{
+						{Name: "name", Label: "Name"},
+						{Name: "age", Label: "Age"},
+					},
+				}
+				mock.EXPECT().GetTable().Return(table).AnyTimes()
+				mock.EXPECT().SetCellValue(1, 2, "Name").Return(nil)
+				mock.EXPECT().SetCellValue(2, 2, "Age").Return(nil)
+			},
+			expectedRows: 1,
+		},
+		{
+			name:     "multi_level_headers_with_preamble",
+			xlsx:     &xlsx{},
+			startRow: 3,
+			setupMock: func(mock *MockSpreadsheet) {
+				table := &Table{
+					Columns: Columns{
+						{
+							Name:  "personal",
+							Label: "Personal",
+							Columns: Columns{
+								{Name: "name", Label: "Name"},
+							},
+						},
+					},
+				}
+				mock.EXPECT().GetTable().Return(table).AnyTimes()
+				mock.EXPECT().SetCellValue(1, 3, "Personal").Return(nil)
+				mock.EXPECT().SetCellValue(1, 4, "Name").Return(nil)
+			},
+			expectedRows: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockSpreadsheet := NewMockSpreadsheet(ctrl)
+			tt.xlsx.spreadsheet = mockSpreadsheet
+			tt.setupMock(mockSpreadsheet)
+
+			rows, err := tt.xlsx.writeHeaders(tt.startRow)
+
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Expected error but got none")
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Unexpected error: %v", err)
+				}
+				if rows != tt.expectedRows {
+					t.Errorf("Expected %d rows, got %d", tt.expectedRows, rows)
+				}
+			}
 		})
 	}
 }
