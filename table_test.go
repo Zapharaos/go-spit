@@ -844,6 +844,69 @@ func TestTable_WithCellOptions(t *testing.T) {
 	}
 }
 
+func TestTable_WithHeaderOptions(t *testing.T) {
+	table := &Table{}
+	headerOptions := NewHeaderOptions().
+		WithStyle(&Style{Bold: true, BackgroundColor: "#FF0000"}).
+		WithBorders(NewBordersBoundaries(BorderStyleMedium))
+
+	result := table.WithHeaderOptions(headerOptions)
+
+	if result != table {
+		t.Errorf("WithHeaderOptions() should return the same table instance")
+	}
+	if table.HeaderOptions == nil {
+		t.Errorf("WithHeaderOptions() should set HeaderOptions")
+	}
+	if table.HeaderOptions != headerOptions {
+		t.Errorf("WithHeaderOptions() HeaderOptions should be set to the provided value")
+	}
+}
+
+func TestNewHeaderOptions(t *testing.T) {
+	h := NewHeaderOptions()
+
+	if h == nil {
+		t.Errorf("NewHeaderOptions() should not return nil")
+	}
+	if h.Style != nil {
+		t.Errorf("NewHeaderOptions() Style should be nil by default")
+	}
+	if h.Borders != nil {
+		t.Errorf("NewHeaderOptions() Borders should be nil by default")
+	}
+}
+
+func TestHeaderOptions_WithStyle(t *testing.T) {
+	h := NewHeaderOptions()
+	style := &Style{Bold: true, FontSize: 14, BackgroundColor: "#AABBCC"}
+
+	result := h.WithStyle(style)
+
+	if result != h {
+		t.Errorf("WithStyle() should return the same HeaderOptions instance")
+	}
+	if h.Style != style {
+		t.Errorf("WithStyle() Style should be set to the provided value")
+	}
+}
+
+func TestHeaderOptions_WithBorders(t *testing.T) {
+	h := NewHeaderOptions()
+	borders := NewBordersBoundaries(BorderStyleThick)
+
+	result := h.WithBorders(borders)
+
+	if result != h {
+		t.Errorf("WithBorders() should return the same HeaderOptions instance")
+	}
+	if h.Borders != borders {
+		t.Errorf("WithBorders() Borders should be set to the provided value")
+	}
+}
+
+
+
 func TestNewColumn(t *testing.T) {
 	name := "test_name"
 	label := "Test Label"
