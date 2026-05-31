@@ -811,6 +811,190 @@ func TestXlsx_autoFitColumns(t *testing.T) {
 	}
 }
 
+// TestExportXLSXSheets tests the ExportXLSXSheets function
+func TestExportXLSXSheets(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	tempDir, err := os.MkdirTemp("", "xlsx_sheets_test")
+	if err != nil {
+		t.Fatalf("Failed to create temp directory: %v", err)
+	}
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			t.Logf("Failed to remove temp directory: %v", err)
+		}
+	}()
+
+	emptyTable := &Table{Data: DataSlice{}, Columns: Columns{}, WriteHeader: false}
+
+	tests := []struct {
+		name          string
+		setupMocks    func(mocks []*MockSpreadsheet)
+		sheetCount    int
+		params        FileWriteParams
+		expectError   bool
+		errorContains string
+	}{
+		{
+			name:          "no_sheets_returns_error",
+			setupMocks:    func(mocks []*MockSpreadsheet) {},
+			sheetCount:    0,
+			params:        FileWriteParams{Filename: "test_no_sheets", Filepath: tempDir},
+			expectError:   true,
+			errorContains: "no sheets provided",
+		},
+		{
+			name: "single_sheet_with_new_file",
+			setupMocks: func(mocks []*MockSpreadsheet) {
+				m := mocks[0]
+				m.EXPECT().getFile().Return(nil)
+				m.EXPECT().createNewFile().Return(nil)
+				m.EXPECT().close().Return(nil)
+				m.EXPECT().getSheetName().Return("Reports")
+				m.EXPECT().createSheet().Return(nil)
+				m.EXPECT().setActiveSheet().Return(nil)
+				m.EXPECT().getTable().Return(emptyTable).AnyTimes()
+				m.EXPECT().saveToWriter(gomock.Any()).Return(nil)
+			},
+			sheetCount: 1,
+			params:     FileWriteParams{Filename: "test_single_sheet", Filepath: tempDir},
+		},
+		{
+			name: "multiple_sheets_with_new_file",
+			setupMocks: func(mocks []*MockSpreadsheet) {
+				existingFile := &struct{ name string }{name: "shared_file"}
+				mocks[0].EXPECT().getFile().Return(nil)
+				mocks[0].EXPECT().createNewFile().Return(nil)
+				mocks[0].EXPECT().close().Return(nil)
+				mocks[0].EXPECT().getFile().Return(existingFile) // second call to propagate file
+				mocks[0].EXPECT().getSheetName().Return("Sheet1")
+				mocks[0].EXPECT().createSheet().Return(nil)
+				mocks[0].EXPECT().setActiveSheet().Return(nil)
+				mocks[0].EXPECT().getTable().Return(emptyTable).AnyTimes()
+				mocks[0].EXPECT().saveToWriter(gomock.Any()).Return(nil)
+
+				mocks[1].EXPECT().getFile().Return(nil)
+				mocks[1].EXPECT().initWithFile(existingFile).Return(nil)
+				mocks[1].EXPECT().getSheetName().Return("Summary")
+				mocks[1].EXPECT().createSheet().Return(nil)
+				mocks[1].EXPECT().setActiveSheet().Return(nil)
+				mocks[1].EXPECT().getTable().Return(emptyTable).AnyTimes()
+			},
+			sheetCount: 2,
+			params:     FileWriteParams{Filename: "test_multiple_sheets", Filepath: tempDir},
+		},
+		{
+			name: "multiple_sheets_with_existing_file",
+			setupMocks: func(mocks []*MockSpreadsheet) {
+				existingFile := &struct{ name string }{name: "shared_file"}
+				mocks[0].EXPECT().getFile().Return(existingFile)
+				mocks[0].EXPECT().getFile().Return(existingFile) // second call to propagate file
+				mocks[0].EXPECT().getSheetName().Return("Sheet1")
+				mocks[0].EXPECT().createSheet().Return(nil)
+				mocks[0].EXPECT().setActiveSheet().Return(nil)
+				mocks[0].EXPECT().getTable().Return(emptyTable).AnyTimes()
+				mocks[0].EXPECT().saveToWriter(gomock.Any()).Return(nil)
+
+				mocks[1].EXPECT().getFile().Return(existingFile) // already has the file
+				mocks[1].EXPECT().getSheetName().Return("Summary")
+				mocks[1].EXPECT().createSheet().Return(nil)
+				mocks[1].EXPECT().setActiveSheet().Return(nil)
+				mocks[1].EXPECT().getTable().Return(emptyTable).AnyTimes()
+			},
+			sheetCount: 2,
+			params:     FileWriteParams{Filename: "test_existing_file", Filepath: tempDir},
+		},
+		{
+			name: "error_creating_new_file",
+			setupMocks: func(mocks []*MockSpreadsheet) {
+				mocks[0].EXPECT().getFile().Return(nil)
+				mocks[0].EXPECT().createNewFile().Return(errors.New("create file error"))
+			},
+			sheetCount:    1,
+			params:        FileWriteParams{Filename: "test_error_create", Filepath: tempDir},
+			expectError:   true,
+			errorContains: "failed to create new XLSX file",
+		},
+		{
+			name: "error_initializing_second_sheet",
+			setupMocks: func(mocks []*MockSpreadsheet) {
+				existingFile := &struct{ name string }{name: "shared_file"}
+				mocks[0].EXPECT().getFile().Return(nil)
+				mocks[0].EXPECT().createNewFile().Return(nil)
+				mocks[0].EXPECT().close().Return(nil)
+				mocks[0].EXPECT().getFile().Return(existingFile) // second call to propagate file
+
+				mocks[1].EXPECT().getFile().Return(nil)
+				mocks[1].EXPECT().initWithFile(existingFile).Return(errors.New("init error"))
+			},
+			sheetCount:    2,
+			params:        FileWriteParams{Filename: "test_error_init", Filepath: tempDir},
+			expectError:   true,
+			errorContains: "failed to initialize sheet with existing file",
+		},
+		{
+			name: "error_writing_data",
+			setupMocks: func(mocks []*MockSpreadsheet) {
+				mocks[0].EXPECT().getFile().Return(&struct{ name string }{name: "existing_file"})
+				mocks[0].EXPECT().getSheetName().Return("Sheet1")
+				mocks[0].EXPECT().createSheet().Return(errors.New("create sheet error"))
+			},
+			sheetCount:    1,
+			params:        FileWriteParams{Filename: "test_write_error", Filepath: tempDir},
+			expectError:   true,
+			errorContains: "failed to write data to XLSX file",
+		},
+		{
+			name: "error_saving_to_writer",
+			setupMocks: func(mocks []*MockSpreadsheet) {
+				mocks[0].EXPECT().getFile().Return(&struct{ name string }{name: "existing_file"})
+				mocks[0].EXPECT().getSheetName().Return("Sheet1")
+				mocks[0].EXPECT().createSheet().Return(nil)
+				mocks[0].EXPECT().setActiveSheet().Return(nil)
+				mocks[0].EXPECT().getTable().Return(emptyTable).AnyTimes()
+				mocks[0].EXPECT().saveToWriter(gomock.Any()).Return(errors.New("save error"))
+			},
+			sheetCount:    1,
+			params:        FileWriteParams{Filename: "test_save_error", Filepath: tempDir},
+			expectError:   true,
+			errorContains: "failed to write XLSX to writer",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mocks := make([]*MockSpreadsheet, tt.sheetCount)
+			for i := range mocks {
+				mocks[i] = NewMockSpreadsheet(ctrl)
+			}
+			tt.setupMocks(mocks)
+
+			sheets := make([]Spreadsheet, tt.sheetCount)
+			for i, m := range mocks {
+				sheets[i] = m
+			}
+
+			result, err := ExportXLSXSheets(sheets, tt.params)
+
+			if tt.expectError {
+				if err == nil {
+					t.Error("Expected error but got none")
+				} else if tt.errorContains != "" && !contains(err.Error(), tt.errorContains) {
+					t.Errorf("Expected error to contain %q, got %q", tt.errorContains, err.Error())
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Unexpected error: %v", err)
+				}
+				if result == nil {
+					t.Error("Expected non-nil result")
+				}
+			}
+		})
+	}
+}
+
 // Helper function to check if a string contains a substring
 func contains(s, substr string) bool {
 	return len(s) >= len(substr) && (s == substr || len(substr) == 0 ||

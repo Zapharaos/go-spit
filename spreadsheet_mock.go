@@ -153,6 +153,20 @@ func (mr *MockSpreadsheetMockRecorder) getCellValue(col, row any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCellValue", reflect.TypeOf((*MockSpreadsheet)(nil).GetCellValue), col, row)
 }
 
+// InitWithFile mocks base method.
+func (m *MockSpreadsheet) InitWithFile(file interface{}) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InitWithFile", file)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// InitWithFile indicates an expected call of InitWithFile.
+func (mr *MockSpreadsheetMockRecorder) initWithFile(file any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitWithFile", reflect.TypeOf((*MockSpreadsheet)(nil).InitWithFile), file)
+}
+
 // getColumnLetter mocks base method.
 func (m *MockSpreadsheet) GetColumnLetter(col int) string {
 	m.ctrl.T.Helper()

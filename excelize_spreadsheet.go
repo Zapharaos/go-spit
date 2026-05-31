@@ -19,6 +19,7 @@ type SpreadsheetExcelize struct {
 	File      *excelize.File // Single Excelize file object for all sheets
 	SheetName string         // Current sheet name
 	Table     *TableExcelize // Current Table for Excelize
+	isNewFile bool           // internal: true only for files created by CreateNewFile(), false for user-provided files
 }
 
 // NewSpreadsheetExcelize creates a new SpreadsheetExcelize instance for a given sheet name and table.
@@ -34,6 +35,7 @@ func NewSpreadsheetExcelize(sheetName string, t *Table) *SpreadsheetExcelize {
 func (e *SpreadsheetExcelize) WithFile(file *excelize.File) *SpreadsheetExcelize {
 	e.Table.WithFile(file) // Keep the TableExcelize in sync with the spreadsheet file
 	e.File = file
+	e.isNewFile = false
 	return e
 }
 
@@ -50,7 +52,8 @@ func (e *SpreadsheetExcelize) GetFile() interface{} {
 // CreateNewFile initializes a new Excelize file and syncs it with the TableExcelize adapter.
 func (e *SpreadsheetExcelize) CreateNewFile() error {
 	f := excelize.NewFile()
-	e.WithFile(f)
+	e.isNewFile = true
+	e.File = f
 	e.Table.WithFile(f)
 	return nil
 }
@@ -77,12 +80,23 @@ func (e *SpreadsheetExcelize) SetSheetName(name string) {
 }
 
 // CreateSheet creates a new sheet with the current sheet name if it does not already exist.
+// When the file was just created and the sheet name differs from the Excelize default "Sheet1",
+// the default "Sheet1" is removed so the file only contains the intended sheets.
 func (e *SpreadsheetExcelize) CreateSheet() error {
 	index, err := e.File.GetSheetIndex(e.SheetName)
 	if err != nil || index == -1 {
 		_, err = e.File.NewSheet(e.SheetName)
 		if err != nil {
 			return fmt.Errorf("failed to create sheet: %w", err)
+		}
+
+		// Remove the default "Sheet1" created by Excelize when initialising a new file,
+		// but only when this is a freshly created file and the target sheet has a different name.
+		if e.isNewFile && e.SheetName != "Sheet1" {
+			if err = e.File.DeleteSheet("Sheet1"); err != nil {
+				return fmt.Errorf("failed to delete default sheet: %w", err)
+			}
+			e.isNewFile = false // default sheet already cleaned up
 		}
 	}
 	return nil
@@ -101,6 +115,17 @@ func (e *SpreadsheetExcelize) SetActiveSheet() error {
 // SetColumnWidth sets the width of a column by its letter (e.g., "A", "B").
 func (e *SpreadsheetExcelize) SetColumnWidth(colLetter string, width float64) error {
 	return e.File.SetColWidth(e.SheetName, colLetter, colLetter, width)
+}
+
+// InitWithFile initializes this spreadsheet with an existing file from another spreadsheet.
+// Expects file to be a *excelize.File; returns an error if the type does not match.
+func (e *SpreadsheetExcelize) InitWithFile(file interface{}) error {
+	f, ok := file.(*excelize.File)
+	if !ok {
+		return fmt.Errorf("unsupported file type: expected *excelize.File, got %T", file)
+	}
+	e.WithFile(f)
+	return nil
 }
 
 // Delegation to Excelize table operations
