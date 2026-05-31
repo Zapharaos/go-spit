@@ -144,9 +144,9 @@ func (xlsx *xlsx) writeData() error {
 	}
 
 	L().Debug("Writing data rows")
+	flatColumns := t.Columns.GetFlattenedColumns()
 	for _, item := range t.Data {
 		colIndex := 1
-		flatColumns := t.Columns.GetFlattenedColumns()
 		for _, column := range flatColumns {
 			if err := xlsx.writeCell(item, column, colIndex, currentRow); err != nil {
 				return fmt.Errorf("failed to write cell: %w", err)

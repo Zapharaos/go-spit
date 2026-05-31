@@ -14,9 +14,11 @@ import (
 // TableExcelize provides Excelize-specific operations for table handling.
 // Implements TableOperations for Excel spreadsheets using github.com/xuri/excelize.
 type TableExcelize struct {
-	File      *excelize.File // Underlying Excelize file object
-	SheetName string         // Current sheet name
-	Table     *Table         // Reference to the generic Table struct
+	File                  *excelize.File    // Underlying Excelize file object
+	SheetName             string            // Current sheet name
+	Table                 *Table            // Reference to the generic Table struct
+	mergedCells           []excelize.MergeCell // Cached merged-cell list for IsCellMerged lookups
+	mergedCellsCachedName string            // The sheet name used when mergedCells was last populated
 }
 
 // NewTableExcelize creates a new TableExcelize instance for a given sheet name and table.
@@ -68,7 +70,24 @@ func (e *TableExcelize) MergeCells(startCol, startRow, endCol, endRow int) error
 	if err1 != nil || err2 != nil {
 		return fmt.Errorf("failed to convert coordinates: %v, %v", err1, err2)
 	}
-	return e.File.MergeCell(e.SheetName, startCell, endCell)
+	err := e.File.MergeCell(e.SheetName, startCell, endCell)
+	e.mergedCellsCachedName = "" // Invalidate the merged-cells cache
+	return err
+}
+
+// getMergedCells returns the list of merged cells for the current sheet, using a cache to avoid
+// repeated calls to GetMergeCells. The cache is invalidated whenever MergeCells is called or
+// SheetName changes.
+func (e *TableExcelize) getMergedCells() ([]excelize.MergeCell, error) {
+	if e.mergedCellsCachedName != e.SheetName {
+		cells, err := e.File.GetMergeCells(e.SheetName)
+		if err != nil {
+			return nil, err
+		}
+		e.mergedCells = cells
+		e.mergedCellsCachedName = e.SheetName
+	}
+	return e.mergedCells, nil
 }
 
 // IsCellMerged checks if a cell at the given column and row is merged with others.
@@ -79,7 +98,7 @@ func (e *TableExcelize) IsCellMerged(col, row int) bool {
 		return false
 	}
 
-	mergedCells, err := e.File.GetMergeCells(e.SheetName)
+	mergedCells, err := e.getMergedCells()
 	if err != nil {
 		return false
 	}
@@ -99,7 +118,7 @@ func (e *TableExcelize) IsCellMergedHorizontally(col, row int) bool {
 		return false
 	}
 
-	mergedCells, err := e.File.GetMergeCells(e.SheetName)
+	mergedCells, err := e.getMergedCells()
 	if err != nil {
 		return false
 	}
@@ -124,18 +143,19 @@ func (e *TableExcelize) ApplyBorderToCell(col, row int, side string, border *Bor
 		return nil
 	}
 
-	// Get current style and preserve borders
+	// Validate side before doing any expensive work
+	switch side {
+	case "left", "right", "top", "bottom":
+	default:
+		return fmt.Errorf("unsupported border side: %s", side)
+	}
+
+	// Get current style and preserve existing properties
 	excelStyle, err := e.getCellStyle(col, row)
 	if excelStyle == nil || err != nil {
 		excelStyle = &excelize.Style{}
-	} else {
-		switch side {
-		case "left", "right", "top", "bottom":
-			excelStyle.Border = append(excelStyle.Border, excelize.Border{Type: side, Color: "000000", Style: int(border.Style)})
-		default:
-			return fmt.Errorf("unsupported border side: %s", side)
-		}
 	}
+	excelStyle.Border = append(excelStyle.Border, excelize.Border{Type: side, Color: "000000", Style: int(border.Style)})
 
 	styleID, err := e.File.NewStyle(excelStyle)
 	if err != nil {
@@ -147,28 +167,47 @@ func (e *TableExcelize) ApplyBorderToCell(col, row int, side string, border *Bor
 
 // ApplyBordersToRange applies borders to a range of cells defined by start and end coordinates.
 // Each side of the range can have a different border style, as specified in the Borders parameter.
+// All applicable border sides are batched into a single style update per cell.
 func (e *TableExcelize) ApplyBordersToRange(startCol, startRow, endCol, endRow int, borders Borders) error {
 	for row := startRow; row <= endRow; row++ {
 		for col := startCol; col <= endCol; col++ {
-			if col == startCol && borders.Left != nil {
-				if err := e.ApplyBorderToCell(col, row, "left", borders.Left); err != nil {
-					return err
-				}
+			// Collect which border sides apply to this cell in the range
+			var sides []excelize.Border
+			if col == startCol && borders.Left != nil && borders.Left.Style != BorderStyleNone {
+				sides = append(sides, excelize.Border{Type: "left", Color: "000000", Style: int(borders.Left.Style)})
 			}
-			if col == endCol && borders.Right != nil {
-				if err := e.ApplyBorderToCell(col, row, "right", borders.Right); err != nil {
-					return err
-				}
+			if col == endCol && borders.Right != nil && borders.Right.Style != BorderStyleNone {
+				sides = append(sides, excelize.Border{Type: "right", Color: "000000", Style: int(borders.Right.Style)})
 			}
-			if row == startRow && borders.Top != nil {
-				if err := e.ApplyBorderToCell(col, row, "top", borders.Top); err != nil {
-					return err
-				}
+			if row == startRow && borders.Top != nil && borders.Top.Style != BorderStyleNone {
+				sides = append(sides, excelize.Border{Type: "top", Color: "000000", Style: int(borders.Top.Style)})
 			}
-			if row == endRow && borders.Bottom != nil {
-				if err := e.ApplyBorderToCell(col, row, "bottom", borders.Bottom); err != nil {
-					return err
-				}
+			if row == endRow && borders.Bottom != nil && borders.Bottom.Style != BorderStyleNone {
+				sides = append(sides, excelize.Border{Type: "bottom", Color: "000000", Style: int(borders.Bottom.Style)})
+			}
+
+			if len(sides) == 0 {
+				continue
+			}
+
+			// Apply all sides in one style read/write cycle
+			cellRef, err := excelize.CoordinatesToCellName(col, row)
+			if err != nil {
+				return err
+			}
+
+			excelStyle, err := e.getCellStyle(col, row)
+			if excelStyle == nil || err != nil {
+				excelStyle = &excelize.Style{}
+			}
+			excelStyle.Border = append(excelStyle.Border, sides...)
+
+			styleID, err := e.File.NewStyle(excelStyle)
+			if err != nil {
+				return err
+			}
+			if err := e.File.SetCellStyle(e.SheetName, cellRef, cellRef, styleID); err != nil {
+				return err
 			}
 		}
 	}
@@ -193,37 +232,51 @@ func (e *TableExcelize) HasExistingBorder(col, row int, side string) bool {
 // ApplyStyleToCell applies a style to a cell at the given column and row.
 // The style properties are defined in the style parameter. Existing borders are preserved.
 func (e *TableExcelize) ApplyStyleToCell(col, row int, style Style) error {
+	return e.applyExcelizeStyleToCell(col, row, convertStyleToExcelizeStyle(style))
+}
+
+// applyExcelizeStyleToCell applies a pre-converted excelize style to a single cell,
+// merging it with any existing style so that borders and other properties are preserved.
+func (e *TableExcelize) applyExcelizeStyleToCell(col, row int, inputStyle *excelize.Style) error {
 	cellRef, err := excelize.CoordinatesToCellName(col, row)
 	if err != nil {
 		return err
 	}
 
-	inputStyle := convertStyleToExcelizeStyle(style)
+	// Fast path: if the cell carries no existing style, apply inputStyle directly without
+	// a round-trip to read and decode the default style.
+	existingID, err := e.File.GetCellStyle(e.SheetName, cellRef)
+	if err != nil {
+		return err
+	}
 
-	// Get current style and preserve borders
-	excelStyle, err := e.getCellStyle(col, row)
-	if excelStyle == nil || err != nil {
-		// If no existing style, use the input style directly
-		excelStyle = inputStyle
+	var finalStyle *excelize.Style
+	if existingID == 0 {
+		finalStyle = inputStyle
 	} else {
-		// Merge input style with existing style
-		// Preserve existing style properties if the inputStyle has nil values in them
-
-		if inputStyle.Fill.Color != nil {
-			excelStyle.Fill = inputStyle.Fill
-		}
-		if inputStyle.Font != nil {
-			excelStyle.Font = inputStyle.Font
-		}
-		if inputStyle.Alignment != nil {
-			excelStyle.Alignment = inputStyle.Alignment
-		}
-		if inputStyle.CustomNumFmt != nil {
-			excelStyle.CustomNumFmt = inputStyle.CustomNumFmt
+		excelStyle, err := e.File.GetStyle(existingID)
+		if excelStyle == nil || err != nil {
+			finalStyle = inputStyle
+		} else {
+			// Merge: overlay inputStyle properties on top of the existing style so that
+			// borders (and any other properties not covered by inputStyle) are preserved.
+			if inputStyle.Fill.Color != nil {
+				excelStyle.Fill = inputStyle.Fill
+			}
+			if inputStyle.Font != nil {
+				excelStyle.Font = inputStyle.Font
+			}
+			if inputStyle.Alignment != nil {
+				excelStyle.Alignment = inputStyle.Alignment
+			}
+			if inputStyle.CustomNumFmt != nil {
+				excelStyle.CustomNumFmt = inputStyle.CustomNumFmt
+			}
+			finalStyle = excelStyle
 		}
 	}
 
-	styleID, err := e.File.NewStyle(excelStyle)
+	styleID, err := e.File.NewStyle(finalStyle)
 	if err != nil {
 		return err
 	}
@@ -231,11 +284,12 @@ func (e *TableExcelize) ApplyStyleToCell(col, row int, style Style) error {
 }
 
 // ApplyStyleToRange applies a style to a range of cells defined by start and end coordinates.
-// The style properties are defined in the style parameter.
+// The style is converted once and then applied to each cell in the range.
 func (e *TableExcelize) ApplyStyleToRange(startCol, startRow, endCol, endRow int, style Style) error {
+	inputStyle := convertStyleToExcelizeStyle(style)
 	for row := startRow; row <= endRow; row++ {
 		for col := startCol; col <= endCol; col++ {
-			if err := e.ApplyStyleToCell(col, row, style); err != nil {
+			if err := e.applyExcelizeStyleToCell(col, row, inputStyle); err != nil {
 				return err
 			}
 		}
