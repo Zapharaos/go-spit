@@ -219,6 +219,7 @@ func (xlsx *xlsx) writeHeaderRow(columns Columns, currentRow, maxDepth, startCol
 
 // writeCell writes a single cell item to the spreadsheet.
 // Looks up the value, processes formatting, and sets the cell value.
+// Special formats (formula, hyperlink, default) trigger dedicated Excelize operations.
 func (xlsx *xlsx) writeCell(item Data, column *Column, colIndex, rowIndex int) error {
 	value, err, found := item.Lookup(column.Name)
 	if err == nil && !found {
@@ -233,8 +234,24 @@ func (xlsx *xlsx) writeCell(item Data, column *Column, colIndex, rowIndex int) e
 		return fmt.Errorf("error processing value %s for column %s: %w", value, column.Name, err)
 	}
 
-	if err = xlsx.spreadsheet.SetCellValue(colIndex, rowIndex, processedValue); err != nil {
-		return fmt.Errorf("error setting cell value for column %s at (%d, %d): %w", column.Name, colIndex, rowIndex, err)
+	switch column.Format {
+	case ExcelizeFormatFormula:
+		formula := fmt.Sprintf("%v", processedValue)
+		if err = xlsx.spreadsheet.SetCellFormula(colIndex, rowIndex, formula); err != nil {
+			return fmt.Errorf("error setting formula for column %s at (%d, %d): %w", column.Name, colIndex, rowIndex, err)
+		}
+	case ExcelizeFormatHyperlink:
+		link := fmt.Sprintf("%v", processedValue)
+		if err = xlsx.spreadsheet.SetCellValue(colIndex, rowIndex, link); err != nil {
+			return fmt.Errorf("error setting cell value for column %s at (%d, %d): %w", column.Name, colIndex, rowIndex, err)
+		}
+		if err = xlsx.spreadsheet.SetCellHyperLink(colIndex, rowIndex, link); err != nil {
+			return fmt.Errorf("error setting hyperlink for column %s at (%d, %d): %w", column.Name, colIndex, rowIndex, err)
+		}
+	default:
+		if err = xlsx.spreadsheet.SetCellValue(colIndex, rowIndex, processedValue); err != nil {
+			return fmt.Errorf("error setting cell value for column %s at (%d, %d): %w", column.Name, colIndex, rowIndex, err)
+		}
 	}
 
 	return nil

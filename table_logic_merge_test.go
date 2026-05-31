@@ -31,7 +31,7 @@ func TestTable_processMerging(t *testing.T) {
 				}
 			},
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().processValue(gomock.Any(), gomock.Any()).Return("A", nil).AnyTimes()
+				mock.EXPECT().ProcessValue(gomock.Any(), gomock.Any()).Return("A", nil).AnyTimes()
 			},
 			expectedError: "",
 			expectedCalls: 1,
@@ -51,8 +51,8 @@ func TestTable_processMerging(t *testing.T) {
 				}
 			},
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().mergeCells(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-				mock.EXPECT().processValue(gomock.Any(), gomock.Any()).Return("A", nil).AnyTimes()
+				mock.EXPECT().MergeCells(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mock.EXPECT().ProcessValue(gomock.Any(), gomock.Any()).Return("A", nil).AnyTimes()
 			},
 			expectedError: "",
 			expectedCalls: 1,
@@ -77,7 +77,7 @@ func TestTable_processMerging(t *testing.T) {
 			setupMock: func(mock *MockTableOperations) {
 				// Header merging will be called but will fail - this should not cause ProcessMerging to fail
 				// as the error is logged as a warning and processing continues
-				mock.EXPECT().mergeCells(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("merge failed")).AnyTimes()
+				mock.EXPECT().MergeCells(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("merge failed")).AnyTimes()
 			},
 			expectedError: "", // Changed: ProcessMerging doesn't fail on header merge errors, just logs warnings
 			expectedCalls: 1,
@@ -109,8 +109,8 @@ func TestTable_processMerging(t *testing.T) {
 			},
 			setupMock: func(mock *MockTableOperations) {
 				// Expect ProcessValue calls for row 0 with identical values that should merge
-				mock.EXPECT().processValue("A", "").Return("A", nil).Times(2)
-				mock.EXPECT().mergeCells(1, 1, 2, 1).Return(nil)
+				mock.EXPECT().ProcessValue("A", "").Return("A", nil).Times(2)
+				mock.EXPECT().MergeCells(1, 1, 2, 1).Return(nil)
 				// No ProcessValue calls expected for row 1 since it's not mergeable
 			},
 			expectedError: "",
@@ -196,8 +196,8 @@ func TestTable_executeHeaderMerging(t *testing.T) {
 				}
 			},
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().mergeCells(1, 1, 2, 1).Return(nil)
-				mock.EXPECT().mergeCells(3, 1, 3, 2).Return(nil)
+				mock.EXPECT().MergeCells(1, 1, 2, 1).Return(nil)
+				mock.EXPECT().MergeCells(3, 1, 3, 2).Return(nil)
 			},
 			expectedError: "",
 		},
@@ -217,7 +217,7 @@ func TestTable_executeHeaderMerging(t *testing.T) {
 				}
 			},
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().mergeCells(1, 1, 2, 1).Return(errors.New("merge failed"))
+				mock.EXPECT().MergeCells(1, 1, 2, 1).Return(errors.New("merge failed"))
 			},
 			expectedError: "", // Changed: executeHeaderMerging logs warnings but doesn't return errors for merge failures
 		},
@@ -244,11 +244,11 @@ func TestTable_executeHeaderMerging(t *testing.T) {
 			},
 			setupMock: func(mock *MockTableOperations) {
 				// Parent spans all 3 columns at row 1
-				mock.EXPECT().mergeCells(1, 1, 3, 1).Return(nil)
+				mock.EXPECT().MergeCells(1, 1, 3, 1).Return(nil)
 				// Child 1 spans 2 columns at row 2
-				mock.EXPECT().mergeCells(1, 2, 2, 2).Return(nil)
+				mock.EXPECT().MergeCells(1, 2, 2, 2).Return(nil)
 				// col3 spans from row 2 to row 3
-				mock.EXPECT().mergeCells(3, 2, 3, 3).Return(nil)
+				mock.EXPECT().MergeCells(3, 2, 3, 3).Return(nil)
 			},
 			expectedError: "",
 		},
@@ -300,8 +300,8 @@ func TestTable_processHeaderMergingRecursive(t *testing.T) {
 			maxDepth:   2,
 			startCol:   1,
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().mergeCells(1, 1, 1, 2).Return(nil)
-				mock.EXPECT().mergeCells(2, 1, 2, 2).Return(nil)
+				mock.EXPECT().MergeCells(1, 1, 1, 2).Return(nil)
+				mock.EXPECT().MergeCells(2, 1, 2, 2).Return(nil)
 			},
 			expectedError: "",
 		},
@@ -324,7 +324,7 @@ func TestTable_processHeaderMergingRecursive(t *testing.T) {
 			setupMock: func(mock *MockTableOperations) {
 				// Group header doesn't need horizontal merge (only 1 child)
 				// col2 needs vertical merge
-				mock.EXPECT().mergeCells(2, 1, 2, 2).Return(nil)
+				mock.EXPECT().MergeCells(2, 1, 2, 2).Return(nil)
 			},
 			expectedError: "",
 		},
@@ -346,7 +346,7 @@ func TestTable_processHeaderMergingRecursive(t *testing.T) {
 			maxDepth:   2,
 			startCol:   1,
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().mergeCells(1, 1, 3, 1).Return(nil)
+				mock.EXPECT().MergeCells(1, 1, 3, 1).Return(nil)
 			},
 			expectedError: "",
 		},
@@ -367,7 +367,7 @@ func TestTable_processHeaderMergingRecursive(t *testing.T) {
 			maxDepth:   2,
 			startCol:   1,
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().mergeCells(1, 1, 2, 1).Return(errors.New("recursive merge failed"))
+				mock.EXPECT().MergeCells(1, 1, 2, 1).Return(errors.New("recursive merge failed"))
 			},
 			expectedError: "", // Changed: processHeaderMergingRecursive logs warnings but doesn't return errors for merge failures
 		},
@@ -450,9 +450,9 @@ func TestTable_executeVerticalMerging(t *testing.T) {
 			actualColIndex: 1,
 			dataStartRow:   2,
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().processValue("A", "").Return("A", nil).Times(2)
-				mock.EXPECT().processValue("B", "").Return("B", nil).Times(1)
-				mock.EXPECT().mergeCells(1, 2, 1, 3).Return(nil)
+				mock.EXPECT().ProcessValue("A", "").Return("A", nil).Times(2)
+				mock.EXPECT().ProcessValue("B", "").Return("B", nil).Times(1)
+				mock.EXPECT().MergeCells(1, 2, 1, 3).Return(nil)
 			},
 			expectedError: "",
 		},
@@ -476,8 +476,8 @@ func TestTable_executeVerticalMerging(t *testing.T) {
 			actualColIndex: 1,
 			dataStartRow:   2,
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().processValue("A", "").Return("A", nil).Times(2)
-				mock.EXPECT().mergeCells(1, 2, 1, 3).Return(errors.New("merge failed"))
+				mock.EXPECT().ProcessValue("A", "").Return("A", nil).Times(2)
+				mock.EXPECT().MergeCells(1, 2, 1, 3).Return(errors.New("merge failed"))
 			},
 			expectedError: "",
 		},
@@ -503,10 +503,10 @@ func TestTable_executeVerticalMerging(t *testing.T) {
 			actualColIndex: 1,
 			dataStartRow:   1,
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().processValue("", "string").Return("", nil)
-				mock.EXPECT().processValue(nil, "string").Return("", nil)
-				mock.EXPECT().processValue("A", "string").Return("A", nil)
-				mock.EXPECT().mergeCells(1, 1, 1, 2).Return(nil)
+				mock.EXPECT().ProcessValue("", "string").Return("", nil)
+				mock.EXPECT().ProcessValue(nil, "string").Return("", nil)
+				mock.EXPECT().ProcessValue("A", "string").Return("A", nil)
+				mock.EXPECT().MergeCells(1, 1, 1, 2).Return(nil)
 			},
 			expectedError: "",
 		},
@@ -565,8 +565,8 @@ func TestTable_findVerticalMergeRanges(t *testing.T) {
 			format:     "",
 			conditions: MergeConditions{MergeConditionIdentical},
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().processValue("A", "").Return("A", nil).Times(2)
-				mock.EXPECT().processValue("B", "").Return("B", nil).Times(3)
+				mock.EXPECT().ProcessValue("A", "").Return("A", nil).Times(2)
+				mock.EXPECT().ProcessValue("B", "").Return("B", nil).Times(3)
 			},
 			expectedRanges: [][]int{{0, 1}, {2, 3, 4}},
 		},
@@ -588,9 +588,9 @@ func TestTable_findVerticalMergeRanges(t *testing.T) {
 			format:     "",
 			conditions: MergeConditions{MergeConditionEmpty},
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().processValue("", "").Return("", nil).Times(3)
-				mock.EXPECT().processValue(nil, "").Return("", nil).Times(1)
-				mock.EXPECT().processValue("A", "").Return("A", nil).Times(1)
+				mock.EXPECT().ProcessValue("", "").Return("", nil).Times(3)
+				mock.EXPECT().ProcessValue(nil, "").Return("", nil).Times(1)
+				mock.EXPECT().ProcessValue("A", "").Return("A", nil).Times(1)
 			},
 			expectedRanges: [][]int{{0, 1}, {3, 4}},
 		},
@@ -613,7 +613,7 @@ func TestTable_findVerticalMergeRanges(t *testing.T) {
 			format:     "",
 			conditions: MergeConditions{MergeConditionIdentical},
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().processValue("A", "").Return("A", nil).Times(2)
+				mock.EXPECT().ProcessValue("A", "").Return("A", nil).Times(2)
 			},
 			expectedRanges: [][]int{},
 		},
@@ -638,7 +638,7 @@ func TestTable_findVerticalMergeRanges(t *testing.T) {
 			format:     "",
 			conditions: MergeConditions{MergeConditionIdentical},
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().processValue("A", "").Return("A", nil).Times(2)
+				mock.EXPECT().ProcessValue("A", "").Return("A", nil).Times(2)
 			},
 			expectedRanges: [][]int{},
 		},
@@ -658,7 +658,7 @@ func TestTable_findVerticalMergeRanges(t *testing.T) {
 			format:     "",
 			conditions: MergeConditions{MergeConditionIdentical},
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().processValue("A", "").Return("A", nil).Times(2)
+				mock.EXPECT().ProcessValue("A", "").Return("A", nil).Times(2)
 			},
 			expectedRanges: [][]int{},
 		},
@@ -677,8 +677,8 @@ func TestTable_findVerticalMergeRanges(t *testing.T) {
 			format:     "",
 			conditions: MergeConditions{MergeConditionIdentical},
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().processValue("A", "").Return("A", nil).Times(1)
-				mock.EXPECT().processValue("A", "").Return("", errors.New("process failed")).Times(1)
+				mock.EXPECT().ProcessValue("A", "").Return("A", nil).Times(1)
+				mock.EXPECT().ProcessValue("A", "").Return("", errors.New("process failed")).Times(1)
 			},
 			expectedRanges: [][]int{},
 		},
@@ -764,8 +764,8 @@ func TestTable_executeHorizontalMerging(t *testing.T) {
 				},
 			},
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().processValue("A", "").Return("A", nil).Times(2)
-				mock.EXPECT().mergeCells(1, 1, 2, 1).Return(nil)
+				mock.EXPECT().ProcessValue("A", "").Return("A", nil).Times(2)
+				mock.EXPECT().MergeCells(1, 1, 2, 1).Return(nil)
 			},
 			expectedError: "",
 		},
@@ -801,8 +801,8 @@ func TestTable_executeHorizontalMerging(t *testing.T) {
 			rowOptions:    nil,
 			setupMock: func(mock *MockTableOperations) {
 				// Only expect ProcessValue calls for columns with merge configuration
-				mock.EXPECT().processValue("A", "").Return("A", nil).Times(2)
-				mock.EXPECT().mergeCells(1, 1, 2, 1).Return(nil)
+				mock.EXPECT().ProcessValue("A", "").Return("A", nil).Times(2)
+				mock.EXPECT().MergeCells(1, 1, 2, 1).Return(nil)
 				// No ProcessValue call expected for col3 since it has no merge configuration
 			},
 			expectedError: "",
@@ -851,10 +851,10 @@ func TestTable_executeHorizontalMerging(t *testing.T) {
 			startColIndex: 1,
 			rowOptions:    nil,
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().processValue("A", "").Return("A", nil).Times(2)
-				mock.EXPECT().mergeCells(1, 1, 2, 1).Return(nil)
-				mock.EXPECT().processValue("", "").Return("", nil).Times(2)
-				mock.EXPECT().mergeCells(3, 1, 4, 1).Return(nil)
+				mock.EXPECT().ProcessValue("A", "").Return("A", nil).Times(2)
+				mock.EXPECT().MergeCells(1, 1, 2, 1).Return(nil)
+				mock.EXPECT().ProcessValue("", "").Return("", nil).Times(2)
+				mock.EXPECT().MergeCells(3, 1, 4, 1).Return(nil)
 			},
 			expectedError: "",
 		},
@@ -916,8 +916,8 @@ func TestTable_applyHorizontalMerges(t *testing.T) {
 			rowNum:       2,
 			baseColIndex: 1,
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().mergeCells(1, 2, 2, 2).Return(nil)
-				mock.EXPECT().mergeCells(3, 2, 5, 2).Return(nil)
+				mock.EXPECT().MergeCells(1, 2, 2, 2).Return(nil)
+				mock.EXPECT().MergeCells(3, 2, 5, 2).Return(nil)
 			},
 		},
 		{
@@ -926,8 +926,8 @@ func TestTable_applyHorizontalMerges(t *testing.T) {
 			rowNum:       1,
 			baseColIndex: 2,
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().mergeCells(2, 1, 3, 1).Return(errors.New("merge failed"))
-				mock.EXPECT().mergeCells(4, 1, 5, 1).Return(nil)
+				mock.EXPECT().MergeCells(2, 1, 3, 1).Return(errors.New("merge failed"))
+				mock.EXPECT().MergeCells(4, 1, 5, 1).Return(nil)
 			},
 		},
 		{
@@ -936,8 +936,8 @@ func TestTable_applyHorizontalMerges(t *testing.T) {
 			rowNum:       3,
 			baseColIndex: 5,
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().mergeCells(6, 3, 8, 3).Return(nil)
-				mock.EXPECT().mergeCells(10, 3, 11, 3).Return(nil)
+				mock.EXPECT().MergeCells(6, 3, 8, 3).Return(nil)
+				mock.EXPECT().MergeCells(10, 3, 11, 3).Return(nil)
 			},
 		},
 	}
@@ -981,9 +981,9 @@ func TestTable_findHorizontalMergeRanges(t *testing.T) {
 			},
 			conditions: MergeConditions{MergeConditionIdentical},
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().processValue("A", "").Return("A", nil).Times(2)
-				mock.EXPECT().processValue("B", "").Return("B", nil).Times(2)
-				mock.EXPECT().processValue("C", "").Return("C", nil).Times(1)
+				mock.EXPECT().ProcessValue("A", "").Return("A", nil).Times(2)
+				mock.EXPECT().ProcessValue("B", "").Return("B", nil).Times(2)
+				mock.EXPECT().ProcessValue("C", "").Return("C", nil).Times(1)
 			},
 			expectedRanges: [][]int{{0, 1}, {2, 3}},
 		},
@@ -1002,9 +1002,9 @@ func TestTable_findHorizontalMergeRanges(t *testing.T) {
 			},
 			conditions: MergeConditions{MergeConditionEmpty},
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().processValue("", "").Return("", nil).Times(3)
-				mock.EXPECT().processValue(nil, "").Return("", nil).Times(1)
-				mock.EXPECT().processValue("A", "").Return("A", nil).Times(1)
+				mock.EXPECT().ProcessValue("", "").Return("", nil).Times(3)
+				mock.EXPECT().ProcessValue(nil, "").Return("", nil).Times(1)
+				mock.EXPECT().ProcessValue("A", "").Return("A", nil).Times(1)
 			},
 			expectedRanges: [][]int{{0, 1}, {3, 4}},
 		},
@@ -1027,7 +1027,7 @@ func TestTable_findHorizontalMergeRanges(t *testing.T) {
 			},
 			conditions: MergeConditions{MergeConditionIdentical},
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().processValue("A", "").Return("A", nil).Times(2)
+				mock.EXPECT().ProcessValue("A", "").Return("A", nil).Times(2)
 			},
 			expectedRanges: [][]int{},
 		},
@@ -1044,7 +1044,7 @@ func TestTable_findHorizontalMergeRanges(t *testing.T) {
 			},
 			conditions: MergeConditions{MergeConditionIdentical},
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().processValue("A", "").Return("A", nil).Times(2)
+				mock.EXPECT().ProcessValue("A", "").Return("A", nil).Times(2)
 			},
 			expectedRanges: [][]int{},
 		},
@@ -1060,8 +1060,8 @@ func TestTable_findHorizontalMergeRanges(t *testing.T) {
 			},
 			conditions: MergeConditions{MergeConditionIdentical},
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().processValue("A", "string").Return("A", nil).Times(1)
-				mock.EXPECT().processValue("A", "string").Return("", errors.New("process failed")).Times(1)
+				mock.EXPECT().ProcessValue("A", "string").Return("A", nil).Times(1)
+				mock.EXPECT().ProcessValue("A", "string").Return("", errors.New("process failed")).Times(1)
 			},
 			expectedRanges: [][]int{{0, 1}},
 		},
@@ -1079,9 +1079,9 @@ func TestTable_findHorizontalMergeRanges(t *testing.T) {
 			},
 			conditions: MergeConditions{MergeConditionIdentical, MergeConditionEmpty},
 			setupMock: func(mock *MockTableOperations) {
-				mock.EXPECT().processValue("A", "").Return("A", nil).Times(2)
-				mock.EXPECT().processValue("", "").Return("", nil).Times(1)
-				mock.EXPECT().processValue(nil, "").Return("", nil).Times(1)
+				mock.EXPECT().ProcessValue("A", "").Return("A", nil).Times(2)
+				mock.EXPECT().ProcessValue("", "").Return("", nil).Times(1)
+				mock.EXPECT().ProcessValue(nil, "").Return("", nil).Times(1)
 			},
 			expectedRanges: [][]int{{0, 1}, {2, 3}}, // Changed: Mixed conditions create separate ranges for identical and empty values
 		},

@@ -39,7 +39,7 @@ func (m *MockTableOperations) EXPECT() *MockTableOperationsMockRecorder {
 	return m.recorder
 }
 
-// applyBorderToCell mocks base method.
+// ApplyBorderToCell mocks base method.
 func (m *MockTableOperations) ApplyBorderToCell(col, row int, side string, border *Border) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ApplyBorderToCell", col, row, side, border)
@@ -47,13 +47,13 @@ func (m *MockTableOperations) ApplyBorderToCell(col, row int, side string, borde
 	return ret0
 }
 
-// applyBorderToCell indicates an expected call of applyBorderToCell.
-func (mr *MockTableOperationsMockRecorder) applyBorderToCell(col, row, side, border any) *gomock.Call {
+// ApplyBorderToCell indicates an expected call of ApplyBorderToCell.
+func (mr *MockTableOperationsMockRecorder) ApplyBorderToCell(col, row, side, border any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyBorderToCell", reflect.TypeOf((*MockTableOperations)(nil).ApplyBorderToCell), col, row, side, border)
 }
 
-// applyBordersToRange mocks base method.
+// ApplyBordersToRange mocks base method.
 func (m *MockTableOperations) ApplyBordersToRange(startCol, startRow, endCol, endRow int, borders Borders) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ApplyBordersToRange", startCol, startRow, endCol, endRow, borders)
@@ -61,13 +61,13 @@ func (m *MockTableOperations) ApplyBordersToRange(startCol, startRow, endCol, en
 	return ret0
 }
 
-// applyBordersToRange indicates an expected call of applyBordersToRange.
-func (mr *MockTableOperationsMockRecorder) applyBordersToRange(startCol, startRow, endCol, endRow, borders any) *gomock.Call {
+// ApplyBordersToRange indicates an expected call of ApplyBordersToRange.
+func (mr *MockTableOperationsMockRecorder) ApplyBordersToRange(startCol, startRow, endCol, endRow, borders any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyBordersToRange", reflect.TypeOf((*MockTableOperations)(nil).ApplyBordersToRange), startCol, startRow, endCol, endRow, borders)
 }
 
-// applyStyleToCell mocks base method.
+// ApplyStyleToCell mocks base method.
 func (m *MockTableOperations) ApplyStyleToCell(col, row int, style Style) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ApplyStyleToCell", col, row, style)
@@ -75,13 +75,13 @@ func (m *MockTableOperations) ApplyStyleToCell(col, row int, style Style) error 
 	return ret0
 }
 
-// applyStyleToCell indicates an expected call of applyStyleToCell.
-func (mr *MockTableOperationsMockRecorder) applyStyleToCell(col, row, style any) *gomock.Call {
+// ApplyStyleToCell indicates an expected call of ApplyStyleToCell.
+func (mr *MockTableOperationsMockRecorder) ApplyStyleToCell(col, row, style any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyStyleToCell", reflect.TypeOf((*MockTableOperations)(nil).ApplyStyleToCell), col, row, style)
 }
 
-// applyStyleToRange mocks base method.
+// ApplyStyleToRange mocks base method.
 func (m *MockTableOperations) ApplyStyleToRange(startCol, startRow, endCol, endRow int, style Style) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ApplyStyleToRange", startCol, startRow, endCol, endRow, style)
@@ -89,13 +89,13 @@ func (m *MockTableOperations) ApplyStyleToRange(startCol, startRow, endCol, endR
 	return ret0
 }
 
-// applyStyleToRange indicates an expected call of applyStyleToRange.
-func (mr *MockTableOperationsMockRecorder) applyStyleToRange(startCol, startRow, endCol, endRow, style any) *gomock.Call {
+// ApplyStyleToRange indicates an expected call of ApplyStyleToRange.
+func (mr *MockTableOperationsMockRecorder) ApplyStyleToRange(startCol, startRow, endCol, endRow, style any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyStyleToRange", reflect.TypeOf((*MockTableOperations)(nil).ApplyStyleToRange), startCol, startRow, endCol, endRow, style)
 }
 
-// getCellValue mocks base method.
+// GetCellValue mocks base method.
 func (m *MockTableOperations) GetCellValue(col, row int) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCellValue", col, row)
@@ -104,13 +104,13 @@ func (m *MockTableOperations) GetCellValue(col, row int) (string, error) {
 	return ret0, ret1
 }
 
-// getCellValue indicates an expected call of getCellValue.
-func (mr *MockTableOperationsMockRecorder) getCellValue(col, row any) *gomock.Call {
+// GetCellValue indicates an expected call of GetCellValue.
+func (mr *MockTableOperationsMockRecorder) GetCellValue(col, row any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCellValue", reflect.TypeOf((*MockTableOperations)(nil).GetCellValue), col, row)
 }
 
-// getColumnLetter mocks base method.
+// GetColumnLetter mocks base method.
 func (m *MockTableOperations) GetColumnLetter(col int) string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetColumnLetter", col)
@@ -118,13 +118,13 @@ func (m *MockTableOperations) GetColumnLetter(col int) string {
 	return ret0
 }
 
-// getColumnLetter indicates an expected call of getColumnLetter.
-func (mr *MockTableOperationsMockRecorder) getColumnLetter(col any) *gomock.Call {
+// GetColumnLetter indicates an expected call of GetColumnLetter.
+func (mr *MockTableOperationsMockRecorder) GetColumnLetter(col any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetColumnLetter", reflect.TypeOf((*MockTableOperations)(nil).GetColumnLetter), col)
 }
 
-// getTable mocks base method.
+// GetTable mocks base method.
 func (m *MockTableOperations) GetTable() *Table {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTable")
@@ -132,13 +132,13 @@ func (m *MockTableOperations) GetTable() *Table {
 	return ret0
 }
 
-// getTable indicates an expected call of getTable.
-func (mr *MockTableOperationsMockRecorder) getTable() *gomock.Call {
+// GetTable indicates an expected call of GetTable.
+func (mr *MockTableOperationsMockRecorder) GetTable() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTable", reflect.TypeOf((*MockTableOperations)(nil).GetTable))
 }
 
-// hasExistingBorder mocks base method.
+// HasExistingBorder mocks base method.
 func (m *MockTableOperations) HasExistingBorder(col, row int, side string) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "HasExistingBorder", col, row, side)
@@ -146,13 +146,13 @@ func (m *MockTableOperations) HasExistingBorder(col, row int, side string) bool 
 	return ret0
 }
 
-// hasExistingBorder indicates an expected call of hasExistingBorder.
-func (mr *MockTableOperationsMockRecorder) hasExistingBorder(col, row, side any) *gomock.Call {
+// HasExistingBorder indicates an expected call of HasExistingBorder.
+func (mr *MockTableOperationsMockRecorder) HasExistingBorder(col, row, side any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasExistingBorder", reflect.TypeOf((*MockTableOperations)(nil).HasExistingBorder), col, row, side)
 }
 
-// isCellMerged mocks base method.
+// IsCellMerged mocks base method.
 func (m *MockTableOperations) IsCellMerged(col, row int) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IsCellMerged", col, row)
@@ -160,13 +160,13 @@ func (m *MockTableOperations) IsCellMerged(col, row int) bool {
 	return ret0
 }
 
-// isCellMerged indicates an expected call of isCellMerged.
-func (mr *MockTableOperationsMockRecorder) isCellMerged(col, row any) *gomock.Call {
+// IsCellMerged indicates an expected call of IsCellMerged.
+func (mr *MockTableOperationsMockRecorder) IsCellMerged(col, row any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsCellMerged", reflect.TypeOf((*MockTableOperations)(nil).IsCellMerged), col, row)
 }
 
-// isCellMergedHorizontally mocks base method.
+// IsCellMergedHorizontally mocks base method.
 func (m *MockTableOperations) IsCellMergedHorizontally(col, row int) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IsCellMergedHorizontally", col, row)
@@ -174,13 +174,13 @@ func (m *MockTableOperations) IsCellMergedHorizontally(col, row int) bool {
 	return ret0
 }
 
-// isCellMergedHorizontally indicates an expected call of isCellMergedHorizontally.
-func (mr *MockTableOperationsMockRecorder) isCellMergedHorizontally(col, row any) *gomock.Call {
+// IsCellMergedHorizontally indicates an expected call of IsCellMergedHorizontally.
+func (mr *MockTableOperationsMockRecorder) IsCellMergedHorizontally(col, row any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsCellMergedHorizontally", reflect.TypeOf((*MockTableOperations)(nil).IsCellMergedHorizontally), col, row)
 }
 
-// mergeCells mocks base method.
+// MergeCells mocks base method.
 func (m *MockTableOperations) MergeCells(startCol, startRow, endCol, endRow int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MergeCells", startCol, startRow, endCol, endRow)
@@ -188,13 +188,13 @@ func (m *MockTableOperations) MergeCells(startCol, startRow, endCol, endRow int)
 	return ret0
 }
 
-// mergeCells indicates an expected call of mergeCells.
-func (mr *MockTableOperationsMockRecorder) mergeCells(startCol, startRow, endCol, endRow any) *gomock.Call {
+// MergeCells indicates an expected call of MergeCells.
+func (mr *MockTableOperationsMockRecorder) MergeCells(startCol, startRow, endCol, endRow any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MergeCells", reflect.TypeOf((*MockTableOperations)(nil).MergeCells), startCol, startRow, endCol, endRow)
 }
 
-// processValue mocks base method.
+// ProcessValue mocks base method.
 func (m *MockTableOperations) ProcessValue(value any, format string) (any, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProcessValue", value, format)
@@ -203,13 +203,41 @@ func (m *MockTableOperations) ProcessValue(value any, format string) (any, error
 	return ret0, ret1
 }
 
-// processValue indicates an expected call of processValue.
-func (mr *MockTableOperationsMockRecorder) processValue(value, format any) *gomock.Call {
+// ProcessValue indicates an expected call of ProcessValue.
+func (mr *MockTableOperationsMockRecorder) ProcessValue(value, format any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessValue", reflect.TypeOf((*MockTableOperations)(nil).ProcessValue), value, format)
 }
 
-// setCellValue mocks base method.
+// SetCellFormula mocks base method.
+func (m *MockTableOperations) SetCellFormula(col, row int, formula string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetCellFormula", col, row, formula)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetCellFormula indicates an expected call of SetCellFormula.
+func (mr *MockTableOperationsMockRecorder) SetCellFormula(col, row, formula any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCellFormula", reflect.TypeOf((*MockTableOperations)(nil).SetCellFormula), col, row, formula)
+}
+
+// SetCellHyperLink mocks base method.
+func (m *MockTableOperations) SetCellHyperLink(col, row int, link string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetCellHyperLink", col, row, link)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetCellHyperLink indicates an expected call of SetCellHyperLink.
+func (mr *MockTableOperationsMockRecorder) SetCellHyperLink(col, row, link any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCellHyperLink", reflect.TypeOf((*MockTableOperations)(nil).SetCellHyperLink), col, row, link)
+}
+
+// SetCellValue mocks base method.
 func (m *MockTableOperations) SetCellValue(col, row int, value any) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetCellValue", col, row, value)
@@ -217,8 +245,8 @@ func (m *MockTableOperations) SetCellValue(col, row int, value any) error {
 	return ret0
 }
 
-// setCellValue indicates an expected call of setCellValue.
-func (mr *MockTableOperationsMockRecorder) setCellValue(col, row, value any) *gomock.Call {
+// SetCellValue indicates an expected call of SetCellValue.
+func (mr *MockTableOperationsMockRecorder) SetCellValue(col, row, value any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCellValue", reflect.TypeOf((*MockTableOperations)(nil).SetCellValue), col, row, value)
 }

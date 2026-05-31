@@ -35,14 +35,14 @@ func TestExportXLSX(t *testing.T) {
 		{
 			name: "successful_export_with_new_file",
 			setupMock: func(mock *MockSpreadsheet) {
-				mock.EXPECT().getFile().Return(nil)
-				mock.EXPECT().createNewFile().Return(nil)
-				mock.EXPECT().close().Return(nil)
-				mock.EXPECT().getSheetName().Return("")
-				mock.EXPECT().setSheetName("Sheet1")
-				mock.EXPECT().createSheet().Return(nil)
-				mock.EXPECT().setActiveSheet().Return(nil)
-				mock.EXPECT().getTable().Return(&Table{
+				mock.EXPECT().GetFile().Return(nil)
+				mock.EXPECT().CreateNewFile().Return(nil)
+				mock.EXPECT().Close().Return(nil)
+				mock.EXPECT().GetSheetName().Return("")
+				mock.EXPECT().SetSheetName("Sheet1")
+				mock.EXPECT().CreateSheet().Return(nil)
+				mock.EXPECT().SetActiveSheet().Return(nil)
+				mock.EXPECT().GetTable().Return(&Table{
 					Data: DataSlice{
 						{"name": "John", "age": 30},
 					},
@@ -54,38 +54,38 @@ func TestExportXLSX(t *testing.T) {
 				}).AnyTimes()
 
 				// Header writing expectations
-				mock.EXPECT().setCellValue(1, 1, "Name").Return(nil)
-				mock.EXPECT().setCellValue(2, 1, "Age").Return(nil)
+				mock.EXPECT().SetCellValue(1, 1, "Name").Return(nil)
+				mock.EXPECT().SetCellValue(2, 1, "Age").Return(nil)
 
 				// Data writing expectations
-				mock.EXPECT().processValue("John", "").Return("John", nil)
-				mock.EXPECT().setCellValue(1, 2, "John").Return(nil)
-				mock.EXPECT().processValue(30, "").Return(30, nil)
-				mock.EXPECT().setCellValue(2, 2, 30).Return(nil)
+				mock.EXPECT().ProcessValue("John", "").Return("John", nil)
+				mock.EXPECT().SetCellValue(1, 2, "John").Return(nil)
+				mock.EXPECT().ProcessValue(30, "").Return(30, nil)
+				mock.EXPECT().SetCellValue(2, 2, 30).Return(nil)
 
 				// Auto-fit columns expectations
-				mock.EXPECT().getColumnLetter(1).Return("A")
-				mock.EXPECT().setColumnWidth("A", 15.0).Return(nil)
-				mock.EXPECT().getColumnLetter(2).Return("B")
-				mock.EXPECT().setColumnWidth("B", 15.0).Return(nil)
+				mock.EXPECT().GetColumnLetter(1).Return("A")
+				mock.EXPECT().SetColumnWidth("A", 15.0).Return(nil)
+				mock.EXPECT().GetColumnLetter(2).Return("B")
+				mock.EXPECT().SetColumnWidth("B", 15.0).Return(nil)
 
 				// Table processing expectations (merging and styling are called on the table, not the spreadsheet)
 				// We need to mock any calls that these methods might make to the spreadsheet
-				mock.EXPECT().applyBorderToCell(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-				mock.EXPECT().applyBordersToRange(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-				mock.EXPECT().applyStyleToCell(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-				mock.EXPECT().applyStyleToRange(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-				mock.EXPECT().mergeCells(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-				mock.EXPECT().isCellMerged(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
-				mock.EXPECT().isCellMergedHorizontally(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
-				mock.EXPECT().hasExistingBorder(gomock.Any(), gomock.Any(), gomock.Any()).Return(false).AnyTimes()
-				mock.EXPECT().getCellValue(gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
-				mock.EXPECT().setCellValue(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-				mock.EXPECT().getColumnLetter(gomock.Any()).Return("A").AnyTimes()
-				mock.EXPECT().processValue(gomock.Any(), gomock.Any()).Return(gomock.Any(), nil).AnyTimes()
+				mock.EXPECT().ApplyBorderToCell(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mock.EXPECT().ApplyBordersToRange(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mock.EXPECT().ApplyStyleToCell(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mock.EXPECT().ApplyStyleToRange(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mock.EXPECT().MergeCells(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mock.EXPECT().IsCellMerged(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+				mock.EXPECT().IsCellMergedHorizontally(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+				mock.EXPECT().HasExistingBorder(gomock.Any(), gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+				mock.EXPECT().GetCellValue(gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+				mock.EXPECT().SetCellValue(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mock.EXPECT().GetColumnLetter(gomock.Any()).Return("A").AnyTimes()
+				mock.EXPECT().ProcessValue(gomock.Any(), gomock.Any()).Return(gomock.Any(), nil).AnyTimes()
 
 				// Final save expectation
-				mock.EXPECT().saveToWriter(gomock.Any()).Return(nil)
+				mock.EXPECT().SaveToWriter(gomock.Any()).Return(nil)
 			},
 			params: FileWriteParams{
 				Filename: "test_export",
@@ -105,16 +105,16 @@ func TestExportXLSX(t *testing.T) {
 		{
 			name: "successful_export_with_existing_file",
 			setupMock: func(mock *MockSpreadsheet) {
-				mock.EXPECT().getFile().Return(&struct{ name string }{name: "existing_file"})
-				mock.EXPECT().getSheetName().Return("Sheet1")
-				mock.EXPECT().createSheet().Return(nil)
-				mock.EXPECT().setActiveSheet().Return(nil)
-				mock.EXPECT().getTable().Return(&Table{
+				mock.EXPECT().GetFile().Return(&struct{ name string }{name: "existing_file"})
+				mock.EXPECT().GetSheetName().Return("Sheet1")
+				mock.EXPECT().CreateSheet().Return(nil)
+				mock.EXPECT().SetActiveSheet().Return(nil)
+				mock.EXPECT().GetTable().Return(&Table{
 					Data:        DataSlice{},
 					Columns:     Columns{},
 					WriteHeader: false,
 				}).AnyTimes()
-				mock.EXPECT().saveToWriter(gomock.Any()).Return(nil)
+				mock.EXPECT().SaveToWriter(gomock.Any()).Return(nil)
 			},
 			params: FileWriteParams{
 				Filename: "test_existing",
@@ -125,8 +125,8 @@ func TestExportXLSX(t *testing.T) {
 		{
 			name: "error_creating_new_file",
 			setupMock: func(mock *MockSpreadsheet) {
-				mock.EXPECT().getFile().Return(nil)
-				mock.EXPECT().createNewFile().Return(errors.New("create file error"))
+				mock.EXPECT().GetFile().Return(nil)
+				mock.EXPECT().CreateNewFile().Return(errors.New("create file error"))
 			},
 			params: FileWriteParams{
 				Filename: "test_error",
@@ -138,9 +138,9 @@ func TestExportXLSX(t *testing.T) {
 		{
 			name: "error_writing_data",
 			setupMock: func(mock *MockSpreadsheet) {
-				mock.EXPECT().getFile().Return(&struct{ name string }{name: "existing_file"})
-				mock.EXPECT().getSheetName().Return("Sheet1")
-				mock.EXPECT().createSheet().Return(errors.New("create sheet error"))
+				mock.EXPECT().GetFile().Return(&struct{ name string }{name: "existing_file"})
+				mock.EXPECT().GetSheetName().Return("Sheet1")
+				mock.EXPECT().CreateSheet().Return(errors.New("create sheet error"))
 			},
 			params: FileWriteParams{
 				Filename: "test_write_error",
@@ -152,16 +152,16 @@ func TestExportXLSX(t *testing.T) {
 		{
 			name: "error_saving_to_writer",
 			setupMock: func(mock *MockSpreadsheet) {
-				mock.EXPECT().getFile().Return(&struct{ name string }{name: "existing_file"})
-				mock.EXPECT().getSheetName().Return("Sheet1")
-				mock.EXPECT().createSheet().Return(nil)
-				mock.EXPECT().setActiveSheet().Return(nil)
-				mock.EXPECT().getTable().Return(&Table{
+				mock.EXPECT().GetFile().Return(&struct{ name string }{name: "existing_file"})
+				mock.EXPECT().GetSheetName().Return("Sheet1")
+				mock.EXPECT().CreateSheet().Return(nil)
+				mock.EXPECT().SetActiveSheet().Return(nil)
+				mock.EXPECT().GetTable().Return(&Table{
 					Data:        DataSlice{},
 					Columns:     Columns{},
 					WriteHeader: false,
 				}).AnyTimes()
-				mock.EXPECT().saveToWriter(gomock.Any()).Return(errors.New("save error"))
+				mock.EXPECT().SaveToWriter(gomock.Any()).Return(errors.New("save error"))
 			},
 			params: FileWriteParams{
 				Filename: "test_save_error",
@@ -223,43 +223,43 @@ func TestXlsx_writeData(t *testing.T) {
 					},
 				}
 
-				mock.EXPECT().getSheetName().Return("")
-				mock.EXPECT().setSheetName("Sheet1")
-				mock.EXPECT().createSheet().Return(nil)
-				mock.EXPECT().setActiveSheet().Return(nil)
-				mock.EXPECT().getTable().Return(table).AnyTimes()
+				mock.EXPECT().GetSheetName().Return("")
+				mock.EXPECT().SetSheetName("Sheet1")
+				mock.EXPECT().CreateSheet().Return(nil)
+				mock.EXPECT().SetActiveSheet().Return(nil)
+				mock.EXPECT().GetTable().Return(table).AnyTimes()
 
 				// Header writing expectations
-				mock.EXPECT().setCellValue(1, 1, "Name").Return(nil)
-				mock.EXPECT().setCellValue(2, 1, "Age").Return(nil)
+				mock.EXPECT().SetCellValue(1, 1, "Name").Return(nil)
+				mock.EXPECT().SetCellValue(2, 1, "Age").Return(nil)
 
 				// Data writing expectations
-				mock.EXPECT().processValue("John", "").Return("John", nil)
-				mock.EXPECT().setCellValue(1, 2, "John").Return(nil)
-				mock.EXPECT().processValue(30, "").Return(30, nil)
-				mock.EXPECT().setCellValue(2, 2, 30).Return(nil)
+				mock.EXPECT().ProcessValue("John", "").Return("John", nil)
+				mock.EXPECT().SetCellValue(1, 2, "John").Return(nil)
+				mock.EXPECT().ProcessValue(30, "").Return(30, nil)
+				mock.EXPECT().SetCellValue(2, 2, 30).Return(nil)
 
-				mock.EXPECT().processValue("Jane", "").Return("Jane", nil)
-				mock.EXPECT().setCellValue(1, 3, "Jane").Return(nil)
-				mock.EXPECT().processValue(25, "").Return(25, nil)
-				mock.EXPECT().setCellValue(2, 3, 25).Return(nil)
+				mock.EXPECT().ProcessValue("Jane", "").Return("Jane", nil)
+				mock.EXPECT().SetCellValue(1, 3, "Jane").Return(nil)
+				mock.EXPECT().ProcessValue(25, "").Return(25, nil)
+				mock.EXPECT().SetCellValue(2, 3, 25).Return(nil)
 
 				// Auto-fit columns expectations
-				mock.EXPECT().getColumnLetter(1).Return("A")
-				mock.EXPECT().setColumnWidth("A", 15.0).Return(nil)
-				mock.EXPECT().getColumnLetter(2).Return("B")
-				mock.EXPECT().setColumnWidth("B", 15.0).Return(nil)
+				mock.EXPECT().GetColumnLetter(1).Return("A")
+				mock.EXPECT().SetColumnWidth("A", 15.0).Return(nil)
+				mock.EXPECT().GetColumnLetter(2).Return("B")
+				mock.EXPECT().SetColumnWidth("B", 15.0).Return(nil)
 
 				// Table processing expectations
-				mock.EXPECT().applyBorderToCell(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-				mock.EXPECT().applyBordersToRange(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-				mock.EXPECT().applyStyleToCell(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-				mock.EXPECT().applyStyleToRange(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-				mock.EXPECT().mergeCells(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-				mock.EXPECT().isCellMerged(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
-				mock.EXPECT().isCellMergedHorizontally(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
-				mock.EXPECT().hasExistingBorder(gomock.Any(), gomock.Any(), gomock.Any()).Return(false).AnyTimes()
-				mock.EXPECT().getCellValue(gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
+				mock.EXPECT().ApplyBorderToCell(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mock.EXPECT().ApplyBordersToRange(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mock.EXPECT().ApplyStyleToCell(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mock.EXPECT().ApplyStyleToRange(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mock.EXPECT().MergeCells(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mock.EXPECT().IsCellMerged(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+				mock.EXPECT().IsCellMergedHorizontally(gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+				mock.EXPECT().HasExistingBorder(gomock.Any(), gomock.Any(), gomock.Any()).Return(false).AnyTimes()
+				mock.EXPECT().GetCellValue(gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
 			},
 			expectError: false,
 		},
@@ -269,11 +269,11 @@ func TestXlsx_writeData(t *testing.T) {
 				params: FileWriteParams{},
 			},
 			setupMock: func(mock *MockSpreadsheet) {
-				mock.EXPECT().getSheetName().Return("")
-				mock.EXPECT().setSheetName("Sheet1")
-				mock.EXPECT().createSheet().Return(nil)
-				mock.EXPECT().setActiveSheet().Return(nil)
-				mock.EXPECT().getTable().Return(nil)
+				mock.EXPECT().GetSheetName().Return("")
+				mock.EXPECT().SetSheetName("Sheet1")
+				mock.EXPECT().CreateSheet().Return(nil)
+				mock.EXPECT().SetActiveSheet().Return(nil)
+				mock.EXPECT().GetTable().Return(nil)
 			},
 			expectError: true,
 			errorMsg:    "no table data provided",
@@ -284,9 +284,9 @@ func TestXlsx_writeData(t *testing.T) {
 				params: FileWriteParams{},
 			},
 			setupMock: func(mock *MockSpreadsheet) {
-				mock.EXPECT().getSheetName().Return("")
-				mock.EXPECT().setSheetName("Sheet1")
-				mock.EXPECT().createSheet().Return(errors.New("sheet creation error"))
+				mock.EXPECT().GetSheetName().Return("")
+				mock.EXPECT().SetSheetName("Sheet1")
+				mock.EXPECT().CreateSheet().Return(errors.New("sheet creation error"))
 			},
 			expectError: true,
 			errorMsg:    "failed to create sheet",
@@ -297,10 +297,10 @@ func TestXlsx_writeData(t *testing.T) {
 				params: FileWriteParams{},
 			},
 			setupMock: func(mock *MockSpreadsheet) {
-				mock.EXPECT().getSheetName().Return("")
-				mock.EXPECT().setSheetName("Sheet1")
-				mock.EXPECT().createSheet().Return(nil)
-				mock.EXPECT().setActiveSheet().Return(errors.New("set active sheet error"))
+				mock.EXPECT().GetSheetName().Return("")
+				mock.EXPECT().SetSheetName("Sheet1")
+				mock.EXPECT().CreateSheet().Return(nil)
+				mock.EXPECT().SetActiveSheet().Return(errors.New("set active sheet error"))
 			},
 			expectError: true,
 			errorMsg:    "failed to set active sheet",
@@ -353,9 +353,9 @@ func TestXlsx_writeHeaders(t *testing.T) {
 						{Name: "age", Label: "Age"},
 					},
 				}
-				mock.EXPECT().getTable().Return(table).AnyTimes()
-				mock.EXPECT().setCellValue(1, 1, "Name").Return(nil)
-				mock.EXPECT().setCellValue(2, 1, "Age").Return(nil)
+				mock.EXPECT().GetTable().Return(table).AnyTimes()
+				mock.EXPECT().SetCellValue(1, 1, "Name").Return(nil)
+				mock.EXPECT().SetCellValue(2, 1, "Age").Return(nil)
 			},
 			expectError:  false,
 			expectedRows: 1,
@@ -376,10 +376,10 @@ func TestXlsx_writeHeaders(t *testing.T) {
 						},
 					},
 				}
-				mock.EXPECT().getTable().Return(table).AnyTimes()
-				mock.EXPECT().setCellValue(1, 1, "Personal Info").Return(nil)
-				mock.EXPECT().setCellValue(1, 2, "Name").Return(nil)
-				mock.EXPECT().setCellValue(2, 2, "Age").Return(nil)
+				mock.EXPECT().GetTable().Return(table).AnyTimes()
+				mock.EXPECT().SetCellValue(1, 1, "Personal Info").Return(nil)
+				mock.EXPECT().SetCellValue(1, 2, "Name").Return(nil)
+				mock.EXPECT().SetCellValue(2, 2, "Age").Return(nil)
 			},
 			expectError:  false,
 			expectedRows: 2,
@@ -391,7 +391,7 @@ func TestXlsx_writeHeaders(t *testing.T) {
 				table := &Table{
 					Columns: Columns{},
 				}
-				mock.EXPECT().getTable().Return(table).AnyTimes()
+				mock.EXPECT().GetTable().Return(table).AnyTimes()
 			},
 			expectError:  false,
 			expectedRows: 0,
@@ -405,8 +405,8 @@ func TestXlsx_writeHeaders(t *testing.T) {
 						{Name: "name", Label: "Name"},
 					},
 				}
-				mock.EXPECT().getTable().Return(table).AnyTimes()
-				mock.EXPECT().setCellValue(1, 1, "Name").Return(errors.New("cell write error"))
+				mock.EXPECT().GetTable().Return(table).AnyTimes()
+				mock.EXPECT().SetCellValue(1, 1, "Name").Return(errors.New("cell write error"))
 			},
 			expectError: true,
 			errorMsg:    "failed to set header cell value",
@@ -466,8 +466,8 @@ func TestXlsx_writeHeaderRow(t *testing.T) {
 			maxDepth:   1,
 			startCol:   1,
 			setupMock: func(mock *MockSpreadsheet) {
-				mock.EXPECT().setCellValue(1, 1, "Name").Return(nil)
-				mock.EXPECT().setCellValue(2, 1, "Age").Return(nil)
+				mock.EXPECT().SetCellValue(1, 1, "Name").Return(nil)
+				mock.EXPECT().SetCellValue(2, 1, "Age").Return(nil)
 			},
 			expectError: false,
 		},
@@ -488,9 +488,9 @@ func TestXlsx_writeHeaderRow(t *testing.T) {
 			maxDepth:   2,
 			startCol:   1,
 			setupMock: func(mock *MockSpreadsheet) {
-				mock.EXPECT().setCellValue(1, 1, "Personal Info").Return(nil)
-				mock.EXPECT().setCellValue(1, 2, "Name").Return(nil)
-				mock.EXPECT().setCellValue(2, 2, "Age").Return(nil)
+				mock.EXPECT().SetCellValue(1, 1, "Personal Info").Return(nil)
+				mock.EXPECT().SetCellValue(1, 2, "Name").Return(nil)
+				mock.EXPECT().SetCellValue(2, 2, "Age").Return(nil)
 			},
 			expectError: false,
 		},
@@ -504,7 +504,7 @@ func TestXlsx_writeHeaderRow(t *testing.T) {
 			maxDepth:   1,
 			startCol:   1,
 			setupMock: func(mock *MockSpreadsheet) {
-				mock.EXPECT().setCellValue(1, 1, "Name").Return(errors.New("cell write error"))
+				mock.EXPECT().SetCellValue(1, 1, "Name").Return(errors.New("cell write error"))
 			},
 			expectError: true,
 			errorMsg:    "failed to set header cell value",
@@ -526,9 +526,9 @@ func TestXlsx_writeHeaderRow(t *testing.T) {
 			maxDepth:   2,
 			startCol:   1,
 			setupMock: func(mock *MockSpreadsheet) {
-				mock.EXPECT().setCellValue(1, 1, "Group 1").Return(nil)
-				mock.EXPECT().setCellValue(1, 2, "Column 1").Return(nil)
-				mock.EXPECT().setCellValue(2, 1, "Column 2").Return(nil)
+				mock.EXPECT().SetCellValue(1, 1, "Group 1").Return(nil)
+				mock.EXPECT().SetCellValue(1, 2, "Column 1").Return(nil)
+				mock.EXPECT().SetCellValue(2, 1, "Column 2").Return(nil)
 			},
 			expectError: false,
 		},
@@ -585,8 +585,8 @@ func TestXlsx_writeCell(t *testing.T) {
 			colIndex: 1,
 			rowIndex: 1,
 			setupMock: func(mock *MockSpreadsheet) {
-				mock.EXPECT().processValue("John", "").Return("John", nil)
-				mock.EXPECT().setCellValue(1, 1, "John").Return(nil)
+				mock.EXPECT().ProcessValue("John", "").Return("John", nil)
+				mock.EXPECT().SetCellValue(1, 1, "John").Return(nil)
 			},
 			expectError: false,
 		},
@@ -602,8 +602,8 @@ func TestXlsx_writeCell(t *testing.T) {
 			colIndex: 1,
 			rowIndex: 1,
 			setupMock: func(mock *MockSpreadsheet) {
-				mock.EXPECT().processValue(123.45, "currency").Return("$123.45", nil)
-				mock.EXPECT().setCellValue(1, 1, "$123.45").Return(nil)
+				mock.EXPECT().ProcessValue(123.45, "currency").Return("$123.45", nil)
+				mock.EXPECT().SetCellValue(1, 1, "$123.45").Return(nil)
 			},
 			expectError: false,
 		},
@@ -635,7 +635,7 @@ func TestXlsx_writeCell(t *testing.T) {
 			colIndex: 1,
 			rowIndex: 1,
 			setupMock: func(mock *MockSpreadsheet) {
-				mock.EXPECT().processValue("John", "invalid_format").Return(nil, errors.New("format error"))
+				mock.EXPECT().ProcessValue("John", "invalid_format").Return(nil, errors.New("format error"))
 			},
 			expectError: true,
 			errorMsg:    "error processing value",
@@ -652,8 +652,8 @@ func TestXlsx_writeCell(t *testing.T) {
 			colIndex: 1,
 			rowIndex: 1,
 			setupMock: func(mock *MockSpreadsheet) {
-				mock.EXPECT().processValue("John", "").Return("John", nil)
-				mock.EXPECT().setCellValue(1, 1, "John").Return(errors.New("cell write error"))
+				mock.EXPECT().ProcessValue("John", "").Return("John", nil)
+				mock.EXPECT().SetCellValue(1, 1, "John").Return(errors.New("cell write error"))
 			},
 			expectError: true,
 			errorMsg:    "error setting cell value",
@@ -670,8 +670,115 @@ func TestXlsx_writeCell(t *testing.T) {
 			colIndex: 1,
 			rowIndex: 1,
 			setupMock: func(mock *MockSpreadsheet) {
-				mock.EXPECT().processValue(nil, "").Return("", nil)
-				mock.EXPECT().setCellValue(1, 1, "").Return(nil)
+				mock.EXPECT().ProcessValue(nil, "").Return("", nil)
+				mock.EXPECT().SetCellValue(1, 1, "").Return(nil)
+			},
+			expectError: false,
+		},
+		{
+			name: "formula_format_uses_set_cell_formula",
+			xlsx: &xlsx{},
+			item: Data{"total": "=SUM(A2:A10)"},
+			column: &Column{
+				Name:   "total",
+				Label:  "Total",
+				Format: ExcelizeFormatFormula,
+			},
+			colIndex: 1,
+			rowIndex: 2,
+			setupMock: func(mock *MockSpreadsheet) {
+				mock.EXPECT().ProcessValue("=SUM(A2:A10)", ExcelizeFormatFormula).Return("=SUM(A2:A10)", nil)
+				mock.EXPECT().SetCellFormula(1, 2, "=SUM(A2:A10)").Return(nil)
+			},
+			expectError: false,
+		},
+		{
+			name: "formula_format_set_cell_formula_error",
+			xlsx: &xlsx{},
+			item: Data{"total": "=SUM(A2:A10)"},
+			column: &Column{
+				Name:   "total",
+				Label:  "Total",
+				Format: ExcelizeFormatFormula,
+			},
+			colIndex: 1,
+			rowIndex: 2,
+			setupMock: func(mock *MockSpreadsheet) {
+				mock.EXPECT().ProcessValue("=SUM(A2:A10)", ExcelizeFormatFormula).Return("=SUM(A2:A10)", nil)
+				mock.EXPECT().SetCellFormula(1, 2, "=SUM(A2:A10)").Return(errors.New("formula error"))
+			},
+			expectError: true,
+			errorMsg:    "error setting formula",
+		},
+		{
+			name: "hyperlink_format_sets_value_and_hyperlink",
+			xlsx: &xlsx{},
+			item: Data{"url": "https://example.com"},
+			column: &Column{
+				Name:   "url",
+				Label:  "URL",
+				Format: ExcelizeFormatHyperlink,
+			},
+			colIndex: 2,
+			rowIndex: 3,
+			setupMock: func(mock *MockSpreadsheet) {
+				mock.EXPECT().ProcessValue("https://example.com", ExcelizeFormatHyperlink).Return("https://example.com", nil)
+				mock.EXPECT().SetCellValue(2, 3, "https://example.com").Return(nil)
+				mock.EXPECT().SetCellHyperLink(2, 3, "https://example.com").Return(nil)
+			},
+			expectError: false,
+		},
+		{
+			name: "hyperlink_format_set_cell_value_error",
+			xlsx: &xlsx{},
+			item: Data{"url": "https://example.com"},
+			column: &Column{
+				Name:   "url",
+				Label:  "URL",
+				Format: ExcelizeFormatHyperlink,
+			},
+			colIndex: 2,
+			rowIndex: 3,
+			setupMock: func(mock *MockSpreadsheet) {
+				mock.EXPECT().ProcessValue("https://example.com", ExcelizeFormatHyperlink).Return("https://example.com", nil)
+				mock.EXPECT().SetCellValue(2, 3, "https://example.com").Return(errors.New("value error"))
+			},
+			expectError: true,
+			errorMsg:    "error setting cell value",
+		},
+		{
+			name: "hyperlink_format_set_cell_hyperlink_error",
+			xlsx: &xlsx{},
+			item: Data{"url": "https://example.com"},
+			column: &Column{
+				Name:   "url",
+				Label:  "URL",
+				Format: ExcelizeFormatHyperlink,
+			},
+			colIndex: 2,
+			rowIndex: 3,
+			setupMock: func(mock *MockSpreadsheet) {
+				mock.EXPECT().ProcessValue("https://example.com", ExcelizeFormatHyperlink).Return("https://example.com", nil)
+				mock.EXPECT().SetCellValue(2, 3, "https://example.com").Return(nil)
+				mock.EXPECT().SetCellHyperLink(2, 3, "https://example.com").Return(errors.New("hyperlink error"))
+			},
+			expectError: true,
+			errorMsg:    "error setting hyperlink",
+		},
+		{
+			name: "default_format_passes_raw_value",
+			xlsx: &xlsx{},
+			item: Data{"count": 42},
+			column: &Column{
+				Name:   "count",
+				Label:  "Count",
+				Format: ExcelizeFormatDefault,
+			},
+			colIndex: 1,
+			rowIndex: 1,
+			setupMock: func(mock *MockSpreadsheet) {
+				mock.EXPECT().ProcessValue(42, ExcelizeFormatDefault).Return(42, nil)
+				mock.EXPECT().SetCellValue(1, 1, 42).Return(nil)
 			},
 			expectError: false,
 		},
@@ -720,11 +827,11 @@ func TestXlsx_autoFitColumns(t *testing.T) {
 						{Name: "age", Label: "Age"},
 					},
 				}
-				mock.EXPECT().getTable().Return(table).AnyTimes()
-				mock.EXPECT().getColumnLetter(1).Return("A")
-				mock.EXPECT().setColumnWidth("A", 15.0).Return(nil)
-				mock.EXPECT().getColumnLetter(2).Return("B")
-				mock.EXPECT().setColumnWidth("B", 15.0).Return(nil)
+				mock.EXPECT().GetTable().Return(table).AnyTimes()
+				mock.EXPECT().GetColumnLetter(1).Return("A")
+				mock.EXPECT().SetColumnWidth("A", 15.0).Return(nil)
+				mock.EXPECT().GetColumnLetter(2).Return("B")
+				mock.EXPECT().SetColumnWidth("B", 15.0).Return(nil)
 			},
 		},
 		{
@@ -737,11 +844,11 @@ func TestXlsx_autoFitColumns(t *testing.T) {
 						{Name: "age", Label: "Age"},
 					},
 				}
-				mock.EXPECT().getTable().Return(table).AnyTimes()
-				mock.EXPECT().getColumnLetter(1).Return("A")
-				mock.EXPECT().setColumnWidth("A", 15.0).Return(errors.New("width error"))
-				mock.EXPECT().getColumnLetter(2).Return("B")
-				mock.EXPECT().setColumnWidth("B", 15.0).Return(nil)
+				mock.EXPECT().GetTable().Return(table).AnyTimes()
+				mock.EXPECT().GetColumnLetter(1).Return("A")
+				mock.EXPECT().SetColumnWidth("A", 15.0).Return(errors.New("width error"))
+				mock.EXPECT().GetColumnLetter(2).Return("B")
+				mock.EXPECT().SetColumnWidth("B", 15.0).Return(nil)
 			},
 		},
 		{
@@ -751,7 +858,7 @@ func TestXlsx_autoFitColumns(t *testing.T) {
 				table := &Table{
 					Columns: Columns{},
 				}
-				mock.EXPECT().getTable().Return(table).AnyTimes()
+				mock.EXPECT().GetTable().Return(table).AnyTimes()
 			},
 		},
 		{
@@ -763,9 +870,9 @@ func TestXlsx_autoFitColumns(t *testing.T) {
 						{Name: "single", Label: "Single Column"},
 					},
 				}
-				mock.EXPECT().getTable().Return(table).AnyTimes()
-				mock.EXPECT().getColumnLetter(1).Return("A")
-				mock.EXPECT().setColumnWidth("A", 15.0).Return(nil)
+				mock.EXPECT().GetTable().Return(table).AnyTimes()
+				mock.EXPECT().GetColumnLetter(1).Return("A")
+				mock.EXPECT().SetColumnWidth("A", 15.0).Return(nil)
 			},
 		},
 		{
@@ -781,17 +888,17 @@ func TestXlsx_autoFitColumns(t *testing.T) {
 						{Name: "col5", Label: "Column 5"},
 					},
 				}
-				mock.EXPECT().getTable().Return(table).AnyTimes()
-				mock.EXPECT().getColumnLetter(1).Return("A")
-				mock.EXPECT().setColumnWidth("A", 15.0).Return(nil)
-				mock.EXPECT().getColumnLetter(2).Return("B")
-				mock.EXPECT().setColumnWidth("B", 15.0).Return(nil)
-				mock.EXPECT().getColumnLetter(3).Return("C")
-				mock.EXPECT().setColumnWidth("C", 15.0).Return(nil)
-				mock.EXPECT().getColumnLetter(4).Return("D")
-				mock.EXPECT().setColumnWidth("D", 15.0).Return(nil)
-				mock.EXPECT().getColumnLetter(5).Return("E")
-				mock.EXPECT().setColumnWidth("E", 15.0).Return(nil)
+				mock.EXPECT().GetTable().Return(table).AnyTimes()
+				mock.EXPECT().GetColumnLetter(1).Return("A")
+				mock.EXPECT().SetColumnWidth("A", 15.0).Return(nil)
+				mock.EXPECT().GetColumnLetter(2).Return("B")
+				mock.EXPECT().SetColumnWidth("B", 15.0).Return(nil)
+				mock.EXPECT().GetColumnLetter(3).Return("C")
+				mock.EXPECT().SetColumnWidth("C", 15.0).Return(nil)
+				mock.EXPECT().GetColumnLetter(4).Return("D")
+				mock.EXPECT().SetColumnWidth("D", 15.0).Return(nil)
+				mock.EXPECT().GetColumnLetter(5).Return("E")
+				mock.EXPECT().SetColumnWidth("E", 15.0).Return(nil)
 			},
 		},
 	}
@@ -848,14 +955,14 @@ func TestExportXLSXSheets(t *testing.T) {
 			name: "single_sheet_with_new_file",
 			setupMocks: func(mocks []*MockSpreadsheet) {
 				m := mocks[0]
-				m.EXPECT().getFile().Return(nil)
-				m.EXPECT().createNewFile().Return(nil)
-				m.EXPECT().close().Return(nil)
-				m.EXPECT().getSheetName().Return("Reports")
-				m.EXPECT().createSheet().Return(nil)
-				m.EXPECT().setActiveSheet().Return(nil)
-				m.EXPECT().getTable().Return(emptyTable).AnyTimes()
-				m.EXPECT().saveToWriter(gomock.Any()).Return(nil)
+				m.EXPECT().GetFile().Return(nil)
+				m.EXPECT().CreateNewFile().Return(nil)
+				m.EXPECT().Close().Return(nil)
+				m.EXPECT().GetSheetName().Return("Reports")
+				m.EXPECT().CreateSheet().Return(nil)
+				m.EXPECT().SetActiveSheet().Return(nil)
+				m.EXPECT().GetTable().Return(emptyTable).AnyTimes()
+				m.EXPECT().SaveToWriter(gomock.Any()).Return(nil)
 			},
 			sheetCount: 1,
 			params:     FileWriteParams{Filename: "test_single_sheet", Filepath: tempDir},
@@ -864,22 +971,22 @@ func TestExportXLSXSheets(t *testing.T) {
 			name: "multiple_sheets_with_new_file",
 			setupMocks: func(mocks []*MockSpreadsheet) {
 				existingFile := &struct{ name string }{name: "shared_file"}
-				mocks[0].EXPECT().getFile().Return(nil)
-				mocks[0].EXPECT().createNewFile().Return(nil)
-				mocks[0].EXPECT().close().Return(nil)
-				mocks[0].EXPECT().getFile().Return(existingFile) // second call to propagate file
-				mocks[0].EXPECT().getSheetName().Return("Sheet1")
-				mocks[0].EXPECT().createSheet().Return(nil)
-				mocks[0].EXPECT().setActiveSheet().Return(nil)
-				mocks[0].EXPECT().getTable().Return(emptyTable).AnyTimes()
-				mocks[0].EXPECT().saveToWriter(gomock.Any()).Return(nil)
+				mocks[0].EXPECT().GetFile().Return(nil)
+				mocks[0].EXPECT().CreateNewFile().Return(nil)
+				mocks[0].EXPECT().Close().Return(nil)
+				mocks[0].EXPECT().GetFile().Return(existingFile) // second call to propagate file
+				mocks[0].EXPECT().GetSheetName().Return("Sheet1")
+				mocks[0].EXPECT().CreateSheet().Return(nil)
+				mocks[0].EXPECT().SetActiveSheet().Return(nil)
+				mocks[0].EXPECT().GetTable().Return(emptyTable).AnyTimes()
+				mocks[0].EXPECT().SaveToWriter(gomock.Any()).Return(nil)
 
-				mocks[1].EXPECT().getFile().Return(nil)
-				mocks[1].EXPECT().initWithFile(existingFile).Return(nil)
-				mocks[1].EXPECT().getSheetName().Return("Summary")
-				mocks[1].EXPECT().createSheet().Return(nil)
-				mocks[1].EXPECT().setActiveSheet().Return(nil)
-				mocks[1].EXPECT().getTable().Return(emptyTable).AnyTimes()
+				mocks[1].EXPECT().GetFile().Return(nil)
+				mocks[1].EXPECT().InitWithFile(existingFile).Return(nil)
+				mocks[1].EXPECT().GetSheetName().Return("Summary")
+				mocks[1].EXPECT().CreateSheet().Return(nil)
+				mocks[1].EXPECT().SetActiveSheet().Return(nil)
+				mocks[1].EXPECT().GetTable().Return(emptyTable).AnyTimes()
 			},
 			sheetCount: 2,
 			params:     FileWriteParams{Filename: "test_multiple_sheets", Filepath: tempDir},
@@ -888,19 +995,19 @@ func TestExportXLSXSheets(t *testing.T) {
 			name: "multiple_sheets_with_existing_file",
 			setupMocks: func(mocks []*MockSpreadsheet) {
 				existingFile := &struct{ name string }{name: "shared_file"}
-				mocks[0].EXPECT().getFile().Return(existingFile)
-				mocks[0].EXPECT().getFile().Return(existingFile) // second call to propagate file
-				mocks[0].EXPECT().getSheetName().Return("Sheet1")
-				mocks[0].EXPECT().createSheet().Return(nil)
-				mocks[0].EXPECT().setActiveSheet().Return(nil)
-				mocks[0].EXPECT().getTable().Return(emptyTable).AnyTimes()
-				mocks[0].EXPECT().saveToWriter(gomock.Any()).Return(nil)
+				mocks[0].EXPECT().GetFile().Return(existingFile)
+				mocks[0].EXPECT().GetFile().Return(existingFile) // second call to propagate file
+				mocks[0].EXPECT().GetSheetName().Return("Sheet1")
+				mocks[0].EXPECT().CreateSheet().Return(nil)
+				mocks[0].EXPECT().SetActiveSheet().Return(nil)
+				mocks[0].EXPECT().GetTable().Return(emptyTable).AnyTimes()
+				mocks[0].EXPECT().SaveToWriter(gomock.Any()).Return(nil)
 
-				mocks[1].EXPECT().getFile().Return(existingFile) // already has the file
-				mocks[1].EXPECT().getSheetName().Return("Summary")
-				mocks[1].EXPECT().createSheet().Return(nil)
-				mocks[1].EXPECT().setActiveSheet().Return(nil)
-				mocks[1].EXPECT().getTable().Return(emptyTable).AnyTimes()
+				mocks[1].EXPECT().GetFile().Return(existingFile) // already has the file
+				mocks[1].EXPECT().GetSheetName().Return("Summary")
+				mocks[1].EXPECT().CreateSheet().Return(nil)
+				mocks[1].EXPECT().SetActiveSheet().Return(nil)
+				mocks[1].EXPECT().GetTable().Return(emptyTable).AnyTimes()
 			},
 			sheetCount: 2,
 			params:     FileWriteParams{Filename: "test_existing_file", Filepath: tempDir},
@@ -908,8 +1015,8 @@ func TestExportXLSXSheets(t *testing.T) {
 		{
 			name: "error_creating_new_file",
 			setupMocks: func(mocks []*MockSpreadsheet) {
-				mocks[0].EXPECT().getFile().Return(nil)
-				mocks[0].EXPECT().createNewFile().Return(errors.New("create file error"))
+				mocks[0].EXPECT().GetFile().Return(nil)
+				mocks[0].EXPECT().CreateNewFile().Return(errors.New("create file error"))
 			},
 			sheetCount:    1,
 			params:        FileWriteParams{Filename: "test_error_create", Filepath: tempDir},
@@ -920,13 +1027,13 @@ func TestExportXLSXSheets(t *testing.T) {
 			name: "error_initializing_second_sheet",
 			setupMocks: func(mocks []*MockSpreadsheet) {
 				existingFile := &struct{ name string }{name: "shared_file"}
-				mocks[0].EXPECT().getFile().Return(nil)
-				mocks[0].EXPECT().createNewFile().Return(nil)
-				mocks[0].EXPECT().close().Return(nil)
-				mocks[0].EXPECT().getFile().Return(existingFile) // second call to propagate file
+				mocks[0].EXPECT().GetFile().Return(nil)
+				mocks[0].EXPECT().CreateNewFile().Return(nil)
+				mocks[0].EXPECT().Close().Return(nil)
+				mocks[0].EXPECT().GetFile().Return(existingFile) // second call to propagate file
 
-				mocks[1].EXPECT().getFile().Return(nil)
-				mocks[1].EXPECT().initWithFile(existingFile).Return(errors.New("init error"))
+				mocks[1].EXPECT().GetFile().Return(nil)
+				mocks[1].EXPECT().InitWithFile(existingFile).Return(errors.New("init error"))
 			},
 			sheetCount:    2,
 			params:        FileWriteParams{Filename: "test_error_init", Filepath: tempDir},
@@ -936,9 +1043,9 @@ func TestExportXLSXSheets(t *testing.T) {
 		{
 			name: "error_writing_data",
 			setupMocks: func(mocks []*MockSpreadsheet) {
-				mocks[0].EXPECT().getFile().Return(&struct{ name string }{name: "existing_file"})
-				mocks[0].EXPECT().getSheetName().Return("Sheet1")
-				mocks[0].EXPECT().createSheet().Return(errors.New("create sheet error"))
+				mocks[0].EXPECT().GetFile().Return(&struct{ name string }{name: "existing_file"})
+				mocks[0].EXPECT().GetSheetName().Return("Sheet1")
+				mocks[0].EXPECT().CreateSheet().Return(errors.New("create sheet error"))
 			},
 			sheetCount:    1,
 			params:        FileWriteParams{Filename: "test_write_error", Filepath: tempDir},
@@ -948,12 +1055,12 @@ func TestExportXLSXSheets(t *testing.T) {
 		{
 			name: "error_saving_to_writer",
 			setupMocks: func(mocks []*MockSpreadsheet) {
-				mocks[0].EXPECT().getFile().Return(&struct{ name string }{name: "existing_file"})
-				mocks[0].EXPECT().getSheetName().Return("Sheet1")
-				mocks[0].EXPECT().createSheet().Return(nil)
-				mocks[0].EXPECT().setActiveSheet().Return(nil)
-				mocks[0].EXPECT().getTable().Return(emptyTable).AnyTimes()
-				mocks[0].EXPECT().saveToWriter(gomock.Any()).Return(errors.New("save error"))
+				mocks[0].EXPECT().GetFile().Return(&struct{ name string }{name: "existing_file"})
+				mocks[0].EXPECT().GetSheetName().Return("Sheet1")
+				mocks[0].EXPECT().CreateSheet().Return(nil)
+				mocks[0].EXPECT().SetActiveSheet().Return(nil)
+				mocks[0].EXPECT().GetTable().Return(emptyTable).AnyTimes()
+				mocks[0].EXPECT().SaveToWriter(gomock.Any()).Return(errors.New("save error"))
 			},
 			sheetCount:    1,
 			params:        FileWriteParams{Filename: "test_save_error", Filepath: tempDir},

@@ -40,7 +40,7 @@ func (m *MockSpreadsheet) EXPECT() *MockSpreadsheetMockRecorder {
 	return m.recorder
 }
 
-// applyBorderToCell mocks base method.
+// ApplyBorderToCell mocks base method.
 func (m *MockSpreadsheet) ApplyBorderToCell(col, row int, side string, border *Border) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ApplyBorderToCell", col, row, side, border)
@@ -48,13 +48,13 @@ func (m *MockSpreadsheet) ApplyBorderToCell(col, row int, side string, border *B
 	return ret0
 }
 
-// applyBorderToCell indicates an expected call of applyBorderToCell.
-func (mr *MockSpreadsheetMockRecorder) applyBorderToCell(col, row, side, border any) *gomock.Call {
+// ApplyBorderToCell indicates an expected call of ApplyBorderToCell.
+func (mr *MockSpreadsheetMockRecorder) ApplyBorderToCell(col, row, side, border any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyBorderToCell", reflect.TypeOf((*MockSpreadsheet)(nil).ApplyBorderToCell), col, row, side, border)
 }
 
-// applyBordersToRange mocks base method.
+// ApplyBordersToRange mocks base method.
 func (m *MockSpreadsheet) ApplyBordersToRange(startCol, startRow, endCol, endRow int, borders Borders) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ApplyBordersToRange", startCol, startRow, endCol, endRow, borders)
@@ -62,13 +62,13 @@ func (m *MockSpreadsheet) ApplyBordersToRange(startCol, startRow, endCol, endRow
 	return ret0
 }
 
-// applyBordersToRange indicates an expected call of applyBordersToRange.
-func (mr *MockSpreadsheetMockRecorder) applyBordersToRange(startCol, startRow, endCol, endRow, borders any) *gomock.Call {
+// ApplyBordersToRange indicates an expected call of ApplyBordersToRange.
+func (mr *MockSpreadsheetMockRecorder) ApplyBordersToRange(startCol, startRow, endCol, endRow, borders any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyBordersToRange", reflect.TypeOf((*MockSpreadsheet)(nil).ApplyBordersToRange), startCol, startRow, endCol, endRow, borders)
 }
 
-// applyStyleToCell mocks base method.
+// ApplyStyleToCell mocks base method.
 func (m *MockSpreadsheet) ApplyStyleToCell(col, row int, style Style) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ApplyStyleToCell", col, row, style)
@@ -76,13 +76,13 @@ func (m *MockSpreadsheet) ApplyStyleToCell(col, row int, style Style) error {
 	return ret0
 }
 
-// applyStyleToCell indicates an expected call of applyStyleToCell.
-func (mr *MockSpreadsheetMockRecorder) applyStyleToCell(col, row, style any) *gomock.Call {
+// ApplyStyleToCell indicates an expected call of ApplyStyleToCell.
+func (mr *MockSpreadsheetMockRecorder) ApplyStyleToCell(col, row, style any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyStyleToCell", reflect.TypeOf((*MockSpreadsheet)(nil).ApplyStyleToCell), col, row, style)
 }
 
-// applyStyleToRange mocks base method.
+// ApplyStyleToRange mocks base method.
 func (m *MockSpreadsheet) ApplyStyleToRange(startCol, startRow, endCol, endRow int, style Style) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ApplyStyleToRange", startCol, startRow, endCol, endRow, style)
@@ -90,13 +90,13 @@ func (m *MockSpreadsheet) ApplyStyleToRange(startCol, startRow, endCol, endRow i
 	return ret0
 }
 
-// applyStyleToRange indicates an expected call of applyStyleToRange.
-func (mr *MockSpreadsheetMockRecorder) applyStyleToRange(startCol, startRow, endCol, endRow, style any) *gomock.Call {
+// ApplyStyleToRange indicates an expected call of ApplyStyleToRange.
+func (mr *MockSpreadsheetMockRecorder) ApplyStyleToRange(startCol, startRow, endCol, endRow, style any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyStyleToRange", reflect.TypeOf((*MockSpreadsheet)(nil).ApplyStyleToRange), startCol, startRow, endCol, endRow, style)
 }
 
-// close mocks base method.
+// Close mocks base method.
 func (m *MockSpreadsheet) Close() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Close")
@@ -104,13 +104,13 @@ func (m *MockSpreadsheet) Close() error {
 	return ret0
 }
 
-// close indicates an expected call of close.
-func (mr *MockSpreadsheetMockRecorder) close() *gomock.Call {
+// Close indicates an expected call of Close.
+func (mr *MockSpreadsheetMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockSpreadsheet)(nil).Close))
 }
 
-// createNewFile mocks base method.
+// CreateNewFile mocks base method.
 func (m *MockSpreadsheet) CreateNewFile() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateNewFile")
@@ -118,13 +118,13 @@ func (m *MockSpreadsheet) CreateNewFile() error {
 	return ret0
 }
 
-// createNewFile indicates an expected call of createNewFile.
-func (mr *MockSpreadsheetMockRecorder) createNewFile() *gomock.Call {
+// CreateNewFile indicates an expected call of CreateNewFile.
+func (mr *MockSpreadsheetMockRecorder) CreateNewFile() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNewFile", reflect.TypeOf((*MockSpreadsheet)(nil).CreateNewFile))
 }
 
-// createSheet mocks base method.
+// CreateSheet mocks base method.
 func (m *MockSpreadsheet) CreateSheet() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateSheet")
@@ -132,13 +132,13 @@ func (m *MockSpreadsheet) CreateSheet() error {
 	return ret0
 }
 
-// createSheet indicates an expected call of createSheet.
-func (mr *MockSpreadsheetMockRecorder) createSheet() *gomock.Call {
+// CreateSheet indicates an expected call of CreateSheet.
+func (mr *MockSpreadsheetMockRecorder) CreateSheet() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSheet", reflect.TypeOf((*MockSpreadsheet)(nil).CreateSheet))
 }
 
-// getCellValue mocks base method.
+// GetCellValue mocks base method.
 func (m *MockSpreadsheet) GetCellValue(col, row int) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCellValue", col, row)
@@ -147,8 +147,8 @@ func (m *MockSpreadsheet) GetCellValue(col, row int) (string, error) {
 	return ret0, ret1
 }
 
-// getCellValue indicates an expected call of getCellValue.
-func (mr *MockSpreadsheetMockRecorder) getCellValue(col, row any) *gomock.Call {
+// GetCellValue indicates an expected call of GetCellValue.
+func (mr *MockSpreadsheetMockRecorder) GetCellValue(col, row any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCellValue", reflect.TypeOf((*MockSpreadsheet)(nil).GetCellValue), col, row)
 }
@@ -162,12 +162,12 @@ func (m *MockSpreadsheet) InitWithFile(file interface{}) error {
 }
 
 // InitWithFile indicates an expected call of InitWithFile.
-func (mr *MockSpreadsheetMockRecorder) initWithFile(file any) *gomock.Call {
+func (mr *MockSpreadsheetMockRecorder) InitWithFile(file any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitWithFile", reflect.TypeOf((*MockSpreadsheet)(nil).InitWithFile), file)
 }
 
-// getColumnLetter mocks base method.
+// GetColumnLetter mocks base method.
 func (m *MockSpreadsheet) GetColumnLetter(col int) string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetColumnLetter", col)
@@ -175,13 +175,13 @@ func (m *MockSpreadsheet) GetColumnLetter(col int) string {
 	return ret0
 }
 
-// getColumnLetter indicates an expected call of getColumnLetter.
-func (mr *MockSpreadsheetMockRecorder) getColumnLetter(col any) *gomock.Call {
+// GetColumnLetter indicates an expected call of GetColumnLetter.
+func (mr *MockSpreadsheetMockRecorder) GetColumnLetter(col any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetColumnLetter", reflect.TypeOf((*MockSpreadsheet)(nil).GetColumnLetter), col)
 }
 
-// getFile mocks base method.
+// GetFile mocks base method.
 func (m *MockSpreadsheet) GetFile() any {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetFile")
@@ -189,13 +189,13 @@ func (m *MockSpreadsheet) GetFile() any {
 	return ret0
 }
 
-// getFile indicates an expected call of getFile.
-func (mr *MockSpreadsheetMockRecorder) getFile() *gomock.Call {
+// GetFile indicates an expected call of GetFile.
+func (mr *MockSpreadsheetMockRecorder) GetFile() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFile", reflect.TypeOf((*MockSpreadsheet)(nil).GetFile))
 }
 
-// getSheetName mocks base method.
+// GetSheetName mocks base method.
 func (m *MockSpreadsheet) GetSheetName() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSheetName")
@@ -203,13 +203,13 @@ func (m *MockSpreadsheet) GetSheetName() string {
 	return ret0
 }
 
-// getSheetName indicates an expected call of getSheetName.
-func (mr *MockSpreadsheetMockRecorder) getSheetName() *gomock.Call {
+// GetSheetName indicates an expected call of GetSheetName.
+func (mr *MockSpreadsheetMockRecorder) GetSheetName() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSheetName", reflect.TypeOf((*MockSpreadsheet)(nil).GetSheetName))
 }
 
-// getTable mocks base method.
+// GetTable mocks base method.
 func (m *MockSpreadsheet) GetTable() *Table {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTable")
@@ -217,13 +217,13 @@ func (m *MockSpreadsheet) GetTable() *Table {
 	return ret0
 }
 
-// getTable indicates an expected call of getTable.
-func (mr *MockSpreadsheetMockRecorder) getTable() *gomock.Call {
+// GetTable indicates an expected call of GetTable.
+func (mr *MockSpreadsheetMockRecorder) GetTable() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTable", reflect.TypeOf((*MockSpreadsheet)(nil).GetTable))
 }
 
-// hasExistingBorder mocks base method.
+// HasExistingBorder mocks base method.
 func (m *MockSpreadsheet) HasExistingBorder(col, row int, side string) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "HasExistingBorder", col, row, side)
@@ -231,13 +231,13 @@ func (m *MockSpreadsheet) HasExistingBorder(col, row int, side string) bool {
 	return ret0
 }
 
-// hasExistingBorder indicates an expected call of hasExistingBorder.
-func (mr *MockSpreadsheetMockRecorder) hasExistingBorder(col, row, side any) *gomock.Call {
+// HasExistingBorder indicates an expected call of HasExistingBorder.
+func (mr *MockSpreadsheetMockRecorder) HasExistingBorder(col, row, side any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasExistingBorder", reflect.TypeOf((*MockSpreadsheet)(nil).HasExistingBorder), col, row, side)
 }
 
-// isCellMerged mocks base method.
+// IsCellMerged mocks base method.
 func (m *MockSpreadsheet) IsCellMerged(col, row int) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IsCellMerged", col, row)
@@ -245,13 +245,13 @@ func (m *MockSpreadsheet) IsCellMerged(col, row int) bool {
 	return ret0
 }
 
-// isCellMerged indicates an expected call of isCellMerged.
-func (mr *MockSpreadsheetMockRecorder) isCellMerged(col, row any) *gomock.Call {
+// IsCellMerged indicates an expected call of IsCellMerged.
+func (mr *MockSpreadsheetMockRecorder) IsCellMerged(col, row any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsCellMerged", reflect.TypeOf((*MockSpreadsheet)(nil).IsCellMerged), col, row)
 }
 
-// isCellMergedHorizontally mocks base method.
+// IsCellMergedHorizontally mocks base method.
 func (m *MockSpreadsheet) IsCellMergedHorizontally(col, row int) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IsCellMergedHorizontally", col, row)
@@ -259,13 +259,13 @@ func (m *MockSpreadsheet) IsCellMergedHorizontally(col, row int) bool {
 	return ret0
 }
 
-// isCellMergedHorizontally indicates an expected call of isCellMergedHorizontally.
-func (mr *MockSpreadsheetMockRecorder) isCellMergedHorizontally(col, row any) *gomock.Call {
+// IsCellMergedHorizontally indicates an expected call of IsCellMergedHorizontally.
+func (mr *MockSpreadsheetMockRecorder) IsCellMergedHorizontally(col, row any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsCellMergedHorizontally", reflect.TypeOf((*MockSpreadsheet)(nil).IsCellMergedHorizontally), col, row)
 }
 
-// mergeCells mocks base method.
+// MergeCells mocks base method.
 func (m *MockSpreadsheet) MergeCells(startCol, startRow, endCol, endRow int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MergeCells", startCol, startRow, endCol, endRow)
@@ -273,13 +273,13 @@ func (m *MockSpreadsheet) MergeCells(startCol, startRow, endCol, endRow int) err
 	return ret0
 }
 
-// mergeCells indicates an expected call of mergeCells.
-func (mr *MockSpreadsheetMockRecorder) mergeCells(startCol, startRow, endCol, endRow any) *gomock.Call {
+// MergeCells indicates an expected call of MergeCells.
+func (mr *MockSpreadsheetMockRecorder) MergeCells(startCol, startRow, endCol, endRow any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MergeCells", reflect.TypeOf((*MockSpreadsheet)(nil).MergeCells), startCol, startRow, endCol, endRow)
 }
 
-// processValue mocks base method.
+// ProcessValue mocks base method.
 func (m *MockSpreadsheet) ProcessValue(value any, format string) (any, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProcessValue", value, format)
@@ -288,13 +288,13 @@ func (m *MockSpreadsheet) ProcessValue(value any, format string) (any, error) {
 	return ret0, ret1
 }
 
-// processValue indicates an expected call of processValue.
-func (mr *MockSpreadsheetMockRecorder) processValue(value, format any) *gomock.Call {
+// ProcessValue indicates an expected call of ProcessValue.
+func (mr *MockSpreadsheetMockRecorder) ProcessValue(value, format any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessValue", reflect.TypeOf((*MockSpreadsheet)(nil).ProcessValue), value, format)
 }
 
-// saveToWriter mocks base method.
+// SaveToWriter mocks base method.
 func (m *MockSpreadsheet) SaveToWriter(writer io.Writer) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveToWriter", writer)
@@ -302,13 +302,13 @@ func (m *MockSpreadsheet) SaveToWriter(writer io.Writer) error {
 	return ret0
 }
 
-// saveToWriter indicates an expected call of saveToWriter.
-func (mr *MockSpreadsheetMockRecorder) saveToWriter(writer any) *gomock.Call {
+// SaveToWriter indicates an expected call of SaveToWriter.
+func (mr *MockSpreadsheetMockRecorder) SaveToWriter(writer any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveToWriter", reflect.TypeOf((*MockSpreadsheet)(nil).SaveToWriter), writer)
 }
 
-// setActiveSheet mocks base method.
+// SetActiveSheet mocks base method.
 func (m *MockSpreadsheet) SetActiveSheet() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetActiveSheet")
@@ -316,13 +316,41 @@ func (m *MockSpreadsheet) SetActiveSheet() error {
 	return ret0
 }
 
-// setActiveSheet indicates an expected call of setActiveSheet.
-func (mr *MockSpreadsheetMockRecorder) setActiveSheet() *gomock.Call {
+// SetActiveSheet indicates an expected call of SetActiveSheet.
+func (mr *MockSpreadsheetMockRecorder) SetActiveSheet() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetActiveSheet", reflect.TypeOf((*MockSpreadsheet)(nil).SetActiveSheet))
 }
 
-// setCellValue mocks base method.
+// SetCellFormula mocks base method.
+func (m *MockSpreadsheet) SetCellFormula(col, row int, formula string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetCellFormula", col, row, formula)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetCellFormula indicates an expected call of SetCellFormula.
+func (mr *MockSpreadsheetMockRecorder) SetCellFormula(col, row, formula any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCellFormula", reflect.TypeOf((*MockSpreadsheet)(nil).SetCellFormula), col, row, formula)
+}
+
+// SetCellHyperLink mocks base method.
+func (m *MockSpreadsheet) SetCellHyperLink(col, row int, link string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetCellHyperLink", col, row, link)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetCellHyperLink indicates an expected call of SetCellHyperLink.
+func (mr *MockSpreadsheetMockRecorder) SetCellHyperLink(col, row, link any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCellHyperLink", reflect.TypeOf((*MockSpreadsheet)(nil).SetCellHyperLink), col, row, link)
+}
+
+// SetCellValue mocks base method.
 func (m *MockSpreadsheet) SetCellValue(col, row int, value any) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetCellValue", col, row, value)
@@ -330,13 +358,13 @@ func (m *MockSpreadsheet) SetCellValue(col, row int, value any) error {
 	return ret0
 }
 
-// setCellValue indicates an expected call of setCellValue.
-func (mr *MockSpreadsheetMockRecorder) setCellValue(col, row, value any) *gomock.Call {
+// SetCellValue indicates an expected call of SetCellValue.
+func (mr *MockSpreadsheetMockRecorder) SetCellValue(col, row, value any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCellValue", reflect.TypeOf((*MockSpreadsheet)(nil).SetCellValue), col, row, value)
 }
 
-// setColumnWidth mocks base method.
+// SetColumnWidth mocks base method.
 func (m *MockSpreadsheet) SetColumnWidth(colLetter string, width float64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetColumnWidth", colLetter, width)
@@ -344,20 +372,20 @@ func (m *MockSpreadsheet) SetColumnWidth(colLetter string, width float64) error 
 	return ret0
 }
 
-// setColumnWidth indicates an expected call of setColumnWidth.
-func (mr *MockSpreadsheetMockRecorder) setColumnWidth(colLetter, width any) *gomock.Call {
+// SetColumnWidth indicates an expected call of SetColumnWidth.
+func (mr *MockSpreadsheetMockRecorder) SetColumnWidth(colLetter, width any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetColumnWidth", reflect.TypeOf((*MockSpreadsheet)(nil).SetColumnWidth), colLetter, width)
 }
 
-// setSheetName mocks base method.
+// SetSheetName mocks base method.
 func (m *MockSpreadsheet) SetSheetName(name string) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "SetSheetName", name)
 }
 
-// setSheetName indicates an expected call of setSheetName.
-func (mr *MockSpreadsheetMockRecorder) setSheetName(name any) *gomock.Call {
+// SetSheetName indicates an expected call of SetSheetName.
+func (mr *MockSpreadsheetMockRecorder) SetSheetName(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSheetName", reflect.TypeOf((*MockSpreadsheet)(nil).SetSheetName), name)
 }

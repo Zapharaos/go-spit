@@ -59,6 +59,14 @@ type TableOperations interface {
 
 	// ProcessValue Processes a value for output, applying formatting if needed.
 	ProcessValue(value interface{}, format string) (interface{}, error)
+
+	// SetCellFormula sets the formula of a cell at the given column and row.
+	// The formula string should be a valid Excel formula, e.g. "=SUM(A1:A10)".
+	SetCellFormula(col, row int, formula string) error
+
+	// SetCellHyperLink sets an external hyperlink on a cell at the given column and row.
+	// The link string should be a valid URL, e.g. "https://example.com".
+	SetCellHyperLink(col, row int, link string) error
 }
 
 // Table represents a structured data table with configuration for export operations.

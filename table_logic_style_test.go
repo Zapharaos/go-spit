@@ -38,13 +38,13 @@ func TestTable_renderStyles(t *testing.T) {
 					BackgroundColor: "#E0E0E0",
 					Alignment:       AlignmentCenterMiddle,
 				}
-				mockOps.EXPECT().applyStyleToRange(1, 1, 2, 1, headerStyle).Return(nil)
+				mockOps.EXPECT().ApplyStyleToRange(1, 1, 2, 1, headerStyle).Return(nil)
 
 				// Header borders (2 columns * 4 sides = 8 calls)
 				border := &Border{Style: BorderStyleThin}
 				for col := 1; col <= 2; col++ {
 					for _, side := range []string{"left", "right", "top", "bottom"} {
-						mockOps.EXPECT().applyBorderToCell(col, 1, side, border).Return(nil)
+						mockOps.EXPECT().ApplyBorderToCell(col, 1, side, border).Return(nil)
 					}
 				}
 			},
@@ -81,10 +81,10 @@ func TestTable_renderStyles(t *testing.T) {
 			setupMock: func(mockOps *MockTableOperations) {
 				// The header borders are applied first, then the style
 				border := &Border{Style: BorderStyleThin}
-				mockOps.EXPECT().applyBorderToCell(1, 1, "left", border).Return(nil)
-				mockOps.EXPECT().applyBorderToCell(1, 1, "right", border).Return(nil)
-				mockOps.EXPECT().applyBorderToCell(1, 1, "top", border).Return(nil)
-				mockOps.EXPECT().applyBorderToCell(1, 1, "bottom", border).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 1, "left", border).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 1, "right", border).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 1, "top", border).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 1, "bottom", border).Return(nil)
 
 				// Then the style fails
 				headerStyle := Style{
@@ -92,7 +92,7 @@ func TestTable_renderStyles(t *testing.T) {
 					BackgroundColor: "#E0E0E0",
 					Alignment:       AlignmentCenterMiddle,
 				}
-				mockOps.EXPECT().applyStyleToRange(1, 1, 1, 1, headerStyle).Return(errors.New("header style error"))
+				mockOps.EXPECT().ApplyStyleToRange(1, 1, 1, 1, headerStyle).Return(errors.New("header style error"))
 			},
 			expectedError: true,
 			errorContains: "failed to apply header styles",
@@ -148,13 +148,13 @@ func TestTable_applyHeaderStyles(t *testing.T) {
 					BackgroundColor: "#E0E0E0",
 					Alignment:       AlignmentCenterMiddle,
 				}
-				mockOps.EXPECT().applyStyleToRange(1, 1, 2, 1, headerStyle).Return(nil)
+				mockOps.EXPECT().ApplyStyleToRange(1, 1, 2, 1, headerStyle).Return(nil)
 
 				// Header borders
 				border := &Border{Style: BorderStyleThin}
 				for col := 1; col <= 2; col++ {
 					for _, side := range []string{"left", "right", "top", "bottom"} {
-						mockOps.EXPECT().applyBorderToCell(col, 1, side, border).Return(nil)
+						mockOps.EXPECT().ApplyBorderToCell(col, 1, side, border).Return(nil)
 					}
 				}
 			},
@@ -181,14 +181,14 @@ func TestTable_applyHeaderStyles(t *testing.T) {
 					BackgroundColor: "#E0E0E0",
 					Alignment:       AlignmentCenterMiddle,
 				}
-				mockOps.EXPECT().applyStyleToRange(1, 1, 2, 2, headerStyle).Return(nil)
+				mockOps.EXPECT().ApplyStyleToRange(1, 1, 2, 2, headerStyle).Return(nil)
 
 				// Header borders for 2-level headers
 				border := &Border{Style: BorderStyleThin}
 				for row := 1; row <= 2; row++ {
 					for col := 1; col <= 2; col++ {
 						for _, side := range []string{"left", "right", "top", "bottom"} {
-							mockOps.EXPECT().applyBorderToCell(col, row, side, border).Return(nil)
+							mockOps.EXPECT().ApplyBorderToCell(col, row, side, border).Return(nil)
 						}
 					}
 				}
@@ -206,10 +206,10 @@ func TestTable_applyHeaderStyles(t *testing.T) {
 			setupMock: func(mockOps *MockTableOperations) {
 				// First, borders are applied to all header cells
 				border := &Border{Style: BorderStyleThin}
-				mockOps.EXPECT().applyBorderToCell(1, 1, "left", border).Return(nil)
-				mockOps.EXPECT().applyBorderToCell(1, 1, "right", border).Return(nil)
-				mockOps.EXPECT().applyBorderToCell(1, 1, "top", border).Return(nil)
-				mockOps.EXPECT().applyBorderToCell(1, 1, "bottom", border).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 1, "left", border).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 1, "right", border).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 1, "top", border).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 1, "bottom", border).Return(nil)
 
 				// Then the style call fails
 				headerStyle := Style{
@@ -217,7 +217,7 @@ func TestTable_applyHeaderStyles(t *testing.T) {
 					BackgroundColor: "#E0E0E0",
 					Alignment:       AlignmentCenterMiddle,
 				}
-				mockOps.EXPECT().applyStyleToRange(1, 1, 1, 1, headerStyle).Return(errors.New("style error"))
+				mockOps.EXPECT().ApplyStyleToRange(1, 1, 1, 1, headerStyle).Return(errors.New("style error"))
 			},
 			expectedError: true,
 			errorContains: "failed to apply header cell styles",
@@ -240,13 +240,13 @@ func TestTable_applyHeaderStyles(t *testing.T) {
 					BackgroundColor: "#E0E0E0",
 					Alignment:       AlignmentCenterMiddle,
 				}
-				mockOps.EXPECT().applyStyleToRange(1, 1, 2, 1, headerStyle).Return(nil)
+				mockOps.EXPECT().ApplyStyleToRange(1, 1, 2, 1, headerStyle).Return(nil)
 
 				// Custom medium borders applied instead of default thin
 				border := &Border{Style: BorderStyleMedium}
 				for col := 1; col <= 2; col++ {
 					for _, side := range []string{"left", "right", "top", "bottom"} {
-						mockOps.EXPECT().applyBorderToCell(col, 1, side, border).Return(nil)
+						mockOps.EXPECT().ApplyBorderToCell(col, 1, side, border).Return(nil)
 					}
 				}
 			},
@@ -278,11 +278,11 @@ func TestTable_applyHeaderStyles(t *testing.T) {
 					BackgroundColor: "#0000FF",
 					Alignment:       AlignmentCenter,
 				}
-				mockOps.EXPECT().applyStyleToRange(1, 1, 1, 1, customStyle).Return(nil)
+				mockOps.EXPECT().ApplyStyleToRange(1, 1, 1, 1, customStyle).Return(nil)
 
 				border := &Border{Style: BorderStyleThick}
 				for _, side := range []string{"left", "right", "top", "bottom"} {
-					mockOps.EXPECT().applyBorderToCell(1, 1, side, border).Return(nil)
+					mockOps.EXPECT().ApplyBorderToCell(1, 1, side, border).Return(nil)
 				}
 			},
 			expectedError: false,
@@ -302,12 +302,12 @@ func TestTable_applyHeaderStyles(t *testing.T) {
 					BackgroundColor: "#E0E0E0",
 					Alignment:       AlignmentCenterMiddle,
 				}
-				mockOps.EXPECT().applyStyleToRange(1, 1, 1, 1, headerStyle).Return(nil)
+				mockOps.EXPECT().ApplyStyleToRange(1, 1, 1, 1, headerStyle).Return(nil)
 
 				// Default thin borders since HeaderOptions.Borders is nil
 				border := &Border{Style: BorderStyleThin}
 				for _, side := range []string{"left", "right", "top", "bottom"} {
-					mockOps.EXPECT().applyBorderToCell(1, 1, side, border).Return(nil)
+					mockOps.EXPECT().ApplyBorderToCell(1, 1, side, border).Return(nil)
 				}
 			},
 			expectedError: false,
@@ -360,7 +360,7 @@ func TestTable_applyHeaderCellStyles(t *testing.T) {
 					BackgroundColor: "#E0E0E0",
 					Alignment:       AlignmentCenterMiddle,
 				}
-				mockOps.EXPECT().applyStyleToRange(1, 1, 2, 1, expectedStyle).Return(nil)
+				mockOps.EXPECT().ApplyStyleToRange(1, 1, 2, 1, expectedStyle).Return(nil)
 			},
 			expectedError: false,
 		},
@@ -377,7 +377,7 @@ func TestTable_applyHeaderCellStyles(t *testing.T) {
 					BackgroundColor: "#E0E0E0",
 					Alignment:       AlignmentCenterMiddle,
 				}
-				mockOps.EXPECT().applyStyleToRange(1, 1, 1, 1, expectedStyle).Return(errors.New("style error"))
+				mockOps.EXPECT().ApplyStyleToRange(1, 1, 1, 1, expectedStyle).Return(errors.New("style error"))
 			},
 			expectedError: true,
 		},
@@ -404,7 +404,7 @@ func TestTable_applyHeaderCellStyles(t *testing.T) {
 					BackgroundColor: "#FF0000",
 					Alignment:       AlignmentLeft,
 				}
-				mockOps.EXPECT().applyStyleToRange(1, 1, 2, 1, expectedStyle).Return(nil)
+				mockOps.EXPECT().ApplyStyleToRange(1, 1, 2, 1, expectedStyle).Return(nil)
 			},
 			expectedError: false,
 		},
@@ -422,7 +422,7 @@ func TestTable_applyHeaderCellStyles(t *testing.T) {
 					BackgroundColor: "#E0E0E0",
 					Alignment:       AlignmentCenterMiddle,
 				}
-				mockOps.EXPECT().applyStyleToRange(1, 1, 1, 1, expectedStyle).Return(nil)
+				mockOps.EXPECT().ApplyStyleToRange(1, 1, 1, 1, expectedStyle).Return(nil)
 			},
 			expectedError: false,
 		},
@@ -488,11 +488,11 @@ func TestTable_applyCellStyles(t *testing.T) {
 			setupMock: func(mockOps *MockTableOperations) {
 				// Cell style should take priority
 				cellStyle := Style{Underline: "single"}
-				mockOps.EXPECT().applyStyleToCell(1, 2, cellStyle).Return(nil)
+				mockOps.EXPECT().ApplyStyleToCell(1, 2, cellStyle).Return(nil)
 
 				// Row style should be used for second column
 				rowStyle := Style{Italic: true}
-				mockOps.EXPECT().applyStyleToCell(2, 2, rowStyle).Return(nil)
+				mockOps.EXPECT().ApplyStyleToCell(2, 2, rowStyle).Return(nil)
 			},
 		},
 		{
@@ -524,8 +524,8 @@ func TestTable_applyCellStyles(t *testing.T) {
 			endRow:   2,
 			setupMock: func(mockOps *MockTableOperations) {
 				rowStyle := Style{Italic: true}
-				mockOps.EXPECT().applyStyleToCell(1, 2, rowStyle).Return(nil)
-				mockOps.EXPECT().applyStyleToCell(2, 2, rowStyle).Return(nil)
+				mockOps.EXPECT().ApplyStyleToCell(1, 2, rowStyle).Return(nil)
+				mockOps.EXPECT().ApplyStyleToCell(2, 2, rowStyle).Return(nil)
 			},
 		},
 		{
@@ -548,7 +548,7 @@ func TestTable_applyCellStyles(t *testing.T) {
 			endRow:   2,
 			setupMock: func(mockOps *MockTableOperations) {
 				columnStyle := Style{Bold: true}
-				mockOps.EXPECT().applyStyleToCell(1, 2, columnStyle).Return(nil)
+				mockOps.EXPECT().ApplyStyleToCell(1, 2, columnStyle).Return(nil)
 				// No call expected for second column (no style)
 			},
 		},
@@ -610,7 +610,7 @@ func TestTable_applyCellStyle(t *testing.T) {
 					Bold:      true,
 					TextColor: "#FF0000",
 				}
-				mockOps.EXPECT().applyStyleToCell(1, 2, expectedStyle).Return(nil)
+				mockOps.EXPECT().ApplyStyleToCell(1, 2, expectedStyle).Return(nil)
 			},
 		},
 		{
@@ -633,7 +633,7 @@ func TestTable_applyCellStyle(t *testing.T) {
 			expectedError: true,
 			setupMock: func(mockOps *MockTableOperations) {
 				expectedStyle := Style{Bold: true}
-				mockOps.EXPECT().applyStyleToCell(1, 2, expectedStyle).Return(errors.New("apply error"))
+				mockOps.EXPECT().ApplyStyleToCell(1, 2, expectedStyle).Return(errors.New("apply error"))
 			},
 		},
 	}
@@ -695,7 +695,7 @@ func TestTable_applyColumnBorders(t *testing.T) {
 				// Inner borders applied to all cells (2 rows * 4 sides = 8 calls)
 				for row := 2; row <= 3; row++ {
 					for _, side := range []string{"left", "right", "top", "bottom"} {
-						mockOps.EXPECT().applyBorderToCell(1, row, side, border).Return(nil)
+						mockOps.EXPECT().ApplyBorderToCell(1, row, side, border).Return(nil)
 					}
 				}
 			},
@@ -724,13 +724,13 @@ func TestTable_applyColumnBorders(t *testing.T) {
 
 				// Left/right borders for all rows
 				for row := 2; row <= 3; row++ {
-					mockOps.EXPECT().applyBorderToCell(1, row, "left", leftRightBorder).Return(nil)
-					mockOps.EXPECT().applyBorderToCell(1, row, "right", leftRightBorder).Return(nil)
+					mockOps.EXPECT().ApplyBorderToCell(1, row, "left", leftRightBorder).Return(nil)
+					mockOps.EXPECT().ApplyBorderToCell(1, row, "right", leftRightBorder).Return(nil)
 				}
 				// Top border only for first row
-				mockOps.EXPECT().applyBorderToCell(1, 2, "top", topBottomBorder).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 2, "top", topBottomBorder).Return(nil)
 				// Bottom border only for last row
-				mockOps.EXPECT().applyBorderToCell(1, 3, "bottom", topBottomBorder).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 3, "bottom", topBottomBorder).Return(nil)
 			},
 		},
 		{
@@ -801,7 +801,7 @@ func TestTable_applyRowBorders(t *testing.T) {
 				// Inner borders applied to all cells in row (2 columns * 4 sides = 8 calls)
 				for col := 1; col <= 2; col++ {
 					for _, side := range []string{"left", "right", "top", "bottom"} {
-						mockOps.EXPECT().applyBorderToCell(col, 2, side, border).Return(nil)
+						mockOps.EXPECT().ApplyBorderToCell(col, 2, side, border).Return(nil)
 					}
 				}
 			},
@@ -829,13 +829,13 @@ func TestTable_applyRowBorders(t *testing.T) {
 
 				// Top/bottom borders for all columns
 				for col := 1; col <= 2; col++ {
-					mockOps.EXPECT().applyBorderToCell(col, 2, "top", topBottomBorder).Return(nil)
-					mockOps.EXPECT().applyBorderToCell(col, 2, "bottom", topBottomBorder).Return(nil)
+					mockOps.EXPECT().ApplyBorderToCell(col, 2, "top", topBottomBorder).Return(nil)
+					mockOps.EXPECT().ApplyBorderToCell(col, 2, "bottom", topBottomBorder).Return(nil)
 				}
 				// Left border only for first column
-				mockOps.EXPECT().applyBorderToCell(1, 2, "left", leftRightBorder).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 2, "left", leftRightBorder).Return(nil)
 				// Right border only for last column
-				mockOps.EXPECT().applyBorderToCell(2, 2, "right", leftRightBorder).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(2, 2, "right", leftRightBorder).Return(nil)
 			},
 		},
 		{
@@ -901,13 +901,13 @@ func TestTable_applyCellSpecificBorders(t *testing.T) {
 			dataStartRow: 2,
 			setupMock: func(mockOps *MockTableOperations) {
 				// First cell borders (4 borders)
-				mockOps.EXPECT().applyBorderToCell(1, 2, "left", &Border{Style: BorderStyleThin}).Return(nil)
-				mockOps.EXPECT().applyBorderToCell(1, 2, "right", &Border{Style: BorderStyleThick}).Return(nil)
-				mockOps.EXPECT().applyBorderToCell(1, 2, "top", &Border{Style: BorderStyleDotted}).Return(nil)
-				mockOps.EXPECT().applyBorderToCell(1, 2, "bottom", &Border{Style: BorderStyleDashed}).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 2, "left", &Border{Style: BorderStyleThin}).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 2, "right", &Border{Style: BorderStyleThick}).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 2, "top", &Border{Style: BorderStyleDotted}).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 2, "bottom", &Border{Style: BorderStyleDashed}).Return(nil)
 
 				// Second cell borders (1 border)
-				mockOps.EXPECT().applyBorderToCell(2, 3, "left", &Border{Style: BorderStyleThin}).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(2, 3, "left", &Border{Style: BorderStyleThin}).Return(nil)
 			},
 		},
 		{
@@ -959,10 +959,10 @@ func TestTable_applyBordersToCell(t *testing.T) {
 				Bottom: &Border{Style: BorderStyleDashed},
 			},
 			setupMock: func(mockOps *MockTableOperations) {
-				mockOps.EXPECT().applyBorderToCell(1, 2, "left", &Border{Style: BorderStyleThin}).Return(nil)
-				mockOps.EXPECT().applyBorderToCell(1, 2, "right", &Border{Style: BorderStyleThick}).Return(nil)
-				mockOps.EXPECT().applyBorderToCell(1, 2, "top", &Border{Style: BorderStyleDotted}).Return(nil)
-				mockOps.EXPECT().applyBorderToCell(1, 2, "bottom", &Border{Style: BorderStyleDashed}).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 2, "left", &Border{Style: BorderStyleThin}).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 2, "right", &Border{Style: BorderStyleThick}).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 2, "top", &Border{Style: BorderStyleDotted}).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 2, "bottom", &Border{Style: BorderStyleDashed}).Return(nil)
 			},
 			expectedError: false,
 		},
@@ -976,8 +976,8 @@ func TestTable_applyBordersToCell(t *testing.T) {
 				// Top and Bottom are nil
 			},
 			setupMock: func(mockOps *MockTableOperations) {
-				mockOps.EXPECT().applyBorderToCell(1, 2, "left", &Border{Style: BorderStyleThin}).Return(nil)
-				mockOps.EXPECT().applyBorderToCell(1, 2, "right", &Border{Style: BorderStyleThick}).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 2, "left", &Border{Style: BorderStyleThin}).Return(nil)
+				mockOps.EXPECT().ApplyBorderToCell(1, 2, "right", &Border{Style: BorderStyleThick}).Return(nil)
 			},
 			expectedError: false,
 		},
@@ -989,7 +989,7 @@ func TestTable_applyBordersToCell(t *testing.T) {
 				Left: &Border{Style: BorderStyleThin},
 			},
 			setupMock: func(mockOps *MockTableOperations) {
-				mockOps.EXPECT().applyBorderToCell(1, 2, "left", &Border{Style: BorderStyleThin}).Return(errors.New("left border error"))
+				mockOps.EXPECT().ApplyBorderToCell(1, 2, "left", &Border{Style: BorderStyleThin}).Return(errors.New("left border error"))
 			},
 			expectedError: true,
 			errorContains: "failed to apply left border",
