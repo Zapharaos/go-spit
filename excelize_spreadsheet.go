@@ -19,7 +19,7 @@ type SpreadsheetExcelize struct {
 	File      *excelize.File // Single Excelize file object for all sheets
 	SheetName string         // Current sheet name
 	Table     *TableExcelize // Current Table for Excelize
-	isNewFile bool           // tracks whether the file was just created (vs provided externally)
+	isNewFile bool           // internal: true only for files created by CreateNewFile(), false for user-provided files
 }
 
 // NewSpreadsheetExcelize creates a new SpreadsheetExcelize instance for a given sheet name and table.
