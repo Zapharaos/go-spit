@@ -11,6 +11,8 @@
 
 Go-spit is a Go package for flexible file exporting. It supports multiple formats and is designed for extensibility, making it easy to export data in various ways for reporting, data exchange and automation.
 
+📖 **Full documentation:** [zapharaos.github.io/go-spit](https://zapharaos.github.io/go-spit/)
+
 ## Features
 - Export tabular data and spreadsheets
 - Customizable file writing options (compression, overwrite, temporary, etc.)
@@ -19,6 +21,21 @@ Go-spit is a Go package for flexible file exporting. It supports multiple format
 ## Supported Formats
 - **CSV**: Simple tabular data with custom delimiters
 - **XLSX**: Advanced spreadsheets with styling, borders, merging, and hierarchical headers
+
+## Documentation
+
+Comprehensive, English-based documentation is available at
+**[zapharaos.github.io/go-spit](https://zapharaos.github.io/go-spit/)**, including:
+
+- [Installation](https://zapharaos.github.io/go-spit/getting-started/installation/) and [Quick Start](https://zapharaos.github.io/go-spit/getting-started/quickstart/)
+- [Tables, Data & Columns](https://zapharaos.github.io/go-spit/user-guide/tables-and-columns/)
+- [CSV Export](https://zapharaos.github.io/go-spit/user-guide/csv-export/) and [XLSX Export](https://zapharaos.github.io/go-spit/user-guide/xlsx-export/)
+- [Styling, Borders & Merging](https://zapharaos.github.io/go-spit/user-guide/styling/)
+- [File Options](https://zapharaos.github.io/go-spit/user-guide/file-options/) and [Logging](https://zapharaos.github.io/go-spit/user-guide/logging/)
+
+The documentation sources live in the [`docs/`](docs) directory and are built with
+[MkDocs](https://www.mkdocs.org/). See the [Contributing](#contributing) section for how to
+preview them locally.
 
 ## Installation
 
@@ -152,6 +169,12 @@ make lint
 Some linter violations can automatically be fixed:
 ```shell
 make fmt
+```
+
+Build and preview the documentation site locally:
+```shell
+pip install -r docs/requirements.txt
+mkdocs serve
 ```
 
 ## Contributing

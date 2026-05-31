@@ -1,0 +1,83 @@
+site_name: go-spit
+site_description: A Go package for flexible file exporting (CSV, XLSX).
+site_author: Zapharaos
+site_url: https://zapharaos.github.io/go-spit/
+
+repo_name: Zapharaos/go-spit
+repo_url: https://github.com/Zapharaos/go-spit
+edit_uri: edit/main/docs/
+
+copyright: Copyright &copy; Zapharaos — MIT License
+
+theme:
+  name: material
+  language: en
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+    - navigation.sections
+    - content.code.copy
+    - content.code.annotate
+    - search.suggest
+    - search.highlight
+    - toc.follow
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quickstart.md
+  - User Guide:
+      - Tables, Data & Columns: user-guide/tables-and-columns.md
+      - CSV Export: user-guide/csv-export.md
+      - XLSX Export: user-guide/xlsx-export.md
+      - Styling, Borders & Merging: user-guide/styling.md
+      - File Options: user-guide/file-options.md
+      - Logging: user-guide/logging.md
+  - API Reference: reference/api.md
+  - Contributing: contributing.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - search
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Zapharaos/go-spit
+    - icon: fontawesome/brands/golang
+      link: https://pkg.go.dev/github.com/Zapharaos/go-spit
