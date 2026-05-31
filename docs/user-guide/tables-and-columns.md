@@ -1,0 +1,175 @@
+# Tables, Data & Columns
+
+Every export in go-spit revolves around a [`Table`](#tables): a combination of **data rows**,
+**column definitions** and optional **styling/merging options**. This page explains each piece of
+the data model.
+
+## Data
+
+A single row is a `Data` value — a map from a column name to its value:
+
+```go
+type Data map[string]interface{}
+```
+
+A collection of rows is a `DataSlice`:
+
+```go
+type DataSlice []Data
+```
+
+Example:
+
+```go
+data := spit.DataSlice{
+	{"name": "John Doe", "age": 30, "salary": 75000.50},
+	{"name": "Jane Smith", "age": 28, "salary": 82000},
+}
+```
+
+Values can be any Go type. Numbers, booleans and `time.Time` values are handled natively;
+other types are rendered using their default string representation.
+
+### Nested data and lookups
+
+`Data` supports nested maps. Use `Lookup` to read a (possibly nested) key:
+
+```go
+row := spit.Data{
+	"address": spit.Data{"city": "Paris"},
+}
+
+value, err, found := row.Lookup("address", "city") // "Paris", nil, true
+```
+
+`Lookup` returns `(value, err, found)`. A missing key returns `found == false` with a `nil`
+error; a malformed nested structure returns an error.
+
+## Columns
+
+A `Column` maps a data key to a header label and carries optional formatting and styling:
+
+```go
+type Column struct {
+	Name    string      // Field name in the data source (for leaf columns)
+	Label   string      // Display label for headers
+	Format  string      // Format specification for value processing (e.g., date format)
+	Merge   *MergeRules // Optional merge configuration for this column
+	Borders *Borders    // Borders configuration
+	Style   *Style      // Optional content style
+	Columns Columns     // Sub-columns for hierarchical structures
+}
+```
+
+Create columns with `NewColumn(name, label)` and configure them through a fluent API:
+
+```go
+columns := spit.Columns{
+	spit.NewColumn("name", "Full Name"),
+	spit.NewColumn("created_at", "Created At").WithFormat(time.RFC1123Z),
+}
+```
+
+The available builder methods are:
+
+| Method                       | Purpose                                                       |
+|------------------------------|---------------------------------------------------------------|
+| `WithFormat(format)`         | Set a value format (e.g. a date layout or an XLSX format key). |
+| `WithStyle(style)`           | Apply a [`Style`](styling.md#styles) to the column's cells.   |
+| `WithBorders(borders)`       | Apply [`Borders`](styling.md#borders) to the column's cells.  |
+| `WithMerge(rules)`           | Apply [`MergeRules`](styling.md#merging) to the column.       |
+| `WithSubColumns(subColumns)` | Replace the sub-columns (hierarchical headers).               |
+| `AddSubColumn(subColumn)`    | Append a single sub-column.                                   |
+| `RemoveSubColumn(name)`      | Remove a sub-column by name.                                  |
+
+!!! note "Formatting"
+    `Format` controls how a value is rendered. For dates, use a Go time layout such as
+    `"2006-01-02"`. For XLSX-specific behaviors (formulas, hyperlinks, raw values), use the
+    [Excelize format constants](xlsx-export.md#cell-content-formats).
+
+### Hierarchical (grouped) columns
+
+Columns can be nested to create grouped, multi-level headers. A column with sub-columns acts as a
+parent header that spans all of its leaf columns; only **leaf** columns map to data keys.
+
+```go
+columns := spit.Columns{
+	spit.NewColumn("name", "Employee Name"),
+	spit.NewColumn("", "Personal Information").
+		WithSubColumns(spit.Columns{
+			spit.NewColumn("age", "Age"),
+			spit.NewColumn("email", "Email Address"),
+		}),
+}
+```
+
+This renders headers like:
+
+```text
+| Employee Name | Personal Information |
+|               |   Age   |   Email    |
+```
+
+Both CSV and XLSX exports honor this hierarchy. In CSV, each header level becomes its own row; in
+XLSX, parent headers are written above their children.
+
+Useful helpers on `Columns` and `Column`:
+
+| Helper                          | Description                                                  |
+|---------------------------------|--------------------------------------------------------------|
+| `Columns.GetFlattenedColumns()` | All leaf columns in order (used to read data values).        |
+| `Columns.GetMaxDepth()`         | The number of header levels in the hierarchy.                |
+| `Columns.GetTotalColumnCount()` | The total number of leaf columns.                            |
+| `Column.HasSubColumns()`        | Whether a column has nested sub-columns.                     |
+| `Column.CountSubColumns()`      | The number of leaf columns a column represents.              |
+
+## Tables
+
+A `Table` ties everything together:
+
+```go
+type Table struct {
+	Data           DataSlice      // The actual data rows to be exported
+	Columns        Columns        // Column definitions including hierarchy and formatting
+	RowOptionsMap  RowOptionsMap  // Row-specific options (styling, merging, borders)
+	CellOptionsMap CellOptionsMap // Cell-specific options for fine-grained control
+	HeaderOptions  *HeaderOptions // Optional header configuration (style and borders)
+	WriteHeader    bool           // Whether to generate headers from column definitions
+	Limit          int64          // Maximum number of data rows to export (0 = no limit)
+	ListSeparator  string         // Separator used when rendering slice/array values as strings
+}
+```
+
+Build a table with `NewTable(data, columns, writeHeader)`. The third argument controls whether
+headers are generated from the column definitions:
+
+```go
+table := spit.NewTable(data, columns, true)
+```
+
+Tables expose a fluent API to attach optional configuration:
+
+| Method                          | Purpose                                                        |
+|---------------------------------|----------------------------------------------------------------|
+| `WithRowOptions(rowOptions)`    | Per-row styling, borders and merge overrides.                  |
+| `WithCellOptions(cellOptions)`  | Per-cell styling, borders and merge overrides.                 |
+| `WithHeaderOptions(options)`    | Override the default header style and borders.                 |
+
+```go
+table := spit.NewTable(data, columns, true).
+	WithRowOptions(rowOptions).
+	WithCellOptions(cellOptions)
+```
+
+Row and cell options are most relevant for XLSX export; see
+[Styling, Borders & Merging](styling.md) for details.
+
+### Rendering list values
+
+When a cell value is a slice (`[]interface{}`), set `Table.ListSeparator` to control how the
+elements are joined into a single string:
+
+```go
+table := spit.NewTable(data, columns, true)
+table.ListSeparator = ", "
+```
