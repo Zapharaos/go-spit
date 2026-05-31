@@ -165,3 +165,13 @@ func (e *SpreadsheetExcelize) GetColumnLetter(col int) string {
 func (e *SpreadsheetExcelize) ProcessValue(value interface{}, format string) (interface{}, error) {
 	return e.Table.ProcessValue(value, format)
 }
+
+// SetCellFormula sets the formula of a cell at the given column and row.
+func (e *SpreadsheetExcelize) SetCellFormula(col, row int, formula string) error {
+	return e.Table.SetCellFormula(col, row, formula)
+}
+
+// SetCellHyperLink sets an external hyperlink on a cell at the given column and row.
+func (e *SpreadsheetExcelize) SetCellHyperLink(col, row int, link string) error {
+	return e.Table.SetCellHyperLink(col, row, link)
+}

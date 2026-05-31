@@ -1675,3 +1675,189 @@ func TestIsCellInRange(t *testing.T) {
 		})
 	}
 }
+
+func TestTableExcelize_SetCellFormula(t *testing.T) {
+	file := excelize.NewFile()
+	defer func(file *excelize.File) {
+		_ = file.Close()
+	}(file)
+
+	sheetName := "Sheet1"
+	tableExcel := NewTableExcelize(sheetName, &Table{}).WithFile(file)
+
+	tests := []struct {
+		name    string
+		col     int
+		row     int
+		formula string
+		wantErr bool
+	}{
+		{
+			name:    "Valid formula",
+			col:     1,
+			row:     1,
+			formula: "=SUM(A2:A10)",
+			wantErr: false,
+		},
+		{
+			name:    "Empty formula",
+			col:     2,
+			row:     1,
+			formula: "",
+			wantErr: false,
+		},
+		{
+			name:    "Invalid coordinates",
+			col:     0,
+			row:     0,
+			formula: "=SUM(A1:A10)",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tableExcel.SetCellFormula(tt.col, tt.row, tt.formula)
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("SetCellFormula() expected error, got nil")
+				}
+			} else {
+				if err != nil {
+					t.Errorf("SetCellFormula() unexpected error: %v", err)
+				}
+				if tt.formula != "" {
+					cellRef, _ := excelize.CoordinatesToCellName(tt.col, tt.row)
+					stored, _ := file.GetCellFormula(sheetName, cellRef)
+					if stored != tt.formula {
+						t.Errorf("SetCellFormula() stored formula = %q, want %q", stored, tt.formula)
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestTableExcelize_SetCellHyperLink(t *testing.T) {
+	file := excelize.NewFile()
+	defer func(file *excelize.File) {
+		_ = file.Close()
+	}(file)
+
+	sheetName := "Sheet1"
+	tableExcel := NewTableExcelize(sheetName, &Table{}).WithFile(file)
+
+	tests := []struct {
+		name    string
+		col     int
+		row     int
+		link    string
+		wantErr bool
+	}{
+		{
+			name:    "Valid external URL",
+			col:     1,
+			row:     1,
+			link:    "https://example.com",
+			wantErr: false,
+		},
+		{
+			name:    "Invalid coordinates",
+			col:     0,
+			row:     0,
+			link:    "https://example.com",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tableExcel.SetCellHyperLink(tt.col, tt.row, tt.link)
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("SetCellHyperLink() expected error, got nil")
+				}
+			} else {
+				if err != nil {
+					t.Errorf("SetCellHyperLink() unexpected error: %v", err)
+				}
+			}
+		})
+	}
+}
+
+func TestTableExcelize_ProcessValue_ExcelizeFormats(t *testing.T) {
+	table := &Table{
+		ListSeparator: ",",
+	}
+	tableExcel := NewTableExcelize("Sheet1", table)
+
+	tests := []struct {
+		name     string
+		value    interface{}
+		format   string
+		expected interface{}
+		wantErr  bool
+	}{
+		{
+			name:     "Default format preserves integer type",
+			value:    42,
+			format:   ExcelizeFormatDefault,
+			expected: 42,
+			wantErr:  false,
+		},
+		{
+			name:     "Default format preserves float type",
+			value:    3.14,
+			format:   ExcelizeFormatDefault,
+			expected: 3.14,
+			wantErr:  false,
+		},
+		{
+			name:     "Default format preserves boolean type",
+			value:    true,
+			format:   ExcelizeFormatDefault,
+			expected: true,
+			wantErr:  false,
+		},
+		{
+			name:     "Default format preserves string type",
+			value:    "hello",
+			format:   ExcelizeFormatDefault,
+			expected: "hello",
+			wantErr:  false,
+		},
+		{
+			name:     "Formula format returns string representation",
+			value:    "=SUM(A1:A10)",
+			format:   ExcelizeFormatFormula,
+			expected: "=SUM(A1:A10)",
+			wantErr:  false,
+		},
+		{
+			name:     "Hyperlink format returns string representation",
+			value:    "https://example.com",
+			format:   ExcelizeFormatHyperlink,
+			expected: "https://example.com",
+			wantErr:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := tableExcel.ProcessValue(tt.value, tt.format)
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("ProcessValue() expected error, got nil")
+				}
+			} else {
+				if err != nil {
+					t.Errorf("ProcessValue() unexpected error: %v", err)
+				}
+				if result != tt.expected {
+					t.Errorf("ProcessValue() = %v (%T), want %v (%T)", result, result, tt.expected, tt.expected)
+				}
+			}
+		})
+	}
+}

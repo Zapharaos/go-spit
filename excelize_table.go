@@ -248,6 +248,8 @@ func (e *TableExcelize) GetColumnLetter(col int) string {
 
 // ProcessValue processes and formats a value according to its type and the specified format.
 // Supports basic types, time.Time, and slices. Formats value for Excel export.
+// Special formats ExcelizeFormatFormula and ExcelizeFormatHyperlink return the raw string value.
+// ExcelizeFormatDefault returns the raw value without string conversion, preserving its native type.
 func (e *TableExcelize) ProcessValue(value interface{}, format string) (interface{}, error) {
 	switch v := value.(type) {
 	case []interface{}:
@@ -256,15 +258,46 @@ func (e *TableExcelize) ProcessValue(value interface{}, format string) (interfac
 		}
 		return fmt.Sprintf("%v", v), nil
 	default:
-		if format != "" {
-			var err error
-			value, err = FormatValue(value, format)
-			if err != nil {
-				return "", err
+		switch format {
+		case ExcelizeFormatDefault:
+			// Return the raw value so Excelize preserves the native Go type
+			// (e.g. int stays a number, bool stays boolean, time.Time becomes a date).
+			return value, nil
+		case ExcelizeFormatFormula, ExcelizeFormatHyperlink:
+			// Formula and hyperlink values are written via dedicated Excelize calls;
+			// return the string representation here for merge-comparison use.
+			return fmt.Sprintf("%v", value), nil
+		default:
+			if format != "" {
+				var err error
+				value, err = FormatValue(value, format)
+				if err != nil {
+					return "", err
+				}
 			}
+			return fmt.Sprintf("%v", value), nil
 		}
-		return fmt.Sprintf("%v", value), nil
 	}
+}
+
+// SetCellFormula sets the formula of a cell at the given column and row.
+// The formula string should be a valid Excel formula, e.g. "=SUM(A1:A10)".
+func (e *TableExcelize) SetCellFormula(col, row int, formula string) error {
+	cellRef, err := excelize.CoordinatesToCellName(col, row)
+	if err != nil {
+		return err
+	}
+	return e.File.SetCellFormula(e.SheetName, cellRef, formula)
+}
+
+// SetCellHyperLink sets an external hyperlink on a cell at the given column and row.
+// The cell display value is also set to the link URL.
+func (e *TableExcelize) SetCellHyperLink(col, row int, link string) error {
+	cellRef, err := excelize.CoordinatesToCellName(col, row)
+	if err != nil {
+		return err
+	}
+	return e.File.SetCellHyperLink(e.SheetName, cellRef, link, "External")
 }
 
 // getCellStyle retrieves the style of a cell at the given column and row.
