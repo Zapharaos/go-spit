@@ -192,7 +192,8 @@ func (xlsx *xlsx) writeHeaders(startRow int) (int, error) {
 	}
 
 	L().Debug("Writing multi-level headers", Int("maxDepth", maxDepth))
-	if err := xlsx.writeHeaderRow(t.Columns, startRow, startRow+maxDepth-1, 1); err != nil {
+	maxRow := startRow + maxDepth - 1
+	if err := xlsx.writeHeaderRow(t.Columns, startRow, maxRow, 1); err != nil {
 		return 0, err
 	}
 	return maxDepth, nil

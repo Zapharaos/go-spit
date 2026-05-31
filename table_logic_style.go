@@ -338,7 +338,7 @@ func (t *Table) applyBordersToCell(col, row int, borders *Borders, ops TableOper
 }
 
 // applyPreambleStyles applies optional styles to preamble rows.
-// Each preamble row's style is applied to all cells in that row.
+// Each preamble row's style is applied to every cell in that row by index.
 func (t *Table) applyPreambleStyles(ops TableOperations) error {
 	for i, row := range t.Preamble {
 		if row.Style == nil {
