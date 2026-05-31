@@ -68,6 +68,7 @@ type Table struct {
 	Columns        Columns        // Column definitions including hierarchy and formatting
 	RowOptionsMap  RowOptionsMap  // Row-specific options (styling, merging, borders)
 	CellOptionsMap CellOptionsMap // Cell-specific options for fine-grained control
+	HeaderOptions  *HeaderOptions // Optional header configuration (style and borders)
 	WriteHeader    bool           // Whether to generate headers from column definitions
 	Limit          int64          // Maximum number of data rows to export (0 = no limit)
 	ListSeparator  string         // separator used when rendering slice/array values as strings
@@ -92,6 +93,36 @@ func (t *Table) WithRowOptions(rowOptions RowOptionsMap) *Table {
 func (t *Table) WithCellOptions(cellOptions CellOptionsMap) *Table {
 	t.CellOptionsMap = cellOptions
 	return t
+}
+
+// WithHeaderOptions sets the header configuration (style and borders) for the table.
+func (t *Table) WithHeaderOptions(headerOptions *HeaderOptions) *Table {
+	t.HeaderOptions = headerOptions
+	return t
+}
+
+// HeaderOptions represents option settings for table header rows.
+// When configured, it overrides the default header style and border settings.
+type HeaderOptions struct {
+	Style   *Style   // Optional style for header cells (overrides default bold/grey/centered style when set)
+	Borders *Borders // Optional border configuration for header cells (overrides default thin boundaries when set)
+}
+
+// NewHeaderOptions creates a new HeaderOptions instance.
+func NewHeaderOptions() *HeaderOptions {
+	return &HeaderOptions{}
+}
+
+// WithStyle sets the style configuration for header cells.
+func (h *HeaderOptions) WithStyle(style *Style) *HeaderOptions {
+	h.Style = style
+	return h
+}
+
+// WithBorders sets the border configuration for header cells.
+func (h *HeaderOptions) WithBorders(borders *Borders) *HeaderOptions {
+	h.Borders = borders
+	return h
 }
 
 // GetDataStartRow calculates the starting row number for data based on header configuration.

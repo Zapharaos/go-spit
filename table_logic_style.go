@@ -57,9 +57,13 @@ func (t *Table) applyHeaderStyles(ops TableOperations) error {
 	maxDepth := t.Columns.GetMaxDepth()
 	totalColumns := t.Columns.GetTotalColumnCount()
 
+	// Use user-provided borders or fall back to default thin boundary borders
 	borders := NewBordersBoundaries(BorderStyleThin)
+	if t.HeaderOptions != nil && t.HeaderOptions.Borders != nil {
+		borders = t.HeaderOptions.Borders
+	}
 
-	// Apply bottom border to each header row
+	// Apply borders to each header row
 	for row := 1; row <= maxDepth; row++ {
 		for col := 1; col <= totalColumns; col++ {
 			if err := t.applyBordersToCell(col, row, borders, ops); err != nil {
@@ -79,8 +83,8 @@ func (t *Table) applyHeaderStyles(ops TableOperations) error {
 	return nil
 }
 
-// applyHeaderCellStyles applies default styling to all header cells.
-// Styles include bold text, background color, and centered alignment.
+// applyHeaderCellStyles applies styling to all header cells.
+// Uses user-provided style if configured, otherwise applies the default (bold, grey background, centered).
 func (t *Table) applyHeaderCellStyles(ops TableOperations) error {
 	maxDepth := t.Columns.GetMaxDepth()
 	totalColumns := t.Columns.GetTotalColumnCount()
@@ -90,6 +94,11 @@ func (t *Table) applyHeaderCellStyles(ops TableOperations) error {
 		Bold:            true,
 		BackgroundColor: "#E0E0E0",
 		Alignment:       AlignmentCenterMiddle,
+	}
+
+	// Use user-provided style if configured
+	if t.HeaderOptions != nil && t.HeaderOptions.Style != nil {
+		headerStyle = *t.HeaderOptions.Style
 	}
 
 	// Apply header styling to all header rows
