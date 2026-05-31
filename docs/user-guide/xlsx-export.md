@@ -113,13 +113,17 @@ columns := spit.Columns{
 XLSX export supports the full styling model:
 
 - **Styles** — font family, size, colors, bold, italic and alignment.
+- **Number format** — per-column `NumFmt` keeps values numeric while controlling their display (e.g. currency, percentages).
 - **Borders** — thin, medium, thick, double, dashed and dotted borders, with inner-border support.
 - **Cell merging** — vertical and horizontal merging based on identical or empty values.
 - **Row options** — apply styling, borders and merging to entire rows.
 - **Cell options** — fine-grained styling, borders and merging for individual cells.
 - **Column formatting** — dates, formulas, hyperlinks and custom value formats.
+- **Column width** — per-column width override via `WithWidth`; defaults to 15 character units.
+- **Preamble rows** — free-form rows written above the header for titles or metadata.
 
-These are covered in detail in [Styling, Borders & Merging](styling.md).
+These are covered in detail in [Styling, Borders & Merging](styling.md) and
+[Tables, Data & Columns](tables-and-columns.md).
 
 ## The Spreadsheet interface
 

@@ -54,6 +54,7 @@ type Column struct {
 	Name    string      // Field name in the data source (for leaf columns)
 	Label   string      // Display label for headers
 	Format  string      // Format specification for value processing (e.g., date format)
+	Width   float64     // Optional column width in character units (0 = use default)
 	Merge   *MergeRules // Optional merge configuration for this column
 	Borders *Borders    // Borders configuration
 	Style   *Style      // Optional content style
@@ -75,6 +76,7 @@ The available builder methods are:
 | Method                       | Purpose                                                       |
 |------------------------------|---------------------------------------------------------------|
 | `WithFormat(format)`         | Set a value format (e.g. a date layout or an XLSX format key). |
+| `WithWidth(width)`           | Set the column width in character units (0 = use default 15). |
 | `WithStyle(style)`           | Apply a [`Style`](styling.md#styles) to the column's cells.   |
 | `WithBorders(borders)`       | Apply [`Borders`](styling.md#borders) to the column's cells.  |
 | `WithMerge(rules)`           | Apply [`MergeRules`](styling.md#merging) to the column.       |
@@ -134,6 +136,7 @@ type Table struct {
 	RowOptionsMap  RowOptionsMap  // Row-specific options (styling, merging, borders)
 	CellOptionsMap CellOptionsMap // Cell-specific options for fine-grained control
 	HeaderOptions  *HeaderOptions // Optional header configuration (style and borders)
+	Preamble       PreambleRows   // Optional free-form rows written above the header/data area
 	WriteHeader    bool           // Whether to generate headers from column definitions
 	Limit          int64          // Maximum number of data rows to export (0 = no limit)
 	ListSeparator  string         // Separator used when rendering slice/array values as strings
@@ -154,6 +157,7 @@ Tables expose a fluent API to attach optional configuration:
 | `WithRowOptions(rowOptions)`    | Per-row styling, borders and merge overrides.                  |
 | `WithCellOptions(cellOptions)`  | Per-cell styling, borders and merge overrides.                 |
 | `WithHeaderOptions(options)`    | Override the default header style and borders.                 |
+| `WithPreamble(preamble)`        | Prepend free-form rows above the header/data area.             |
 
 ```go
 table := spit.NewTable(data, columns, true).
@@ -163,6 +167,38 @@ table := spit.NewTable(data, columns, true).
 
 Row and cell options are most relevant for XLSX export; see
 [Styling, Borders & Merging](styling.md) for details.
+
+### Preamble rows
+
+Preamble rows are free-form rows written **above** the table header. They are useful for adding
+report titles, generation timestamps, or any other metadata that should appear at the top of the
+sheet.
+
+A `PreambleRow` carries an ordered list of cell values and an optional `Style`:
+
+```go
+type PreambleRow struct {
+    Values []interface{} // Cell values (one entry per column position)
+    Style  *Style        // Optional style applied to every non-empty cell
+}
+```
+
+Build preamble rows with `NewPreambleRow` and attach them to a table with `WithPreamble`:
+
+```go
+table := spit.NewTable(data, columns, true).
+    WithPreamble(spit.PreambleRows{
+        spit.NewPreambleRow("Budget Report", "2024").
+            WithStyle(&spit.Style{Bold: true}),
+        spit.NewPreambleRow(), // empty spacer row
+    })
+```
+
+Values are written left-to-right starting at column 1. Columns beyond the end of `Values` are
+left empty. The header (and data rows) are automatically shifted down to accommodate the preamble.
+
+!!! note
+    Preamble rows apply to XLSX output only. CSV export ignores them.
 
 ### Rendering list values
 

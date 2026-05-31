@@ -27,8 +27,8 @@ spit.DisableLogger()              // equivalent to LevelOff
 
 ## The default logger
 
-Out of the box, `StdLogger` writes to the standard `log` output, respecting the configured level.
-Messages are formatted as `[LEVEL] message | key=value …`.
+Out of the box, `StdLogger` writes to **stdout** at `INFO` level using the standard library `log`
+package. Messages are formatted as `[LEVEL] message | key=value …`.
 
 To restore the defaults at any time:
 
