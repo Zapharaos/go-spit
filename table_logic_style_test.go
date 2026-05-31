@@ -222,6 +222,96 @@ func TestTable_applyHeaderStyles(t *testing.T) {
 			expectedError: true,
 			errorContains: "failed to apply header cell styles",
 		},
+		{
+			name: "custom_header_borders",
+			table: &Table{
+				Columns: Columns{
+					{Name: "name", Label: "Name"},
+					{Name: "age", Label: "Age"},
+				},
+				WriteHeader: true,
+				HeaderOptions: &HeaderOptions{
+					Borders: NewBorders(BorderStyleMedium, BorderStyleMedium, BorderStyleMedium, BorderStyleMedium),
+				},
+			},
+			setupMock: func(mockOps *MockTableOperations) {
+				headerStyle := Style{
+					Bold:            true,
+					BackgroundColor: "#E0E0E0",
+					Alignment:       AlignmentCenterMiddle,
+				}
+				mockOps.EXPECT().ApplyStyleToRange(1, 1, 2, 1, headerStyle).Return(nil)
+
+				// Custom medium borders applied instead of default thin
+				border := &Border{Style: BorderStyleMedium}
+				for col := 1; col <= 2; col++ {
+					for _, side := range []string{"left", "right", "top", "bottom"} {
+						mockOps.EXPECT().ApplyBorderToCell(col, 1, side, border).Return(nil)
+					}
+				}
+			},
+			expectedError: false,
+		},
+		{
+			name: "custom_header_style_and_borders",
+			table: &Table{
+				Columns: Columns{
+					{Name: "name", Label: "Name"},
+				},
+				WriteHeader: true,
+				HeaderOptions: &HeaderOptions{
+					Style: &Style{
+						Bold:            false,
+						Italic:          true,
+						TextColor:       "#FFFFFF",
+						BackgroundColor: "#0000FF",
+						Alignment:       AlignmentCenter,
+					},
+					Borders: NewBorders(BorderStyleThick, BorderStyleThick, BorderStyleThick, BorderStyleThick),
+				},
+			},
+			setupMock: func(mockOps *MockTableOperations) {
+				customStyle := Style{
+					Bold:            false,
+					Italic:          true,
+					TextColor:       "#FFFFFF",
+					BackgroundColor: "#0000FF",
+					Alignment:       AlignmentCenter,
+				}
+				mockOps.EXPECT().ApplyStyleToRange(1, 1, 1, 1, customStyle).Return(nil)
+
+				border := &Border{Style: BorderStyleThick}
+				for _, side := range []string{"left", "right", "top", "bottom"} {
+					mockOps.EXPECT().ApplyBorderToCell(1, 1, side, border).Return(nil)
+				}
+			},
+			expectedError: false,
+		},
+		{
+			name: "header_options_set_but_borders_nil_uses_default",
+			table: &Table{
+				Columns: Columns{
+					{Name: "name", Label: "Name"},
+				},
+				WriteHeader: true,
+				HeaderOptions: &HeaderOptions{},
+			},
+			setupMock: func(mockOps *MockTableOperations) {
+				headerStyle := Style{
+					Bold:            true,
+					BackgroundColor: "#E0E0E0",
+					Alignment:       AlignmentCenterMiddle,
+				}
+				mockOps.EXPECT().ApplyStyleToRange(1, 1, 1, 1, headerStyle).Return(nil)
+
+				// Default thin borders since HeaderOptions.Borders is nil
+				border := &Border{Style: BorderStyleThin}
+				for _, side := range []string{"left", "right", "top", "bottom"} {
+					mockOps.EXPECT().ApplyBorderToCell(1, 1, side, border).Return(nil)
+				}
+			},
+			expectedError: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -290,6 +380,51 @@ func TestTable_applyHeaderCellStyles(t *testing.T) {
 				mockOps.EXPECT().ApplyStyleToRange(1, 1, 1, 1, expectedStyle).Return(errors.New("style error"))
 			},
 			expectedError: true,
+		},
+		{
+			name: "custom_header_style",
+			table: &Table{
+				Columns: Columns{
+					{Name: "name", Label: "Name"},
+					{Name: "age", Label: "Age"},
+				},
+				HeaderOptions: &HeaderOptions{
+					Style: &Style{
+						Bold:            false,
+						Italic:          true,
+						BackgroundColor: "#FF0000",
+						Alignment:       AlignmentLeft,
+					},
+				},
+			},
+			setupMock: func(mockOps *MockTableOperations) {
+				expectedStyle := Style{
+					Bold:            false,
+					Italic:          true,
+					BackgroundColor: "#FF0000",
+					Alignment:       AlignmentLeft,
+				}
+				mockOps.EXPECT().ApplyStyleToRange(1, 1, 2, 1, expectedStyle).Return(nil)
+			},
+			expectedError: false,
+		},
+		{
+			name: "header_options_set_but_style_nil_uses_default",
+			table: &Table{
+				Columns: Columns{
+					{Name: "name", Label: "Name"},
+				},
+				HeaderOptions: &HeaderOptions{},
+			},
+			setupMock: func(mockOps *MockTableOperations) {
+				expectedStyle := Style{
+					Bold:            true,
+					BackgroundColor: "#E0E0E0",
+					Alignment:       AlignmentCenterMiddle,
+				}
+				mockOps.EXPECT().ApplyStyleToRange(1, 1, 1, 1, expectedStyle).Return(nil)
+			},
+			expectedError: false,
 		},
 	}
 

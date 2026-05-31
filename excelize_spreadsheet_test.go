@@ -757,3 +757,174 @@ func TestSpreadsheetExcelize_processValue(t *testing.T) {
 		})
 	}
 }
+
+// Test that CreateSheet removes the default "Sheet1" when creating a new file with a different sheet name.
+func TestSpreadsheetExcelize_createSheet_RemovesDefaultSheet1(t *testing.T) {
+	table := &Table{
+		Columns: Columns{
+			{Name: "TestColumn", Label: "Test Column"},
+		},
+	}
+	se := NewSpreadsheetExcelize("Reports", table)
+	if err := se.CreateNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
+
+	// Before CreateSheet: the file should have only the default "Sheet1"
+	sheetsBefore := se.File.GetSheetList()
+	if len(sheetsBefore) != 1 || sheetsBefore[0] != "Sheet1" {
+		t.Fatalf("expected only Sheet1 before CreateSheet, got: %v", sheetsBefore)
+	}
+
+	if err := se.CreateSheet(); err != nil {
+		t.Fatalf("CreateSheet should not return error, got: %v", err)
+	}
+
+	sheetsAfter := se.File.GetSheetList()
+	for _, s := range sheetsAfter {
+		if s == "Sheet1" {
+			t.Errorf("default Sheet1 should have been removed, got sheets: %v", sheetsAfter)
+		}
+	}
+	if len(sheetsAfter) != 1 || sheetsAfter[0] != "Reports" {
+		t.Errorf("expected only Reports sheet, got: %v", sheetsAfter)
+	}
+}
+
+// Test that CreateSheet does NOT remove "Sheet1" when the sheet name is "Sheet1".
+func TestSpreadsheetExcelize_createSheet_KeepsSheet1WhenNamed(t *testing.T) {
+	table := &Table{
+		Columns: Columns{
+			{Name: "TestColumn", Label: "Test Column"},
+		},
+	}
+	se := NewSpreadsheetExcelize("Sheet1", table)
+	if err := se.CreateNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
+
+	if err := se.CreateSheet(); err != nil {
+		t.Fatalf("CreateSheet should not return error, got: %v", err)
+	}
+
+	sheets := se.File.GetSheetList()
+	found := false
+	for _, s := range sheets {
+		if s == "Sheet1" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("Sheet1 should be present when sheet name is Sheet1, got: %v", sheets)
+	}
+}
+
+// Test that CreateSheet does NOT remove "Sheet1" from an existing (user-provided) file.
+func TestSpreadsheetExcelize_createSheet_PreservesSheet1InExistingFile(t *testing.T) {
+	table := &Table{
+		Columns: Columns{
+			{Name: "TestColumn", Label: "Test Column"},
+		},
+	}
+	se := NewSpreadsheetExcelize("Reports", table)
+
+	// Simulate an existing file provided by the user (not via CreateNewFile)
+	existingFile := excelize.NewFile()
+	se.WithFile(existingFile) // WithFile sets isNewFile = false
+
+	if err := se.CreateSheet(); err != nil {
+		t.Fatalf("CreateSheet should not return error, got: %v", err)
+	}
+
+	sheets := se.File.GetSheetList()
+	hasSheet1 := false
+	hasReports := false
+	for _, s := range sheets {
+		if s == "Sheet1" {
+			hasSheet1 = true
+		}
+		if s == "Reports" {
+			hasReports = true
+		}
+	}
+	if !hasSheet1 {
+		t.Errorf("Sheet1 should be preserved in an existing file, got: %v", sheets)
+	}
+	if !hasReports {
+		t.Errorf("Reports sheet should have been created, got: %v", sheets)
+	}
+}
+
+// Test that creating multiple sheets on a new file only removes the default "Sheet1" once.
+func TestSpreadsheetExcelize_createSheet_MultipleSheets(t *testing.T) {
+	table1 := &Table{Columns: Columns{{Name: "col1", Label: "Col 1"}}}
+	table2 := &Table{Columns: Columns{{Name: "col2", Label: "Col 2"}}}
+
+	se1 := NewSpreadsheetExcelize("Reports", table1)
+	if err := se1.CreateNewFile(); err != nil {
+		t.Fatalf("failed to create new file: %v", err)
+	}
+
+	// Share the file with a second sheet
+	se2 := NewSpreadsheetExcelize("Summary", table2)
+	if err := se2.InitWithFile(se1.File); err != nil {
+		t.Fatalf("InitWithFile should not return error, got: %v", err)
+	}
+
+	if err := se1.CreateSheet(); err != nil {
+		t.Fatalf("CreateSheet for Reports should not return error, got: %v", err)
+	}
+	if err := se2.CreateSheet(); err != nil {
+		t.Fatalf("CreateSheet for Summary should not return error, got: %v", err)
+	}
+
+	sheets := se1.File.GetSheetList()
+	for _, s := range sheets {
+		if s == "Sheet1" {
+			t.Errorf("default Sheet1 should have been removed, got sheets: %v", sheets)
+		}
+	}
+	if len(sheets) != 2 {
+		t.Errorf("expected 2 sheets (Reports, Summary), got: %v", sheets)
+	}
+}
+
+// Test InitWithFile function with a valid file.
+func TestSpreadsheetExcelize_initWithFile_ValidFile(t *testing.T) {
+	table := &Table{
+		Columns: Columns{
+			{Name: "TestColumn", Label: "Test Column"},
+		},
+	}
+	se := NewSpreadsheetExcelize("TestSheet", table)
+	file := excelize.NewFile()
+
+	err := se.InitWithFile(file)
+
+	if err != nil {
+		t.Errorf("InitWithFile should not return error for a valid *excelize.File, got: %v", err)
+	}
+	if se.File != file {
+		t.Error("File was not set correctly by InitWithFile")
+	}
+	if se.Table.File != file {
+		t.Error("Table file was not set correctly by InitWithFile")
+	}
+}
+
+// Test InitWithFile function with an invalid (non-excelize) file type.
+func TestSpreadsheetExcelize_initWithFile_InvalidType(t *testing.T) {
+	table := &Table{
+		Columns: Columns{
+			{Name: "TestColumn", Label: "Test Column"},
+		},
+	}
+	se := NewSpreadsheetExcelize("TestSheet", table)
+
+	err := se.InitWithFile("not-an-excelize-file")
+
+	if err == nil {
+		t.Error("InitWithFile should return error for unsupported file type")
+	}
+}
