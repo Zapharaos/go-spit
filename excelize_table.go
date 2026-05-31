@@ -13,12 +13,13 @@ import (
 
 // TableExcelize provides Excelize-specific operations for table handling.
 // Implements TableOperations for Excel spreadsheets using github.com/xuri/excelize.
+// TableExcelize instances must not be shared across goroutines without external synchronization.
 type TableExcelize struct {
-	File                  *excelize.File    // Underlying Excelize file object
-	SheetName             string            // Current sheet name
-	Table                 *Table            // Reference to the generic Table struct
+	File                  *excelize.File       // Underlying Excelize file object
+	SheetName             string               // Current sheet name
+	Table                 *Table               // Reference to the generic Table struct
 	mergedCells           []excelize.MergeCell // Cached merged-cell list for IsCellMerged lookups
-	mergedCellsCachedName string            // The sheet name used when mergedCells was last populated
+	mergedCellsCachedName string               // Sheet name for which mergedCells is valid; reset on MergeCell call or SheetName change to invalidate cache
 }
 
 // NewTableExcelize creates a new TableExcelize instance for a given sheet name and table.
@@ -252,6 +253,7 @@ func (e *TableExcelize) applyExcelizeStyleToCell(col, row int, inputStyle *excel
 
 	var finalStyle *excelize.Style
 	if existingID == 0 {
+		// styleID 0 is the excelize default (no style applied); skip the GetStyle round-trip.
 		finalStyle = inputStyle
 	} else {
 		excelStyle, err := e.File.GetStyle(existingID)
