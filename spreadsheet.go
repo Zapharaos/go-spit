@@ -41,4 +41,8 @@ type Spreadsheet interface {
 
 	// SetColumnWidth sets the width of a column by its letter (e.g., "A", "B").
 	SetColumnWidth(colLetter string, width float64) error
+
+	// InitWithFile initializes the spreadsheet using an existing file object from another spreadsheet.
+	// Used for multi-sheet exports where all sheets share the same underlying file.
+	InitWithFile(file interface{}) error
 }

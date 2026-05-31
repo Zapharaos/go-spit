@@ -13,44 +13,73 @@ import (
 
 // ExportXLSX writes table data to an XLSX file using the generic file writer and a dynamic spreadsheet implementation.
 func ExportXLSX(s Spreadsheet, params FileWriteParams) (*FileWriteResult, error) {
+	return ExportXLSXSheets([]Spreadsheet{s}, params)
+}
+
+// ExportXLSXSheets writes data for one or more sheets to a single XLSX file.
+// Each Spreadsheet in the slice represents one sheet; all sheets are written to the same underlying file.
+// When the first sheet has no file, a new file is created and shared with the remaining sheets.
+func ExportXLSXSheets(sheets []Spreadsheet, params FileWriteParams) (*FileWriteResult, error) {
+	if len(sheets) == 0 {
+		return nil, fmt.Errorf("no sheets provided")
+	}
+
 	// Ensure Extension is set for XLSX files
 	if params.Extension == "" {
 		params.Extension = FormatXSLX.String()
 	}
 
-	xlsxConfig := &xlsx{
-		spreadsheet: s,
-		params:      params,
-	}
+	firstSheet := sheets[0]
 
 	// Ensure the spreadsheet file is initialized
-	f := xlsxConfig.spreadsheet.GetFile()
+	f := firstSheet.GetFile()
 	if f == nil || reflect.ValueOf(f).IsNil() {
 		L().Debug("No existing spreadsheet file found, creating new one")
-		if err := xlsxConfig.spreadsheet.CreateNewFile(); err != nil {
+		if err := firstSheet.CreateNewFile(); err != nil {
 			L().Error("Failed to create new XLSX file", Error(err))
 			return nil, fmt.Errorf("failed to create new XLSX file: %w", err)
 		}
 
 		defer func() {
-			if err := xlsxConfig.spreadsheet.Close(); err != nil {
+			if err := firstSheet.Close(); err != nil {
 				L().Warn("Error closing spreadsheet", Error(err))
 			}
 		}()
 	}
 
-	L().Info("Starting XLSX export to file", String("filename", xlsxConfig.params.Filename))
+	// Propagate the file to all other sheets that do not already have one.
+	// GetFile is called again here only when there are multiple sheets to initialise.
+	if len(sheets) > 1 {
+		f = firstSheet.GetFile()
+		for _, sheet := range sheets[1:] {
+			sheetF := sheet.GetFile()
+			if sheetF == nil || reflect.ValueOf(sheetF).IsNil() {
+				if err := sheet.InitWithFile(f); err != nil {
+					L().Error("Failed to initialize sheet with existing file", Error(err))
+					return nil, fmt.Errorf("failed to initialize sheet with existing file: %w", err)
+				}
+			}
+		}
+	}
+
+	L().Info("Starting XLSX export to file", String("filename", params.Filename))
 
 	// Create a write function that handles the XLSX file creation and writing
 	writeFunc := func(writer io.Writer) error {
+		for _, sheet := range sheets {
+			xlsxConfig := &xlsx{
+				spreadsheet: sheet,
+				params:      params,
+			}
 
-		L().Debug("Writing data to Excel file")
-		if err := xlsxConfig.writeData(); err != nil {
-			return fmt.Errorf("failed to write data to XLSX file: %w", err)
+			L().Debug("Writing data to sheet")
+			if err := xlsxConfig.writeData(); err != nil {
+				return fmt.Errorf("failed to write data to XLSX file: %w", err)
+			}
 		}
 
 		L().Debug("Saving Excel file to writer")
-		if err := xlsxConfig.spreadsheet.SaveToWriter(writer); err != nil {
+		if err := firstSheet.SaveToWriter(writer); err != nil {
 			return fmt.Errorf("failed to write XLSX to writer: %w", err)
 		}
 
@@ -58,13 +87,13 @@ func ExportXLSX(s Spreadsheet, params FileWriteParams) (*FileWriteResult, error)
 	}
 
 	// Use the generic file writer to handle the actual file writing
-	result, err := xlsxConfig.params.WriteToFile(writeFunc)
+	result, err := params.WriteToFile(writeFunc)
 	if err != nil {
 		L().Error("Failed to write XLSX to file", Error(err))
 		return nil, err
 	}
 
-	L().Info("XLSX export completed", String("filename", xlsxConfig.params.Filename))
+	L().Info("XLSX export completed", String("filename", params.Filename))
 	return result, nil
 }
 
