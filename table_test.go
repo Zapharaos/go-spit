@@ -867,7 +867,7 @@ func TestNewHeaderOptions(t *testing.T) {
 	h := NewHeaderOptions()
 
 	if h == nil {
-		t.Errorf("NewHeaderOptions() should not return nil")
+		t.Fatal("NewHeaderOptions() should not return nil")
 	}
 	if h.Style != nil {
 		t.Errorf("NewHeaderOptions() Style should be nil by default")
