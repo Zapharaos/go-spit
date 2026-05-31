@@ -29,6 +29,7 @@ import "github.com/Zapharaos/go-spit"
 | `Data`, `DataSlice`               | Row data structures.                         |
 | `Column`, `Columns`, `NewColumn`  | Column definitions and hierarchies.          |
 | `HeaderOptions`, `NewHeaderOptions` | Header style/border overrides.             |
+| `PreambleRow`, `PreambleRows`, `NewPreambleRow` | Free-form rows above the header. |
 | `RowOptions`, `RowOptionsMap`     | Per-row overrides.                           |
 | `CellOptions`, `CellOptionsMap`   | Per-cell overrides.                          |
 

@@ -21,6 +21,7 @@ type Style struct {
 	FontSize        float64   // Font size in points
 	FontFamily      string    // Font family name (e.g. "Arial")
 	Alignment       Alignment // Text alignment
+	NumFmt          string    // Excel number-format string (e.g. "#,##0.00 €")
 }
 ```
 
@@ -51,6 +52,22 @@ spit.NewColumn("name", "Employee Name").
 | `AlignmentCenterMiddle` | center     | center   |
 | `AlignmentLeftMiddle`   | left       | center   |
 | `AlignmentRightMiddle`  | right      | center   |
+
+### Number format
+
+`NumFmt` controls how Excel displays a numeric cell value without converting it to a string. The
+value remains a native number (sortable and summable); only its on-screen representation changes.
+
+```go
+spit.NewColumn("salary", "Salary").
+    WithStyle(&spit.Style{NumFmt: "#,##0.00 €"})
+```
+
+Any [Excel number-format string](https://support.microsoft.com/en-us/office/number-format-codes-5026bbd6-04bc-48cd-bf33-80f18b4eae68)
+is accepted. When `NumFmt` is empty the cell inherits Excel's default format for the value's type.
+
+!!! note
+    `NumFmt` applies to XLSX output only and is ignored during CSV export.
 
 ## Borders
 
