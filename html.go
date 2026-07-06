@@ -79,6 +79,7 @@ func ExportHTML(t *Table, opts HTMLOptions, params FileWriteParams) (*FileWriteR
 type htmlCell struct {
 	value   string  // Display text (already processed/formatted)
 	link    string  // External hyperlink URL; when set the value is wrapped in an <a> tag
+	image   *Image  // When set, the cell renders an <img> instead of text
 	style   *Style  // Accumulated style for this cell
 	borders Borders // Per-side border configuration
 	colspan int     // Horizontal span (1 = no span); set on a merge origin
@@ -195,6 +196,11 @@ func (h *htmlExport) writeCell(item Data, column *Column, colIndex, rowIndex int
 	}
 	if err != nil {
 		return fmt.Errorf("error looking up value for column %s: %w", column.Name, err)
+	}
+
+	// Image values render as an <img> element rather than text.
+	if img, ok := asImage(value); ok {
+		return h.SetCellImage(colIndex, rowIndex, img)
 	}
 
 	processedValue, err := h.ProcessValue(value, column.Format)
@@ -402,6 +408,9 @@ func (h *htmlExport) GetColumnLetter(col int) string {
 // ProcessValue formats a value for output and merge comparison, mirroring the
 // semantics used by the other backends so merge decisions stay consistent.
 func (h *htmlExport) ProcessValue(value interface{}, format string) (interface{}, error) {
+	if img, ok := asImage(value); ok {
+		return img.TextValue(), nil
+	}
 	switch v := value.(type) {
 	case []interface{}:
 		if h.table.ListSeparator != "" {
@@ -434,6 +443,13 @@ func (h *htmlExport) SetCellFormula(col, row int, formula string) error {
 // SetCellHyperLink marks a cell as a hyperlink so it is rendered as an <a> element.
 func (h *htmlExport) SetCellHyperLink(col, row int, link string) error {
 	h.cell(col, row).link = link
+	return nil
+}
+
+// SetCellImage marks a cell so it renders an <img> element.
+func (h *htmlExport) SetCellImage(col, row int, img Image) error {
+	imgCopy := img
+	h.cell(col, row).image = &imgCopy
 	return nil
 }
 
@@ -519,6 +535,7 @@ func (h *htmlExport) renderCell(b *strings.Builder, c *htmlCell, col, row int, i
 
 	colspan, rowspan := 1, 1
 	text, link := "", ""
+	var image *Image
 	var style *Style
 	var borders Borders
 	if c != nil {
@@ -526,6 +543,7 @@ func (h *htmlExport) renderCell(b *strings.Builder, c *htmlCell, col, row int, i
 		rowspan = max(c.rowspan, 1)
 		text = c.value
 		link = c.link
+		image = c.image
 		style = c.style
 		borders = h.effectiveBorders(col, row, colspan, rowspan)
 	}
@@ -543,7 +561,12 @@ func (h *htmlExport) renderCell(b *strings.Builder, c *htmlCell, col, row int, i
 		attrs.WriteString(" scope=\"col\"")
 	}
 
-	content := html.EscapeString(text)
+	var content string
+	if image != nil {
+		content = imgTag(*image)
+	} else {
+		content = html.EscapeString(text)
+	}
 	if link != "" {
 		content = fmt.Sprintf("<a href=\"%s\">%s</a>", html.EscapeString(link), content)
 	}
@@ -587,6 +610,28 @@ func (h *htmlExport) effectiveBorders(col, row, colspan, rowspan int) Borders {
 }
 
 // ---- CSS helpers ------------------------------------------------------------
+
+// imgTag builds an <img> element for a cell image. Embedded content is emitted as a
+// base64 data URI; otherwise the URL is used as the source. Empty images render nothing.
+func imgTag(img Image) string {
+	src := img.URL
+	if img.HasBytes() {
+		src = img.DataURI()
+	}
+	if src == "" {
+		return html.EscapeString(img.AltText)
+	}
+	var attrs strings.Builder
+	attrs.WriteString(fmt.Sprintf("<img src=\"%s\" alt=\"%s\"", html.EscapeString(src), html.EscapeString(img.AltText)))
+	if img.Width > 0 {
+		attrs.WriteString(fmt.Sprintf(" width=\"%d\"", img.Width))
+	}
+	if img.Height > 0 {
+		attrs.WriteString(fmt.Sprintf(" height=\"%d\"", img.Height))
+	}
+	attrs.WriteString(">")
+	return attrs.String()
+}
 
 // mergeStyleInto overlays the set fields of style onto the cell's existing style.
 func mergeStyleInto(c *htmlCell, style Style) {

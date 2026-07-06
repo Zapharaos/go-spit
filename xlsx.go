@@ -253,6 +253,14 @@ func (xlsx *xlsx) writeCell(item Data, column *Column, colIndex, rowIndex int) e
 		return fmt.Errorf("error looking up value for column %s: %w", column.Name, err)
 	}
 
+	// Image values are inserted as cell-anchored pictures rather than text.
+	if img, ok := asImage(value); ok {
+		if err = xlsx.spreadsheet.SetCellImage(colIndex, rowIndex, img); err != nil {
+			return fmt.Errorf("error setting image for column %s at (%d, %d): %w", column.Name, colIndex, rowIndex, err)
+		}
+		return nil
+	}
+
 	processedValue, err := xlsx.spreadsheet.ProcessValue(value, column.Format)
 	if err != nil {
 		return fmt.Errorf("error processing value %s for column %s: %w", value, column.Name, err)

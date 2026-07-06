@@ -209,3 +209,37 @@ elements are joined into a single string:
 table := spit.NewTable(data, columns, true)
 table.ListSeparator = ", "
 ```
+
+### Images
+
+A cell value can be an `Image`. Each backend renders it in a format-appropriate way, so the same
+data works across formats:
+
+```go
+data := spit.DataSlice{
+	// Reference an external URL (HTML) or a local file path (XLSX).
+	{"logo": spit.NewImageURL("https://acme.com/logo.png").WithAltText("Acme")},
+	// Or embed binary content directly.
+	{"logo": spit.NewImageBytes(pngBytes, "image/png").WithAltText("Globex").WithSize(48, 48)},
+}
+```
+
+| Field     | Purpose                                                                   |
+|-----------|---------------------------------------------------------------------------|
+| `URL`     | Remote URL (HTML) or local file path (XLSX).                             |
+| `Bytes`   | Embedded binary content.                                                  |
+| `MIME`    | MIME type for embedded content (e.g. `"image/png"`); required with `Bytes`. |
+| `AltText` | Alternative text; also the CSV/text fallback when no URL is set.         |
+| `Width`, `Height` | Optional size hints in pixels (HTML output only).                |
+
+Behavior per format:
+
+| Format   | Rendering                                                                       |
+|----------|---------------------------------------------------------------------------------|
+| **HTML** | An `<img>` element — data URI for embedded bytes, otherwise `src=URL`.           |
+| **XLSX** | A cell-anchored picture (auto-fit). `URL` must be a **local file path**; use `Bytes` for remote images. |
+| **CSV**  | Text fallback: the `URL` (or `AltText` when no URL is set).                      |
+
+!!! note
+    For XLSX, remote URLs are **not** downloaded — Excelize inserts pictures from a local file path
+    or from bytes. Provide `Bytes` (with `MIME`) to embed a remote or in-memory image in a workbook.

@@ -200,3 +200,8 @@ func (e *SpreadsheetExcelize) SetCellFormula(col, row int, formula string) error
 func (e *SpreadsheetExcelize) SetCellHyperLink(col, row int, link string) error {
 	return e.Table.SetCellHyperLink(col, row, link)
 }
+
+// SetCellImage places an image at the given column and row.
+func (e *SpreadsheetExcelize) SetCellImage(col, row int, img Image) error {
+	return e.Table.SetCellImage(col, row, img)
+}

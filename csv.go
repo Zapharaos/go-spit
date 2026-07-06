@@ -175,6 +175,10 @@ func (csv *csv) fillHeaderLevel(headerRow []string, targetLevel int, currentLeve
 // processValue processes a value based on its type and format for CSV output.
 // Handles slices, formatting, and string conversion.
 func (csv *csv) processValue(value interface{}, format string) (string, error) {
+	// CSV cannot render images; fall back to the image's textual value (URL or alt text).
+	if img, ok := asImage(value); ok {
+		return img.TextValue(), nil
+	}
 	switch v := value.(type) {
 	case []interface{}:
 		if csv.table.ListSeparator != "" {

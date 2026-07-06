@@ -151,6 +151,30 @@ columns := spit.Columns{
 }
 ```
 
+## Images
+
+Put an `Image` value into a cell to render an `<img>` element. Provide either a URL (or local
+path) or embedded bytes; embedded content is emitted as a base64 data URI, keeping the document
+self-contained:
+
+```go
+data := spit.DataSlice{
+	{"name": "Acme", "logo": spit.NewImageURL("https://acme.com/logo.png").
+		WithAltText("Acme").WithSize(48, 48)},
+	{"name": "Globex", "logo": spit.NewImageBytes(pngBytes, "image/png").
+		WithAltText("Globex")},
+}
+
+columns := spit.Columns{
+	spit.NewColumn("name", "Company"),
+	spit.NewColumn("logo", "Logo"),
+}
+```
+
+`Width` and `Height` (via `WithSize`) are applied to HTML output as `width`/`height` attributes.
+See [Images across formats](tables-and-columns.md#images) for how the same `Image` value behaves in
+XLSX and CSV.
+
 ## Escaping & safety
 
 All cell values, the title and the description are HTML-escaped, so untrusted data cannot inject
