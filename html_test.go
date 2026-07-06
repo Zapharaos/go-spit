@@ -189,6 +189,66 @@ func TestBordersToCSS(t *testing.T) {
 	}
 }
 
+func TestHTMLTheadTbody(t *testing.T) {
+	table := NewTable(testData, Columns{
+		NewColumn("name", "Name"),
+		NewColumn("age", "Age"),
+		NewColumn("city", "City"),
+	}, true)
+	out := buildHTML(t, table, HTMLOptions{})
+	if !strings.Contains(out, "<thead>") || !strings.Contains(out, "</thead>") {
+		t.Error("expected <thead> around header rows")
+	}
+	if !strings.Contains(out, "<tbody>") || !strings.Contains(out, "</tbody>") {
+		t.Error("expected <tbody> around data rows")
+	}
+	// The header <th> must be inside <thead>, before <tbody>.
+	if strings.Index(out, "<thead>") > strings.Index(out, "<tbody>") {
+		t.Error("<thead> should precede <tbody>")
+	}
+}
+
+func TestHTMLColgroupWidths(t *testing.T) {
+	table := NewTable(testData, Columns{
+		NewColumn("name", "Name").WithWidth(25),
+		NewColumn("age", "Age"),
+	}, true)
+	out := buildHTML(t, table, HTMLOptions{})
+	if !strings.Contains(out, "<colgroup>") {
+		t.Errorf("expected colgroup when a column has width, got:\n%s", out)
+	}
+	if !strings.Contains(out, `<col style="width:25ch">`) {
+		t.Error("expected col width mapped to ch units")
+	}
+
+	// No colgroup when no widths are set.
+	plain := buildHTML(t, NewTable(testData, Columns{NewColumn("name", "Name")}, true), HTMLOptions{})
+	if strings.Contains(plain, "<colgroup>") {
+		t.Error("colgroup should be omitted when no column has width")
+	}
+}
+
+func TestHTMLNumericAutoAlign(t *testing.T) {
+	data := DataSlice{{"name": "A", "age": 30}}
+	table := NewTable(data, Columns{NewColumn("name", "Name"), NewColumn("age", "Age")}, true)
+	out := buildHTML(t, table, HTMLOptions{})
+	if !strings.Contains(out, `<td style="padding:4px 8px;text-align:right">30</td>`) {
+		t.Errorf("expected numeric cell right-aligned, got:\n%s", out)
+	}
+	// Text cells are not auto-aligned.
+	if strings.Contains(out, `text-align:right">A<`) {
+		t.Error("text cell should not be right-aligned")
+	}
+}
+
+func TestHTMLThemeOmitsInlinePadding(t *testing.T) {
+	table := NewTable(testData, Columns{NewColumn("name", "Name")}, true)
+	out := buildHTML(t, table, HTMLOptions{Theme: HTMLThemeDefault})
+	if strings.Contains(out, "padding:4px 8px") {
+		t.Error("inline default padding should be omitted when a theme is active")
+	}
+}
+
 func TestGetColumnLetter(t *testing.T) {
 	h := &htmlExport{}
 	tests := map[int]string{1: "A", 2: "B", 26: "Z", 27: "AA", 28: "AB", 52: "AZ", 53: "BA"}

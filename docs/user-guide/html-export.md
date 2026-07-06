@@ -1,19 +1,25 @@
 # HTML Export
 
-go-spit renders tabular data as a styled HTML `<table>`. The HTML backend reuses the exact same
-styling and merging model as the [XLSX export](xlsx-export.md): per-cell, per-column, per-row and
-header `Style` values become inline CSS, and cell merges become `rowspan`/`colspan`. Document-level
-presentation — title, description, page font/background, custom CSS — is configured through
-`HTMLOptions`.
+go-spit renders tabular data as a styled HTML `<table>`, and can compose full documents with
+headings, paragraphs, lists and sections around one or more tables. The HTML backend reuses the
+exact same styling and merging model as the [XLSX export](xlsx-export.md): per-cell, per-column,
+per-row and header `Style` values become inline CSS, and cell merges become `rowspan`/`colspan`.
+Document-level presentation — title, description, page font/background, custom CSS — is configured
+through `HTMLOptions`.
 
-## The export function
+## The export functions
 
 ```go
+// Render a single table.
 func ExportHTML(t *Table, opts HTMLOptions, params FileWriteParams) (*FileWriteResult, error)
+
+// Render a composed document (headings, paragraphs, lists, sections, tables).
+func ExportHTMLDocument(doc *HTMLDocument, params FileWriteParams) (*FileWriteResult, error)
 ```
 
 The `.html` extension is added automatically when `params.Extension` is empty. See
-[File Options](file-options.md) for the available `params`.
+[File Options](file-options.md) for the available `params`. For multi-block documents, jump to
+[Composing a full document](#composing-a-full-document).
 
 ## Basic example
 
@@ -60,6 +66,103 @@ func main() {
 }
 ```
 
+## Composing a full document
+
+`ExportHTML` renders a single table. To build a complete document — headings, paragraphs, lists,
+sections and one or more tables — use `HTMLDocument` and `ExportHTMLDocument`. The document shares
+the same [`HTMLOptions`](#document-options) and reuses the full table styling/merging.
+
+```go
+salesTable := spit.NewTable(salesData, salesColumns, true)
+
+doc := spit.NewHTMLDocument(spit.HTMLOptions{
+	Title:       "Annual Report",
+	Description: "Fiscal year 2026",
+	BodyStyle:   &spit.Style{FontFamily: "Segoe UI"},
+}).
+	Heading(2, "Summary").
+	Paragraph("Revenue grew across every region.").
+	UnorderedList("Two new markets", "Team doubled").
+	Section(2, "Sales",
+		spit.Paragraph("Quarterly breakdown:"),
+		spit.TableBlock(salesTable),
+		spit.OrderedList("Q1 steady", "Q2 up 25%"),
+	)
+
+result, err := spit.ExportHTMLDocument(doc, spit.FileWriteParams{Filename: "report"})
+if err != nil {
+	log.Fatal(err)
+}
+defer result.RemoveFile()
+```
+
+### Blocks
+
+A document is an ordered list of blocks. Each constructor returns an `HTMLBlock`; the fluent
+`HTMLDocument` methods (`Heading`, `Paragraph`, …) are shortcuts for `Add(<block>)`.
+
+| Block                          | Renders                                                             |
+|--------------------------------|---------------------------------------------------------------------|
+| `Heading(level, text)`         | `<h1>`–`<h6>` (level clamped to 1–6) — titles and subtitles.        |
+| `Paragraph(text)`              | `<p>`.                                                               |
+| `UnorderedList(items...)`      | `<ul>` with one `<li>` per item.                                     |
+| `OrderedList(items...)`        | `<ol>` with one `<li>` per item.                                     |
+| `DefinitionList(items...)`     | `<dl>` with `<dt>`/`<dd>` pairs (use `Def(term, desc)`).            |
+| `Blockquote(text)`             | `<blockquote>`.                                                      |
+| `CodeBlock(code)`              | `<pre><code>` — preformatted, escaped.                              |
+| `HorizontalRule()`             | `<hr>` — a thematic break.                                           |
+| `ImageBlock(img)`              | A standalone `<img>` (reuses the [`Image`](tables-and-columns.md#images) type). |
+| `TableBlock(table)`            | A `<table>` with the table's full styling, borders and merging.     |
+| `Section(level, title, ...)`   | A semantic `<section>` with a heading, wrapping nested blocks.       |
+| `RawHTML(markup)`              | The given markup **verbatim** (not escaped) — an escape hatch.       |
+
+All text (`Heading`, `Paragraph`, list items, `Section` titles, etc.) is HTML-escaped. Only
+`RawHTML` emits unescaped content, so pass it trusted markup only. Document `Title`/`Description`
+from `HTMLOptions` still render at the top, before the blocks. `FragmentOnly` works the same way as
+for single-table export.
+
+**Per-block styling.** `Heading`, `Paragraph`, `Blockquote`, lists and `Section` accept a
+`WithStyle(*Style)` for an inline style. `TableBlock` accepts `WithCaption(string)` (an accessible
+`<caption>`) and `WithStyle(*Style)` (overrides the document `TableStyle` for that table):
+
+```go
+spit.Heading(2, "Overview").WithStyle(&spit.Style{TextColor: "#0969DA"})
+spit.TableBlock(salesTable).WithCaption("Q3 sales")
+```
+
+**Nested lists.** Build sub-items with `Item(text, children...)` and attach them with the list's
+`Add` method:
+
+```go
+spit.UnorderedList("Fruits").
+	Add(spit.Item("Citrus", spit.Item("Orange"), spit.Item("Lemon")))
+```
+
+### Table of contents and anchors
+
+Set `HTMLOptions.TableOfContents` to render a linked `<nav class="toc">` from the document's
+headings and section titles. Enabling it also adds a slugified `id` to every heading (deduplicated
+across the document), so headings become deep-linkable. When it is off (the default), no ids are
+emitted.
+
+### Theme
+
+`HTMLOptions.Theme` injects a built-in stylesheet for a polished look with zero styling effort:
+
+| Value              | Effect                                                                        |
+|--------------------|-------------------------------------------------------------------------------|
+| `HTMLThemeNone`    | No stylesheet (default). Only explicit styles are applied.                    |
+| `HTMLThemeDefault` | A clean, readable stylesheet: modern font stack, spacing, styled headings, zebra-striped tables, responsive max width. |
+
+`CustomCSS` is injected after the theme, so it can override any theme rule. When a theme is active,
+cell padding is left to the stylesheet (the inline default is dropped).
+
+### Table structure
+
+Rendered tables use semantic `<thead>`/`<tbody>` grouping, map each column's
+[`Width`](tables-and-columns.md) to a `<colgroup>`/`<col>` (`ch` units), and right-align numeric
+data cells automatically (unless the cell has an explicit alignment).
+
 ## Document options
 
 `HTMLOptions` carries only the presentation options that have no equivalent in the tabular model.
@@ -74,6 +177,8 @@ Everything about cell content and cell styling comes from the `Table` itself.
 | `CustomCSS`    | `string` | Raw CSS injected into a `<style>` block for advanced customization.                                     |
 | `Lang`         | `string` | `lang` attribute for the `<html>` element (default: `"en"`).                                            |
 | `FragmentOnly` | `bool`   | When `true`, emit only the title/description/table markup without the document wrappers (see below).    |
+| `Theme`        | `HTMLTheme` | Built-in stylesheet for a polished default look (see [Theme](#theme)). Default: `HTMLThemeNone`.      |
+| `TableOfContents` | `bool` | Documents only: render a linked table of contents from the headings (see [above](#table-of-contents-and-anchors)). |
 
 ## Full document vs. fragment
 

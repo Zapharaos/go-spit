@@ -22,7 +22,7 @@ Go-spit is a Go package for flexible file exporting. It supports multiple format
 ## Supported Formats
 - **CSV**: Simple tabular data with custom delimiters
 - **XLSX**: Advanced spreadsheets with styling, borders, merging, and hierarchical headers
-- **HTML**: Styled `<table>` documents reusing the same styling/merging model as XLSX, with an optional title, description, and page-level styling
+- **HTML**: Styled `<table>` output and full composed documents (headings, paragraphs, lists, sections around tables), reusing the same styling/merging model as XLSX
 
 ## Documentation
 
