@@ -23,6 +23,9 @@ import "github.com/Zapharaos/go-spit"
 | `ExportHTML`                 | Export a table to a styled HTML document.          |
 | `ExportHTMLDocument`         | Export a composed HTML document (headings, paragraphs, lists, sections, tables). |
 
+Google Sheets export lives in the optional [`gsheets`](../user-guide/google-sheets.md) module
+(`gsheets.ExportGoogleSheets`), kept separate so the core package stays dependency-light.
+
 ### Data model
 
 | Symbol                            | Description                                  |
