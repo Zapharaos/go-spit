@@ -7,6 +7,7 @@
 // Formats:
 //   - CSV
 //   - XLSX
+//   - HTML
 //
 // For more details, see README.md.
 package spit

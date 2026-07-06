@@ -14,12 +14,14 @@ const (
 	FormatUnknown Format = iota // Unknown format (default)
 	FormatCSV                   // CSV format
 	FormatXSLX                  // XLSX format
+	FormatHTML                  // HTML format
 )
 
 // formats maps Format values to their string representations.
 var formats = map[Format]string{
 	FormatCSV:  "csv",
 	FormatXSLX: "xlsx",
+	FormatHTML: "html",
 }
 
 // String returns the string representation of the Format.

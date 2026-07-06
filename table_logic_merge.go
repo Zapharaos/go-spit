@@ -70,12 +70,20 @@ func (t *Table) executeHeaderMerging(ops TableOperations) error {
 		return nil // No merging needed for single-level headers
 	}
 
+	// Header cells are written starting at GetHeaderStartRow(), which accounts for any
+	// preamble rows above the header, and span maxDepth rows down to maxRow. Merging must
+	// use the same absolute rows as writeHeaders/applyHeaderStyles, otherwise (with a
+	// preamble present) merges would land on the preamble rows instead of the headers.
+	headerStartRow := t.GetHeaderStartRow()
+	maxRow := headerStartRow + maxDepth - 1
+
 	// Process hierarchical header merging recursively
-	return t.processHeaderMergingRecursive(t.Columns, 1, maxDepth, 1, ops)
+	return t.processHeaderMergingRecursive(t.Columns, headerStartRow, maxRow, 1, ops)
 }
 
-// processHeaderMergingRecursive processes header merging for hierarchical columns
-func (t *Table) processHeaderMergingRecursive(columns Columns, currentRow, maxDepth, startCol int, ops TableOperations) error {
+// processHeaderMergingRecursive processes header merging for hierarchical columns.
+// maxRow is the absolute row number of the last (deepest) header row.
+func (t *Table) processHeaderMergingRecursive(columns Columns, currentRow, maxRow, startCol int, ops TableOperations) error {
 	currentCol := startCol
 
 	for _, column := range columns {
@@ -94,20 +102,20 @@ func (t *Table) processHeaderMergingRecursive(columns Columns, currentRow, maxDe
 			}
 
 			// Recursively process sub-columns for next row level
-			if currentRow < maxDepth {
-				if err := t.processHeaderMergingRecursive(column.Columns, currentRow+1, maxDepth, currentCol, ops); err != nil {
+			if currentRow < maxRow {
+				if err := t.processHeaderMergingRecursive(column.Columns, currentRow+1, maxRow, currentCol, ops); err != nil {
 					return err
 				}
 			}
 			currentCol += columnSpan
 		} else {
 			// Merge vertically for leaf columns that span multiple header rows
-			if currentRow < maxDepth {
-				if err := ops.MergeCells(currentCol, currentRow, currentCol, maxDepth); err != nil {
+			if currentRow < maxRow {
+				if err := ops.MergeCells(currentCol, currentRow, currentCol, maxRow); err != nil {
 					L().Warn("Failed to merge header cells vertically",
 						Int("col", currentCol),
 						Int("startRow", currentRow),
-						Int("endRow", maxDepth),
+						Int("endRow", maxRow),
 						Error(err))
 				}
 			}
