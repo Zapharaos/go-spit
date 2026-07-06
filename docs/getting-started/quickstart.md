@@ -8,7 +8,11 @@ The export workflow is always the same three steps:
 1. Describe the rows with a [`DataSlice`](../user-guide/tables-and-columns.md#data).
 2. Describe the headers with [`Columns`](../user-guide/tables-and-columns.md#columns).
 3. Build a [`Table`](../user-guide/tables-and-columns.md#tables) and call an exporter
-   (`ExportCSV` or `ExportXLSX`).
+   (`ExportCSV`, `ExportXLSX`, `ExportHTML`, …).
+
+This guide walks through CSV and XLSX; the same table also feeds
+[HTML](../user-guide/html-export.md), [PDF](../user-guide/pdf-export.md) and
+[Google Sheets](../user-guide/google-sheets.md).
 
 ## Export a CSV file
 
@@ -114,6 +118,8 @@ func main() {
 ## Next steps
 
 - Understand the data model in [Tables, Data & Columns](../user-guide/tables-and-columns.md).
+- Export to other formats: [HTML](../user-guide/html-export.md),
+  [PDF](../user-guide/pdf-export.md) or [Google Sheets](../user-guide/google-sheets.md).
 - Customize output with [Styling, Borders & Merging](../user-guide/styling.md).
 - Control where and how files are written with [File Options](../user-guide/file-options.md).
 - Browse complete, runnable programs in the

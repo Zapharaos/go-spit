@@ -1,5 +1,5 @@
 site_name: go-spit
-site_description: A Go package for flexible file exporting (CSV, XLSX, HTML).
+site_description: A Go package for flexible file exporting (CSV, XLSX, HTML, PDF, Google Sheets).
 site_author: Zapharaos
 site_url: https://zapharaos.github.io/go-spit/
 
@@ -44,6 +44,7 @@ nav:
       - Installation: getting-started/installation.md
       - Quick Start: getting-started/quickstart.md
   - User Guide:
+      - Overview: user-guide/index.md
       - Tables, Data & Columns: user-guide/tables-and-columns.md
       - CSV Export: user-guide/csv-export.md
       - XLSX Export: user-guide/xlsx-export.md

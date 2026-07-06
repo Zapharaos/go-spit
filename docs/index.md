@@ -26,6 +26,7 @@ exchange and automation.
 | **CSV**  | Simple tabular data with custom delimiters and multi-level headers          |
 | **XLSX** | Advanced spreadsheets with styling, borders, merging and hierarchical headers |
 | **HTML** | Styled `<table>` output and full composed documents (headings, paragraphs, lists, sections), reusing the XLSX styling/merging model |
+| **PDF**  | Print-ready HTML you render to PDF with any HTML→PDF engine — go-spit embeds no PDF engine, see [Generating a PDF](user-guide/pdf-export.md) |
 
 Beyond files, go-spit can also push tables straight to **[Google Sheets](user-guide/google-sheets.md)**
 through an optional, dependency-isolated module.
@@ -49,6 +50,10 @@ through an optional, dependency-isolated module.
 - :material-google-spreadsheet: **[Google Sheets](user-guide/google-sheets.md)**
 
     Push tables directly to Google Sheets with your own authenticated client.
+
+- :material-file-pdf-box: **[Generating a PDF](user-guide/pdf-export.md)**
+
+    Produce print-ready HTML and render it to PDF with the engine of your choice.
 
 - :material-code-tags: **[API Reference](reference/api.md)**
 
