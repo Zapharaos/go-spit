@@ -32,6 +32,7 @@ Comprehensive, English-based documentation is available at
 - [Installation](https://zapharaos.github.io/go-spit/getting-started/installation/) and [Quick Start](https://zapharaos.github.io/go-spit/getting-started/quickstart/)
 - [Tables, Data & Columns](https://zapharaos.github.io/go-spit/user-guide/tables-and-columns/)
 - [CSV Export](https://zapharaos.github.io/go-spit/user-guide/csv-export/), [XLSX Export](https://zapharaos.github.io/go-spit/user-guide/xlsx-export/) and [HTML Export](https://zapharaos.github.io/go-spit/user-guide/html-export/)
+- [Generating a PDF](https://zapharaos.github.io/go-spit/user-guide/pdf-export/) from print-ready HTML
 - [Styling, Borders & Merging](https://zapharaos.github.io/go-spit/user-guide/styling/)
 - [File Options](https://zapharaos.github.io/go-spit/user-guide/file-options/) and [Logging](https://zapharaos.github.io/go-spit/user-guide/logging/)
 

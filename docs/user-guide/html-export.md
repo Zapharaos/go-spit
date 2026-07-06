@@ -98,8 +98,10 @@ defer result.RemoveFile()
 
 ### Blocks
 
-A document is an ordered list of blocks. Each constructor returns an `HTMLBlock`; the fluent
-`HTMLDocument` methods (`Heading`, `Paragraph`, …) are shortcuts for `Add(<block>)`.
+A document is an ordered list of blocks. Each block constructor returns a value that implements
+`HTMLBlock`; several return a concrete type exposing fluent options (e.g. `WithStyle`,
+`WithCaption`). The fluent `HTMLDocument` methods (`Heading`, `Paragraph`, …) are shortcuts for
+`Add(<block>)`.
 
 | Block                          | Renders                                                             |
 |--------------------------------|---------------------------------------------------------------------|
@@ -138,12 +140,26 @@ spit.UnorderedList("Fruits").
 	Add(spit.Item("Citrus", spit.Item("Orange"), spit.Item("Lemon")))
 ```
 
+**Building incrementally.** `Section` and lists can be filled step by step with their `Add` method,
+which is handy when block content is built in a loop:
+
+```go
+sec := spit.Section(2, "Results")
+for _, r := range results {
+	sec.Add(spit.Paragraph(r))
+}
+doc.Add(sec)
+```
+
 ### Table of contents and anchors
 
 Set `HTMLOptions.TableOfContents` to render a linked `<nav class="toc">` from the document's
 headings and section titles. Enabling it also adds a slugified `id` to every heading (deduplicated
 across the document), so headings become deep-linkable. When it is off (the default), no ids are
 emitted.
+
+Need a PDF? See [Generating a PDF](pdf-export.md) — go-spit produces print-ready HTML that you
+render with the engine of your choice.
 
 ### Theme
 
