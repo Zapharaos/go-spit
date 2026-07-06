@@ -100,13 +100,23 @@ layouts, go-spit defines Excelize-specific constants:
 | `ExcelizeFormatDefault`   | `"default"`   | Passes the raw value to Excelize, preserving the native Go type.            |
 | `ExcelizeFormatFormula`   | `"formula"`   | Writes the value as an Excel formula, e.g. `"=SUM(A1:A10)"`.                 |
 | `ExcelizeFormatHyperlink` | `"hyperlink"` | Writes a clickable external hyperlink; the value must be a URL string.       |
+| `ExcelizeFormatNumber`    | `"number"`    | Coerces the value to a real number; strings like `"123"` or `"1.5"` are parsed. |
+| `ExcelizeFormatBool`      | `"bool"`      | Coerces the value to a real boolean; strings like `"true"`, `"yes"`, `"1"` are parsed. |
 
 ```go
 columns := spit.Columns{
 	spit.NewColumn("total", "Total").WithFormat(spit.ExcelizeFormatFormula),
 	spit.NewColumn("homepage", "Website").WithFormat(spit.ExcelizeFormatHyperlink),
+	spit.NewColumn("age", "Age").WithFormat(spit.ExcelizeFormatNumber),
+	spit.NewColumn("active", "Active").WithFormat(spit.ExcelizeFormatBool),
 }
 ```
+
+`ExcelizeFormatNumber` and `ExcelizeFormatBool` are useful when the source data is already
+stringified (e.g. `"123"`, `"true"`) but should be stored as a typed cell. Values already of a
+native numeric/boolean type are kept as-is, and any value that cannot be parsed falls back to its
+original string representation, so no data is lost. `ExcelizeFormatBool` also treats non-zero
+numbers as `true`.
 
 ## Images
 
@@ -134,7 +144,7 @@ XLSX export supports the full styling model:
 - **Cell merging** — vertical and horizontal merging based on identical or empty values.
 - **Row options** — apply styling, borders and merging to entire rows.
 - **Cell options** — fine-grained styling, borders and merging for individual cells.
-- **Column formatting** — dates, formulas, hyperlinks and custom value formats.
+- **Column formatting** — dates, formulas, hyperlinks, number/boolean coercion and custom value formats.
 - **Column width** — per-column width override via `WithWidth`; defaults to 15 character units.
 - **Preamble rows** — free-form rows written above the header for titles or metadata.
 

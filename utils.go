@@ -6,6 +6,7 @@ package spit
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -71,4 +72,38 @@ func ParseDate(dateStr string) (time.Time, error) {
 	}
 
 	return time.Time{}, fmt.Errorf("failed to parse date string: %s", dateStr)
+}
+
+// parseAsInt attempts to parse a string as a base-10 integer.
+// Returns the parsed int64 value or an error if the string is not a valid integer.
+func parseAsInt(s string) (int64, error) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return 0, fmt.Errorf("empty string")
+	}
+	return strconv.ParseInt(s, 10, 64)
+}
+
+// parseAsFloat attempts to parse a string as a floating-point number.
+// Returns the parsed float64 value or an error if the string is not a valid number.
+func parseAsFloat(s string) (float64, error) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return 0, fmt.Errorf("empty string")
+	}
+	return strconv.ParseFloat(s, 64)
+}
+
+// parseAsBool attempts to parse a string as a boolean.
+// Recognizes common boolean string representations (true/false, yes/no, 1/0, t/f, y/n),
+// case-insensitively. Returns an error if the string is not a recognized boolean.
+func parseAsBool(s string) (bool, error) {
+	switch strings.TrimSpace(strings.ToLower(s)) {
+	case "true", "yes", "1", "t", "y":
+		return true, nil
+	case "false", "no", "0", "f", "n":
+		return false, nil
+	default:
+		return false, fmt.Errorf("cannot parse '%s' as boolean", s)
+	}
 }

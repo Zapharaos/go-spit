@@ -58,7 +58,7 @@ Google Sheets export lives in the optional [`gsheets`](../user-guide/google-shee
 |----------------------------------------------|--------------------------------------|
 | `Spreadsheet`                                | Backend-agnostic spreadsheet interface. |
 | `SpreadsheetExcelize`, `NewSpreadsheetExcelize` | Excelize-backed implementation.   |
-| `ExcelizeFormatDefault/Formula/Hyperlink`    | XLSX cell content formats.           |
+| `ExcelizeFormatDefault/Formula/Hyperlink/Number/Bool` | XLSX cell content formats.  |
 
 ### Files
 

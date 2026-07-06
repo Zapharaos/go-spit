@@ -7,6 +7,7 @@ package spit
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/xuri/excelize/v2"
 )
@@ -326,6 +327,14 @@ func (e *TableExcelize) ProcessValue(value interface{}, format string) (interfac
 			// Formula and hyperlink values are written via dedicated Excelize calls;
 			// return the string representation here for merge-comparison use.
 			return fmt.Sprintf("%v", value), nil
+		case ExcelizeFormatNumber:
+			// Coerce the value to a numeric type (parsing strings like "123" / "1.5")
+			// so Excelize writes a real number rather than text.
+			return convertToNumber(value)
+		case ExcelizeFormatBool:
+			// Coerce the value to a boolean (parsing strings like "true" / "yes" / "1")
+			// so Excelize writes a real boolean rather than text.
+			return convertToBool(value)
 		default:
 			if format != "" {
 				var err error
@@ -473,4 +482,59 @@ func isCellInRange(cellRef, startRef, endRef string) bool {
 		return false
 	}
 	return col >= startCol && col <= endCol && row >= startRow && row <= endRow
+}
+
+// convertToNumber coerces a value to a numeric type for Excel output.
+// Native numeric types are returned unchanged; strings are parsed as int then float.
+// nil is preserved, and values that cannot be represented as a number fall back to
+// their original string representation so no data is lost.
+func convertToNumber(value interface{}) (interface{}, error) {
+	switch v := value.(type) {
+	case nil:
+		return nil, nil
+	case int, int8, int16, int32, int64,
+		uint, uint8, uint16, uint32, uint64,
+		float32, float64:
+		return v, nil
+	case string:
+		if intVal, err := parseAsInt(v); err == nil {
+			return intVal, nil
+		}
+		if floatVal, err := parseAsFloat(v); err == nil {
+			return floatVal, nil
+		}
+		return v, nil
+	default:
+		return fmt.Sprintf("%v", value), nil
+	}
+}
+
+// convertToBool coerces a value to a boolean for Excel output.
+// Booleans are returned unchanged; strings are parsed via parseAsBool; numeric values
+// are true when non-zero. nil is preserved, and unrecognized values fall back to their
+// original string representation so no data is lost.
+func convertToBool(value interface{}) (interface{}, error) {
+	switch v := value.(type) {
+	case nil:
+		return nil, nil
+	case bool:
+		return v, nil
+	case string:
+		if boolVal, err := parseAsBool(v); err == nil {
+			return boolVal, nil
+		}
+		return v, nil
+	}
+
+	// Numeric types: zero is false, non-zero is true.
+	rv := reflect.ValueOf(value)
+	switch rv.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return rv.Int() != 0, nil
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return rv.Uint() != 0, nil
+	case reflect.Float32, reflect.Float64:
+		return rv.Float() != 0, nil
+	}
+	return fmt.Sprintf("%v", value), nil
 }
