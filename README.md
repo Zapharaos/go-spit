@@ -21,6 +21,7 @@ Go-spit is a Go package for flexible file exporting. It supports multiple format
 ## Supported Formats
 - **CSV**: Simple tabular data with custom delimiters
 - **XLSX**: Advanced spreadsheets with styling, borders, merging, and hierarchical headers
+- **HTML**: Styled `<table>` documents reusing the same styling/merging model as XLSX, with an optional title, description, and page-level styling
 
 ## Documentation
 
@@ -29,7 +30,7 @@ Comprehensive, English-based documentation is available at
 
 - [Installation](https://zapharaos.github.io/go-spit/getting-started/installation/) and [Quick Start](https://zapharaos.github.io/go-spit/getting-started/quickstart/)
 - [Tables, Data & Columns](https://zapharaos.github.io/go-spit/user-guide/tables-and-columns/)
-- [CSV Export](https://zapharaos.github.io/go-spit/user-guide/csv-export/) and [XLSX Export](https://zapharaos.github.io/go-spit/user-guide/xlsx-export/)
+- [CSV Export](https://zapharaos.github.io/go-spit/user-guide/csv-export/), [XLSX Export](https://zapharaos.github.io/go-spit/user-guide/xlsx-export/) and [HTML Export](https://zapharaos.github.io/go-spit/user-guide/html-export/)
 - [Styling, Borders & Merging](https://zapharaos.github.io/go-spit/user-guide/styling/)
 - [File Options](https://zapharaos.github.io/go-spit/user-guide/file-options/) and [Logging](https://zapharaos.github.io/go-spit/user-guide/logging/)
 
@@ -134,6 +135,51 @@ The XLSX format supports advanced styling and formatting options:
 - **Row Options**: Apply styling, borders, merging options to entire rows
 - **Cell Options**: Fine-grained styling, borders, merging options for individual cells
 - **Column Formatting**: Currency, date, custom number formats
+
+### HTML Export
+
+```go
+package main
+
+import (
+    "log"
+    "github.com/Zapharaos/go-spit"
+)
+
+func main() {
+    data := spit.DataSlice{
+        {"name": "John Doe", "age": 30, "department": "Engineering"},
+        {"name": "Jane Smith", "age": 28, "department": "Engineering"},
+    }
+
+    columns := spit.Columns{
+        spit.NewColumn("name", "Employee Name").
+            WithStyle(&spit.Style{Bold: true, TextColor: "#1155CC"}),
+        spit.NewColumn("age", "Age"),
+        spit.NewColumn("department", "Department").
+            WithMerge(spit.NewMergeRules(spit.MergeConditions{spit.MergeConditionIdentical}, nil)),
+    }
+
+    table := spit.NewTable(data, columns, true)
+
+    // Document-level presentation is configured through HTMLOptions; cell/column/row
+    // styling reuses the same Style values as the XLSX export.
+    opts := spit.HTMLOptions{
+        Title:       "Employee Report",
+        Description: "Generated with go-spit.",
+        BodyStyle:   &spit.Style{FontFamily: "Segoe UI", BackgroundColor: "#FAFAFA"},
+        // FragmentOnly: true, // emit only the <table> markup (e.g. to embed in an email)
+    }
+
+    result, err := spit.ExportHTML(table, opts, spit.FileWriteParams{
+        Filename: "employee_report",
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer result.RemoveFile()
+}
+```
 
 ### File Options
 

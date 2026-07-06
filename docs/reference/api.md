@@ -20,6 +20,7 @@ import "github.com/Zapharaos/go-spit"
 | `ExportCSV`                  | Export a table to a CSV file.                      |
 | `ExportXLSX`                 | Export a single sheet to an XLSX file.             |
 | `ExportXLSXSheets`           | Export multiple sheets to one XLSX workbook.       |
+| `ExportHTML`                 | Export a table to a styled HTML document.          |
 
 ### Data model
 
@@ -32,6 +33,7 @@ import "github.com/Zapharaos/go-spit"
 | `PreambleRow`, `PreambleRows`, `NewPreambleRow` | Free-form rows above the header. |
 | `RowOptions`, `RowOptionsMap`     | Per-row overrides.                           |
 | `CellOptions`, `CellOptionsMap`   | Per-cell overrides.                          |
+| `HTMLOptions`                     | Document-level options for HTML export (title, description, page styling). |
 
 ### Styling
 
