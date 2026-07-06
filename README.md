@@ -22,7 +22,7 @@ Go-spit is a Go package for flexible file exporting. It supports multiple format
 ## Supported Formats
 - **CSV**: Simple tabular data with custom delimiters
 - **XLSX**: Advanced spreadsheets with styling, borders, merging, and hierarchical headers
-- **HTML**: Styled `<table>` documents reusing the same styling/merging model as XLSX, with an optional title, description, and page-level styling
+- **HTML**: Styled `<table>` output and full composed documents (headings, paragraphs, lists, sections around tables), reusing the same styling/merging model as XLSX
 
 ## Documentation
 
@@ -32,6 +32,7 @@ Comprehensive, English-based documentation is available at
 - [Installation](https://zapharaos.github.io/go-spit/getting-started/installation/) and [Quick Start](https://zapharaos.github.io/go-spit/getting-started/quickstart/)
 - [Tables, Data & Columns](https://zapharaos.github.io/go-spit/user-guide/tables-and-columns/)
 - [CSV Export](https://zapharaos.github.io/go-spit/user-guide/csv-export/), [XLSX Export](https://zapharaos.github.io/go-spit/user-guide/xlsx-export/) and [HTML Export](https://zapharaos.github.io/go-spit/user-guide/html-export/)
+- [Generating a PDF](https://zapharaos.github.io/go-spit/user-guide/pdf-export/) from print-ready HTML
 - [Styling, Borders & Merging](https://zapharaos.github.io/go-spit/user-guide/styling/)
 - [File Options](https://zapharaos.github.io/go-spit/user-guide/file-options/) and [Logging](https://zapharaos.github.io/go-spit/user-guide/logging/)
 

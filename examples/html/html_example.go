@@ -54,5 +54,39 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Printf("HTML written to %s", result.Filepath)
+	log.Printf("HTML table written to %s", result.Filepath)
+
+	// A full document composes headings, paragraphs, lists, sections and tables.
+	// The built-in theme gives it a polished look, and TableOfContents adds anchors.
+	doc := spit.NewHTMLDocument(spit.HTMLOptions{
+		Title:           "Employee Report",
+		Description:     "Generated with go-spit — full document example.",
+		Theme:           spit.HTMLThemeDefault,
+		TableOfContents: true,
+	}).
+		Heading(2, "Summary").
+		Paragraph("This report lists the current engineering and marketing staff.").
+		DefinitionList(
+			spit.Def("Prepared by", "People Ops"),
+			spit.Def("Period", "July 2026"),
+		).
+		Add(spit.UnorderedList("Two departments").
+			Add(spit.Item("Engineering", spit.Item("Backend"), spit.Item("Frontend"))).
+			Add(spit.Item("Marketing"))).
+		Section(2, "Directory",
+			spit.Paragraph("Full employee directory:"),
+			spit.TableBlock(table).WithCaption("Current staff"),
+		).
+		HorizontalRule().
+		Blockquote("Generated automatically — do not edit by hand.")
+
+	docResult, err := spit.ExportHTMLDocument(doc, spit.FileWriteParams{
+		Filename:      "employee_document",
+		OverwriteFile: true,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("HTML document written to %s", docResult.Filepath)
 }

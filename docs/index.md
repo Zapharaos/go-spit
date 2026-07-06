@@ -24,7 +24,7 @@ exchange and automation.
 |----------|-----------------------------------------------------------------------------|
 | **CSV**  | Simple tabular data with custom delimiters and multi-level headers          |
 | **XLSX** | Advanced spreadsheets with styling, borders, merging and hierarchical headers |
-| **HTML** | Styled `<table>` documents reusing the XLSX styling/merging model, with optional title, description and page-level styling |
+| **HTML** | Styled `<table>` output and full composed documents (headings, paragraphs, lists, sections), reusing the XLSX styling/merging model |
 
 ## Where to Go Next
 

@@ -22,14 +22,28 @@ import (
 // Table itself (see Column.WithStyle, RowOptions.WithStyle, HeaderOptions, etc.), so
 // HTMLOptions only carries options that have no equivalent in the tabular model.
 type HTMLOptions struct {
-	Title        string // Optional document title, rendered as an <h1> above the table (and as <title> in full documents)
-	Description  string // Optional description, rendered as a <p> below the title
-	BodyStyle    *Style // Optional default style applied to the page body (font family, background, text color, etc.)
-	TableStyle   *Style // Optional style applied to the <table> element itself
-	CustomCSS    string // Optional raw CSS injected into a <style> block for advanced customization
-	Lang         string // Optional lang attribute for the <html> element (default: "en")
-	FragmentOnly bool   // When true, emit only the title/description/table markup without <!DOCTYPE>, <html>, <head> and <body> wrappers
+	Title           string    // Optional document title, rendered as an <h1> above the table (and as <title> in full documents)
+	Description     string    // Optional description, rendered as a <p> below the title
+	BodyStyle       *Style    // Optional default style applied to the page body (font family, background, text color, etc.)
+	TableStyle      *Style    // Optional style applied to the <table> element itself
+	CustomCSS       string    // Optional raw CSS injected into a <style> block for advanced customization
+	Lang            string    // Optional lang attribute for the <html> element (default: "en")
+	FragmentOnly    bool      // When true, emit only the title/description/table markup without <!DOCTYPE>, <html>, <head> and <body> wrappers
+	Theme           HTMLTheme // Optional built-in stylesheet applied for a polished default look (default: none)
+	TableOfContents bool      // When true (documents only), render a linked table of contents from the document headings
 }
+
+// HTMLTheme selects a built-in stylesheet injected into the document.
+type HTMLTheme int
+
+const (
+	// HTMLThemeNone applies no built-in stylesheet (default). Only explicit styles are used.
+	HTMLThemeNone HTMLTheme = iota
+
+	// HTMLThemeDefault injects a clean, readable stylesheet: a modern font stack, comfortable
+	// spacing, styled headings, zebra-striped tables and a responsive max width.
+	HTMLThemeDefault
+)
 
 // ExportHTML writes table data to an HTML file using the generic file writer.
 // The table is rendered as an HTML <table>, reusing the shared merging and styling
@@ -85,16 +99,18 @@ type htmlCell struct {
 	colspan int     // Horizontal span (1 = no span); set on a merge origin
 	rowspan int     // Vertical span (1 = no span); set on a merge origin
 	covered bool    // True when this cell is absorbed by a merge origin and must not be rendered
+	numeric bool    // True when the source value was numeric (used for automatic right alignment)
 }
 
 // htmlExport implements TableOperations on top of an in-memory cell grid and
 // serializes the result to HTML markup.
 type htmlExport struct {
-	table  *Table
-	opts   HTMLOptions
-	grid   map[int]map[int]*htmlCell // grid[row][col], both 1-based
-	maxRow int
-	maxCol int
+	table   *Table
+	opts    HTMLOptions
+	caption string                    // Optional <caption> text (set by table blocks)
+	grid    map[int]map[int]*htmlCell // grid[row][col], both 1-based
+	maxRow  int
+	maxCol  int
 }
 
 // build populates the grid from the table (preamble, headers, data) and then applies
@@ -211,6 +227,11 @@ func (h *htmlExport) writeCell(item Data, column *Column, colIndex, rowIndex int
 	text := fmt.Sprintf("%v", processedValue)
 	if err := h.SetCellValue(colIndex, rowIndex, text); err != nil {
 		return fmt.Errorf("error setting cell value for column %s at (%d, %d): %w", column.Name, colIndex, rowIndex, err)
+	}
+
+	// Remember numeric source values so they can be right-aligned automatically.
+	if column.Format == "" && isNumericValue(value) {
+		h.cell(colIndex, rowIndex).numeric = true
 	}
 
 	if column.Format == ExcelizeFormatHyperlink {
@@ -455,12 +476,18 @@ func (h *htmlExport) SetCellImage(col, row int, img Image) error {
 
 // ---- Serialization ----------------------------------------------------------
 
-// render serializes the grid to HTML markup.
+// render serializes a single-table export to full HTML markup.
 func (h *htmlExport) render() string {
 	var b strings.Builder
-	t := h.table
-	opts := h.opts
+	writeDocumentOpen(&b, h.opts)
+	h.writeTable(&b)
+	writeDocumentClose(&b, h.opts)
+	return b.String()
+}
 
+// writeDocumentOpen writes the document preamble: the optional <!DOCTYPE>/<head>/<body>
+// wrappers (unless FragmentOnly), followed by the visible title and description.
+func writeDocumentOpen(b *strings.Builder, opts HTMLOptions) {
 	if !opts.FragmentOnly {
 		lang := opts.Lang
 		if lang == "" {
@@ -469,8 +496,13 @@ func (h *htmlExport) render() string {
 		b.WriteString("<!DOCTYPE html>\n")
 		b.WriteString(fmt.Sprintf("<html lang=\"%s\">\n", html.EscapeString(lang)))
 		b.WriteString("<head>\n<meta charset=\"utf-8\">\n")
+		b.WriteString("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n")
 		if opts.Title != "" {
 			b.WriteString(fmt.Sprintf("<title>%s</title>\n", html.EscapeString(opts.Title)))
+		}
+		// Built-in theme first, so CustomCSS can override it.
+		if css := themeCSS(opts.Theme); css != "" {
+			b.WriteString("<style>" + css + "</style>\n")
 		}
 		if opts.CustomCSS != "" {
 			b.WriteString(fmt.Sprintf("<style>%s</style>\n", opts.CustomCSS))
@@ -481,8 +513,14 @@ func (h *htmlExport) render() string {
 		} else {
 			b.WriteString("<body>\n")
 		}
-	} else if opts.CustomCSS != "" {
-		b.WriteString(fmt.Sprintf("<style>%s</style>\n", opts.CustomCSS))
+	} else {
+		// Fragment mode has no <head>; emit any stylesheet as a leading <style> block.
+		if css := themeCSS(opts.Theme); css != "" {
+			b.WriteString("<style>" + css + "</style>\n")
+		}
+		if opts.CustomCSS != "" {
+			b.WriteString(fmt.Sprintf("<style>%s</style>\n", opts.CustomCSS))
+		}
 	}
 
 	if opts.Title != "" {
@@ -491,12 +529,31 @@ func (h *htmlExport) render() string {
 	if opts.Description != "" {
 		b.WriteString(fmt.Sprintf("<p>%s</p>\n", html.EscapeString(opts.Description)))
 	}
+}
+
+// writeDocumentClose closes the document wrappers opened by writeDocumentOpen.
+func writeDocumentClose(b *strings.Builder, opts HTMLOptions) {
+	if !opts.FragmentOnly {
+		b.WriteString("</body>\n</html>\n")
+	}
+}
+
+// writeTable serializes the cell grid as a standalone <table> element.
+func (h *htmlExport) writeTable(b *strings.Builder) {
+	t := h.table
+	opts := h.opts
 
 	tableStyle := "border-collapse:collapse"
 	if css := styleToCSS(opts.TableStyle); css != "" {
 		tableStyle += ";" + css
 	}
 	b.WriteString(fmt.Sprintf("<table style=\"%s\">\n", tableStyle))
+
+	if h.caption != "" {
+		b.WriteString(fmt.Sprintf("<caption>%s</caption>\n", html.EscapeString(h.caption)))
+	}
+
+	h.writeColgroup(b)
 
 	// Determine which rows are header rows (rendered with <th>).
 	headerStart := t.GetHeaderStartRow()
@@ -505,25 +562,68 @@ func (h *htmlExport) render() string {
 		headerEnd = headerStart + t.Columns.GetMaxDepth() - 1
 	}
 
-	for row := 1; row <= h.maxRow; row++ {
-		b.WriteString("<tr>\n")
-		isHeader := row >= headerStart && row <= headerEnd
-		for col := 1; col <= h.maxCol; col++ {
-			c := h.peek(col, row)
-			if c != nil && c.covered {
-				continue
-			}
-			h.renderCell(&b, c, col, row, isHeader)
+	// The <thead> spans every row above the data (preamble rows and header rows);
+	// the <tbody> holds the data rows.
+	theadEnd := headerStart - 1 // preamble rows only
+	if headerEnd >= headerStart {
+		theadEnd = headerEnd
+	}
+
+	if theadEnd >= 1 {
+		b.WriteString("<thead>\n")
+		for row := 1; row <= theadEnd; row++ {
+			h.writeRow(b, row, headerStart, headerEnd)
 		}
-		b.WriteString("</tr>\n")
+		b.WriteString("</thead>\n")
+	}
+	if h.maxRow > theadEnd {
+		b.WriteString("<tbody>\n")
+		for row := theadEnd + 1; row <= h.maxRow; row++ {
+			h.writeRow(b, row, headerStart, headerEnd)
+		}
+		b.WriteString("</tbody>\n")
 	}
 
 	b.WriteString("</table>\n")
+}
 
-	if !opts.FragmentOnly {
-		b.WriteString("</body>\n</html>\n")
+// writeRow serializes a single grid row, skipping cells absorbed by a merge.
+func (h *htmlExport) writeRow(b *strings.Builder, row, headerStart, headerEnd int) {
+	b.WriteString("<tr>\n")
+	isHeader := row >= headerStart && row <= headerEnd
+	for col := 1; col <= h.maxCol; col++ {
+		c := h.peek(col, row)
+		if c != nil && c.covered {
+			continue
+		}
+		h.renderCell(b, c, col, row, isHeader)
 	}
-	return b.String()
+	b.WriteString("</tr>\n")
+}
+
+// writeColgroup emits a <colgroup> mapping each leaf column's Width (in character units)
+// to a CSS ch width. It is skipped entirely when no column has an explicit width.
+func (h *htmlExport) writeColgroup(b *strings.Builder) {
+	flat := h.table.Columns.GetFlattenedColumns()
+	hasWidth := false
+	for _, c := range flat {
+		if c.Width > 0 {
+			hasWidth = true
+			break
+		}
+	}
+	if !hasWidth {
+		return
+	}
+	b.WriteString("<colgroup>\n")
+	for _, c := range flat {
+		if c.Width > 0 {
+			b.WriteString(fmt.Sprintf("<col style=\"width:%gch\">\n", c.Width))
+		} else {
+			b.WriteString("<col>\n")
+		}
+	}
+	b.WriteString("</colgroup>\n")
 }
 
 // renderCell serializes a single (non-covered) cell as a <td> or <th> element.
@@ -548,7 +648,19 @@ func (h *htmlExport) renderCell(b *strings.Builder, c *htmlCell, col, row int, i
 		borders = h.effectiveBorders(col, row, colspan, rowspan)
 	}
 
-	css := combineCSS("padding:4px 8px", styleToCSS(style), bordersToCSS(borders))
+	// The theme's stylesheet controls cell padding; otherwise apply a small inline default.
+	basePadding := "padding:4px 8px"
+	if h.opts.Theme != HTMLThemeNone {
+		basePadding = ""
+	}
+
+	// Right-align numeric data cells that carry no explicit alignment.
+	numericAlign := ""
+	if c != nil && c.numeric && (style == nil || style.Alignment == AlignmentNone) {
+		numericAlign = "text-align:right"
+	}
+
+	css := combineCSS(basePadding, styleToCSS(style), numericAlign, bordersToCSS(borders))
 
 	var attrs strings.Builder
 	if colspan > 1 {
@@ -571,7 +683,11 @@ func (h *htmlExport) renderCell(b *strings.Builder, c *htmlCell, col, row int, i
 		content = fmt.Sprintf("<a href=\"%s\">%s</a>", html.EscapeString(link), content)
 	}
 
-	b.WriteString(fmt.Sprintf("<%s%s style=\"%s\">%s</%s>\n", tag, attrs.String(), css, content, tag))
+	styleAttr := ""
+	if css != "" {
+		styleAttr = fmt.Sprintf(" style=\"%s\"", css)
+	}
+	b.WriteString(fmt.Sprintf("<%s%s%s>%s</%s>\n", tag, attrs.String(), styleAttr, content, tag))
 }
 
 // effectiveBorders computes the outer borders of a (possibly spanned) cell by
@@ -610,6 +726,48 @@ func (h *htmlExport) effectiveBorders(col, row, colspan, rowspan int) Borders {
 }
 
 // ---- CSS helpers ------------------------------------------------------------
+
+// isNumericValue reports whether a raw cell value is a numeric type (used to right-align it).
+func isNumericValue(value interface{}) bool {
+	switch value.(type) {
+	case int, int8, int16, int32, int64,
+		uint, uint8, uint16, uint32, uint64,
+		float32, float64:
+		return true
+	}
+	return false
+}
+
+// themeCSS returns the built-in stylesheet for the given theme, or "" for HTMLThemeNone.
+func themeCSS(theme HTMLTheme) string {
+	switch theme {
+	case HTMLThemeDefault:
+		return "" +
+			"body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;" +
+			"line-height:1.5;color:#24292f;max-width:960px;margin:2rem auto;padding:0 1rem;}" +
+			"h1,h2,h3,h4,h5,h6{line-height:1.25;margin:1.4em 0 .5em;}" +
+			"h1{font-size:2em;border-bottom:1px solid #eaecef;padding-bottom:.3em;}" +
+			"h2{font-size:1.5em;border-bottom:1px solid #eaecef;padding-bottom:.3em;}" +
+			"p{margin:.6em 0;}" +
+			"a{color:#0969da;text-decoration:none;}a:hover{text-decoration:underline;}" +
+			"ul,ol{margin:.6em 0;padding-left:1.6em;}li{margin:.2em 0;}" +
+			"table{border-collapse:collapse;width:100%;margin:1em 0;overflow:auto;display:block;}" +
+			"caption{caption-side:top;font-weight:600;text-align:left;margin-bottom:.4em;}" +
+			"th,td{border:1px solid #d0d7de;padding:6px 13px;}" +
+			"thead th{background:#f6f8fa;}" +
+			"tbody tr:nth-child(even){background:#f6f8fa;}" +
+			"blockquote{margin:.8em 0;padding:0 1em;color:#57606a;border-left:.25em solid #d0d7de;}" +
+			"pre{background:#f6f8fa;padding:1em;overflow:auto;border-radius:6px;}" +
+			"code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9em;}" +
+			"pre code{background:none;padding:0;}" +
+			"dl{margin:.6em 0;}dt{font-weight:600;}dd{margin:0 0 .4em 1em;color:#57606a;}" +
+			"hr{border:0;border-top:1px solid #d0d7de;margin:1.5em 0;}" +
+			"nav.toc{background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:.5em 1em;margin:1em 0;}" +
+			"nav.toc ul{list-style:none;padding-left:0;}"
+	default:
+		return ""
+	}
+}
 
 // imgTag builds an <img> element for a cell image. Embedded content is emitted as a
 // base64 data URI; otherwise the URL is used as the source. Empty images render nothing.

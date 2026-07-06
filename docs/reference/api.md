@@ -21,6 +21,7 @@ import "github.com/Zapharaos/go-spit"
 | `ExportXLSX`                 | Export a single sheet to an XLSX file.             |
 | `ExportXLSXSheets`           | Export multiple sheets to one XLSX workbook.       |
 | `ExportHTML`                 | Export a table to a styled HTML document.          |
+| `ExportHTMLDocument`         | Export a composed HTML document (headings, paragraphs, lists, sections, tables). |
 
 ### Data model
 
@@ -34,6 +35,10 @@ import "github.com/Zapharaos/go-spit"
 | `RowOptions`, `RowOptionsMap`     | Per-row overrides.                           |
 | `CellOptions`, `CellOptionsMap`   | Per-cell overrides.                          |
 | `HTMLOptions`                     | Document-level options for HTML export (title, description, page styling). |
+| `HTMLDocument`, `NewHTMLDocument` | Composed HTML document (a sequence of blocks).      |
+| `HTMLTheme`                       | Built-in HTML stylesheet selector (`HTMLThemeNone`, `HTMLThemeDefault`). |
+| `HTMLBlock`, `Heading`, `Paragraph`, `UnorderedList`, `OrderedList`, `DefinitionList`, `Blockquote`, `CodeBlock`, `HorizontalRule`, `ImageBlock`, `TableBlock`, `Section`, `RawHTML` | HTML document block constructors. |
+| `Item`, `ListItem`, `Def`, `DefinitionItem` | Helpers for nested list items and definition entries. |
 | `Image`, `NewImageURL`, `NewImageBytes` | Image cell values (HTML/XLSX render them; CSV falls back to text). |
 
 ### Styling
