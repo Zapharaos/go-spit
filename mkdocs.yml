@@ -49,6 +49,7 @@ nav:
       - XLSX Export: user-guide/xlsx-export.md
       - HTML Export: user-guide/html-export.md
       - Generating a PDF: user-guide/pdf-export.md
+      - Google Sheets: user-guide/google-sheets.md
       - Styling, Borders & Merging: user-guide/styling.md
       - File Options: user-guide/file-options.md
       - Logging: user-guide/logging.md

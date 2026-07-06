@@ -16,6 +16,7 @@ exchange and automation.
 - Multiple output formats
 - Hierarchical (grouped) column headers
 - Advanced XLSX styling: fonts, colors, alignment, borders and cell merging
+- Export straight to Google Sheets via an optional module (you provide the authenticated client)
 - Pluggable logging that adapts to your existing logger
 
 ## Supported Formats
@@ -25,6 +26,9 @@ exchange and automation.
 | **CSV**  | Simple tabular data with custom delimiters and multi-level headers          |
 | **XLSX** | Advanced spreadsheets with styling, borders, merging and hierarchical headers |
 | **HTML** | Styled `<table>` output and full composed documents (headings, paragraphs, lists, sections), reusing the XLSX styling/merging model |
+
+Beyond files, go-spit can also push tables straight to **[Google Sheets](user-guide/google-sheets.md)**
+through an optional, dependency-isolated module.
 
 ## Where to Go Next
 
@@ -41,6 +45,10 @@ exchange and automation.
 - :material-book-open-variant: **[User Guide](user-guide/tables-and-columns.md)**
 
     Learn tables, columns, styling, merging and file options in depth.
+
+- :material-google-spreadsheet: **[Google Sheets](user-guide/google-sheets.md)**
+
+    Push tables directly to Google Sheets with your own authenticated client.
 
 - :material-code-tags: **[API Reference](reference/api.md)**
 

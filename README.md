@@ -18,6 +18,7 @@ Go-spit is a Go package for flexible file exporting. It supports multiple format
 - Customizable file writing options (compression, overwrite, temporary, etc.)
 - Multiple output formats
 - Image cell values (rendered in HTML and XLSX, with a text fallback in CSV)
+- Export to Google Sheets via an optional module (you provide the authenticated client)
 
 ## Supported Formats
 - **CSV**: Simple tabular data with custom delimiters
@@ -33,6 +34,7 @@ Comprehensive, English-based documentation is available at
 - [Tables, Data & Columns](https://zapharaos.github.io/go-spit/user-guide/tables-and-columns/)
 - [CSV Export](https://zapharaos.github.io/go-spit/user-guide/csv-export/), [XLSX Export](https://zapharaos.github.io/go-spit/user-guide/xlsx-export/) and [HTML Export](https://zapharaos.github.io/go-spit/user-guide/html-export/)
 - [Generating a PDF](https://zapharaos.github.io/go-spit/user-guide/pdf-export/) from print-ready HTML
+- [Google Sheets](https://zapharaos.github.io/go-spit/user-guide/google-sheets/) export via an optional module
 - [Styling, Borders & Merging](https://zapharaos.github.io/go-spit/user-guide/styling/)
 - [File Options](https://zapharaos.github.io/go-spit/user-guide/file-options/) and [Logging](https://zapharaos.github.io/go-spit/user-guide/logging/)
 
