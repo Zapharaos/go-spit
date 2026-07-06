@@ -1511,6 +1511,52 @@ func TestTableExcelize_processValue(t *testing.T) {
 	}
 }
 
+func TestTableExcelize_ProcessValue_NumberBoolFormats(t *testing.T) {
+	tableExcel := NewTableExcelize("Sheet1", &Table{})
+
+	tests := []struct {
+		name     string
+		value    interface{}
+		format   string
+		expected interface{}
+	}{
+		// ExcelizeFormatNumber: coerce to a real numeric type.
+		{"number string int", "123", ExcelizeFormatNumber, int64(123)},
+		{"number string negative int", "-7", ExcelizeFormatNumber, int64(-7)},
+		{"number string float", "1.5", ExcelizeFormatNumber, 1.5},
+		{"number native int preserved", 42, ExcelizeFormatNumber, 42},
+		{"number native float preserved", 3.14, ExcelizeFormatNumber, 3.14},
+		{"number unparseable falls back to string", "abc", ExcelizeFormatNumber, "abc"},
+		{"number trailing junk falls back to string", "12abc", ExcelizeFormatNumber, "12abc"},
+		{"number nil preserved", nil, ExcelizeFormatNumber, nil},
+
+		// ExcelizeFormatBool: coerce to a real boolean.
+		{"bool string true", "true", ExcelizeFormatBool, true},
+		{"bool string yes", "yes", ExcelizeFormatBool, true},
+		{"bool string one", "1", ExcelizeFormatBool, true},
+		{"bool string false", "false", ExcelizeFormatBool, false},
+		{"bool string no", "no", ExcelizeFormatBool, false},
+		{"bool native bool preserved", true, ExcelizeFormatBool, true},
+		{"bool non-zero int is true", 5, ExcelizeFormatBool, true},
+		{"bool zero int is false", 0, ExcelizeFormatBool, false},
+		{"bool unrecognized falls back to string", "maybe", ExcelizeFormatBool, "maybe"},
+		{"bool nil preserved", nil, ExcelizeFormatBool, nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := tableExcel.ProcessValue(tt.value, tt.format)
+			if err != nil {
+				t.Fatalf("ProcessValue(%v, %q) unexpected error: %v", tt.value, tt.format, err)
+			}
+			if result != tt.expected {
+				t.Errorf("ProcessValue(%v, %q) = %v (%T), want %v (%T)",
+					tt.value, tt.format, result, result, tt.expected, tt.expected)
+			}
+		})
+	}
+}
+
 func TestConvertStyleToExcelizeStyle(t *testing.T) {
 	tests := []struct {
 		name     string

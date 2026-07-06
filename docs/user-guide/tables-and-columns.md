@@ -86,7 +86,8 @@ The available builder methods are:
 
 !!! note "Formatting"
     `Format` controls how a value is rendered. For dates, use a Go time layout such as
-    `"2006-01-02"`. For XLSX-specific behaviors (formulas, hyperlinks, raw values), use the
+    `"2006-01-02"`. For XLSX-specific behaviors (formulas, hyperlinks, raw values, number/boolean
+    coercion), use the
     [Excelize format constants](xlsx-export.md#cell-content-formats).
 
 ### Hierarchical (grouped) columns
