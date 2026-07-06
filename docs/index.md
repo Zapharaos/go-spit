@@ -27,9 +27,7 @@ exchange and automation.
 | **XLSX** | Advanced spreadsheets with styling, borders, merging and hierarchical headers |
 | **HTML** | Styled `<table>` output and full composed documents (headings, paragraphs, lists, sections), reusing the XLSX styling/merging model |
 | **PDF**  | Print-ready HTML you render to PDF with any HTML→PDF engine — go-spit embeds no PDF engine, see [Generating a PDF](user-guide/pdf-export.md) |
-
-Beyond files, go-spit can also push tables straight to **[Google Sheets](user-guide/google-sheets.md)**
-through an optional, dependency-isolated module.
+| **Google Sheets** | Push tables straight to a live spreadsheet via an optional, dependency-isolated module — you provide the authenticated client, see [Google Sheets](user-guide/google-sheets.md) |
 
 ## Where to Go Next
 
@@ -43,7 +41,7 @@ through an optional, dependency-isolated module.
 
     Export your first CSV and XLSX files in minutes.
 
-- :material-book-open-variant: **[User Guide](user-guide/tables-and-columns.md)**
+- :material-book-open-variant: **[User Guide](user-guide/index.md)**
 
     Learn tables, columns, styling, merging and file options in depth.
 
