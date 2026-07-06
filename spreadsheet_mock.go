@@ -153,20 +153,6 @@ func (mr *MockSpreadsheetMockRecorder) GetCellValue(col, row any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCellValue", reflect.TypeOf((*MockSpreadsheet)(nil).GetCellValue), col, row)
 }
 
-// InitWithFile mocks base method.
-func (m *MockSpreadsheet) InitWithFile(file interface{}) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InitWithFile", file)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// InitWithFile indicates an expected call of InitWithFile.
-func (mr *MockSpreadsheetMockRecorder) InitWithFile(file any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitWithFile", reflect.TypeOf((*MockSpreadsheet)(nil).InitWithFile), file)
-}
-
 // GetColumnLetter mocks base method.
 func (m *MockSpreadsheet) GetColumnLetter(col int) string {
 	m.ctrl.T.Helper()
@@ -235,6 +221,20 @@ func (m *MockSpreadsheet) HasExistingBorder(col, row int, side string) bool {
 func (mr *MockSpreadsheetMockRecorder) HasExistingBorder(col, row, side any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasExistingBorder", reflect.TypeOf((*MockSpreadsheet)(nil).HasExistingBorder), col, row, side)
+}
+
+// InitWithFile mocks base method.
+func (m *MockSpreadsheet) InitWithFile(file any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InitWithFile", file)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// InitWithFile indicates an expected call of InitWithFile.
+func (mr *MockSpreadsheetMockRecorder) InitWithFile(file any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitWithFile", reflect.TypeOf((*MockSpreadsheet)(nil).InitWithFile), file)
 }
 
 // IsCellMerged mocks base method.
@@ -348,6 +348,20 @@ func (m *MockSpreadsheet) SetCellHyperLink(col, row int, link string) error {
 func (mr *MockSpreadsheetMockRecorder) SetCellHyperLink(col, row, link any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCellHyperLink", reflect.TypeOf((*MockSpreadsheet)(nil).SetCellHyperLink), col, row, link)
+}
+
+// SetCellImage mocks base method.
+func (m *MockSpreadsheet) SetCellImage(col, row int, img Image) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetCellImage", col, row, img)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetCellImage indicates an expected call of SetCellImage.
+func (mr *MockSpreadsheetMockRecorder) SetCellImage(col, row, img any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCellImage", reflect.TypeOf((*MockSpreadsheet)(nil).SetCellImage), col, row, img)
 }
 
 // SetCellValue mocks base method.

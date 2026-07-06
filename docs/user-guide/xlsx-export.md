@@ -108,6 +108,22 @@ columns := spit.Columns{
 }
 ```
 
+## Images
+
+Put an `Image` value into a cell to anchor a picture to it (auto-fit). Embedded content is inserted
+from bytes; a `URL` is treated as a **local file path** — remote URLs are not downloaded, so provide
+`Bytes` (with `MIME`) to embed a remote or in-memory image:
+
+```go
+data := spit.DataSlice{
+	{"name": "Acme", "logo": spit.NewImageBytes(pngBytes, "image/png").WithAltText("Acme")},
+	{"name": "Globex", "logo": spit.NewImageURL("./assets/globex.png")},
+}
+```
+
+The same `Image` value renders as an `<img>` in HTML and as a text fallback in CSV — see
+[Images across formats](tables-and-columns.md#images).
+
 ## Advanced features
 
 XLSX export supports the full styling model:

@@ -237,6 +237,20 @@ func (mr *MockTableOperationsMockRecorder) SetCellHyperLink(col, row, link any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCellHyperLink", reflect.TypeOf((*MockTableOperations)(nil).SetCellHyperLink), col, row, link)
 }
 
+// SetCellImage mocks base method.
+func (m *MockTableOperations) SetCellImage(col, row int, img Image) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetCellImage", col, row, img)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetCellImage indicates an expected call of SetCellImage.
+func (mr *MockTableOperationsMockRecorder) SetCellImage(col, row, img any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCellImage", reflect.TypeOf((*MockTableOperations)(nil).SetCellImage), col, row, img)
+}
+
 // SetCellValue mocks base method.
 func (m *MockTableOperations) SetCellValue(col, row int, value any) error {
 	m.ctrl.T.Helper()

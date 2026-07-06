@@ -34,6 +34,7 @@ import "github.com/Zapharaos/go-spit"
 | `RowOptions`, `RowOptionsMap`     | Per-row overrides.                           |
 | `CellOptions`, `CellOptionsMap`   | Per-cell overrides.                          |
 | `HTMLOptions`                     | Document-level options for HTML export (title, description, page styling). |
+| `Image`, `NewImageURL`, `NewImageBytes` | Image cell values (HTML/XLSX render them; CSV falls back to text). |
 
 ### Styling
 

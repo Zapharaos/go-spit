@@ -359,6 +359,40 @@ func (e *TableExcelize) SetCellHyperLink(col, row int, link string) error {
 	return e.File.SetCellHyperLink(e.SheetName, cellRef, link, "External")
 }
 
+// SetCellImage places an image at the given column and row, anchored over the cell.
+// Embedded content (Bytes) is inserted via AddPictureFromBytes; a URL is treated as a
+// local file path and inserted via AddPicture (remote URLs are not fetched). The image
+// auto-fits the cell. Images without a usable source are ignored.
+//
+// Note: Excelize only supports pictures anchored over cells; the newer "place in cell"
+// (rich-value IMAGE) embedding is not available for writing, so images float over the cell.
+func (e *TableExcelize) SetCellImage(col, row int, img Image) error {
+	cellRef, err := excelize.CoordinatesToCellName(col, row)
+	if err != nil {
+		return err
+	}
+
+	opts := &excelize.GraphicOptions{AltText: img.AltText, AutoFit: true}
+
+	if img.HasBytes() {
+		ext := extensionFromMIME(img.MIME)
+		if ext == "" {
+			return fmt.Errorf("cannot resolve image extension from MIME %q for cell (%d, %d)", img.MIME, col, row)
+		}
+		return e.File.AddPictureFromBytes(e.SheetName, cellRef, &excelize.Picture{
+			Extension: ext,
+			File:      img.Bytes,
+			Format:    opts,
+		})
+	}
+
+	if img.URL != "" {
+		return e.File.AddPicture(e.SheetName, cellRef, img.URL, opts)
+	}
+
+	return nil
+}
+
 // getCellStyle retrieves the style of a cell at the given column and row.
 func (e *TableExcelize) getCellStyle(col, row int) (*excelize.Style, error) {
 	cellRef, err := excelize.CoordinatesToCellName(col, row)

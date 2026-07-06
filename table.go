@@ -67,6 +67,10 @@ type TableOperations interface {
 	// SetCellHyperLink sets an external hyperlink on a cell at the given column and row.
 	// The link string should be a valid URL, e.g. "https://example.com".
 	SetCellHyperLink(col, row int, link string) error
+
+	// SetCellImage places an image at the given column and row.
+	// Backends that cannot render images fall back to a textual representation.
+	SetCellImage(col, row int, img Image) error
 }
 
 // Table represents a structured data table with configuration for export operations.

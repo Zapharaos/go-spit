@@ -103,3 +103,15 @@ The `tags` cell becomes `go; csv; export`.
     CSV is a plain-text format and does not support styles, borders or cell merging. Those
     options only affect [XLSX export](xlsx-export.md). Hierarchical headers, however, are fully
     supported in CSV.
+
+## Image values
+
+CSV cannot embed images. When a cell holds an [`Image`](tables-and-columns.md#images), CSV writes
+its text fallback — the `URL` (or `AltText` when no URL is set):
+
+```go
+data := spit.DataSlice{
+	{"company": "Acme", "logo": spit.NewImageURL("https://acme.com/logo.png")},
+}
+// The logo cell becomes: https://acme.com/logo.png
+```
