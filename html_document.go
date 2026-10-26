@@ -185,8 +185,8 @@ func writeTOC(b *strings.Builder, entries []tocEntry) {
 	b.WriteString("<nav class=\"toc\">\n<ul>\n")
 	for _, e := range entries {
 		indent := (e.level - minLevel) * 20
-		b.WriteString(fmt.Sprintf("<li style=\"margin-left:%dpx\"><a href=\"#%s\">%s</a></li>\n",
-			indent, e.id, html.EscapeString(e.text)))
+		fmt.Fprintf(b, "<li style=\"margin-left:%dpx\"><a href=\"#%s\">%s</a></li>\n",
+			indent, e.id, html.EscapeString(e.text))
 	}
 	b.WriteString("</ul>\n</nav>\n")
 }
@@ -218,8 +218,8 @@ func (h *HeadingBlock) collectTOC(used map[string]int) []tocEntry {
 }
 
 func (h *HeadingBlock) renderHTML(b *strings.Builder, _ HTMLOptions) error {
-	b.WriteString(fmt.Sprintf("<h%d%s%s>%s</h%d>\n",
-		h.level, idAttr(h.id), inlineStyleAttr(h.style), html.EscapeString(h.text), h.level))
+	fmt.Fprintf(b, "<h%d%s%s>%s</h%d>\n",
+		h.level, idAttr(h.id), inlineStyleAttr(h.style), html.EscapeString(h.text), h.level)
 	return nil
 }
 
@@ -243,7 +243,7 @@ func (p *ParagraphBlock) WithStyle(style *Style) *ParagraphBlock {
 }
 
 func (p *ParagraphBlock) renderHTML(b *strings.Builder, _ HTMLOptions) error {
-	b.WriteString(fmt.Sprintf("<p%s>%s</p>\n", inlineStyleAttr(p.style), html.EscapeString(p.text)))
+	fmt.Fprintf(b, "<p%s>%s</p>\n", inlineStyleAttr(p.style), html.EscapeString(p.text))
 	return nil
 }
 
@@ -344,8 +344,8 @@ func DefinitionList(items ...DefinitionItem) HTMLBlock {
 func (d htmlDefinitionList) renderHTML(b *strings.Builder, _ HTMLOptions) error {
 	b.WriteString("<dl>\n")
 	for _, it := range d.items {
-		b.WriteString(fmt.Sprintf("<dt>%s</dt>\n<dd>%s</dd>\n",
-			html.EscapeString(it.Term), html.EscapeString(it.Description)))
+		fmt.Fprintf(b, "<dt>%s</dt>\n<dd>%s</dd>\n",
+			html.EscapeString(it.Term), html.EscapeString(it.Description))
 	}
 	b.WriteString("</dl>\n")
 	return nil
@@ -371,8 +371,8 @@ func (q *BlockquoteBlock) WithStyle(style *Style) *BlockquoteBlock {
 }
 
 func (q *BlockquoteBlock) renderHTML(b *strings.Builder, _ HTMLOptions) error {
-	b.WriteString(fmt.Sprintf("<blockquote%s>%s</blockquote>\n",
-		inlineStyleAttr(q.style), html.EscapeString(q.text)))
+	fmt.Fprintf(b, "<blockquote%s>%s</blockquote>\n",
+		inlineStyleAttr(q.style), html.EscapeString(q.text))
 	return nil
 }
 
@@ -510,8 +510,8 @@ func (s *SectionBlock) collectTOC(used map[string]int) []tocEntry {
 func (s *SectionBlock) renderHTML(b *strings.Builder, opts HTMLOptions) error {
 	b.WriteString("<section" + inlineStyleAttr(s.style) + ">\n")
 	if s.title != "" {
-		b.WriteString(fmt.Sprintf("<h%d%s>%s</h%d>\n",
-			s.level, idAttr(s.id), html.EscapeString(s.title), s.level))
+		fmt.Fprintf(b, "<h%d%s>%s</h%d>\n",
+			s.level, idAttr(s.id), html.EscapeString(s.title), s.level)
 	}
 	for _, block := range s.blocks {
 		if block == nil {
