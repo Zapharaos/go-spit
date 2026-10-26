@@ -494,22 +494,22 @@ func writeDocumentOpen(b *strings.Builder, opts HTMLOptions) {
 			lang = "en"
 		}
 		b.WriteString("<!DOCTYPE html>\n")
-		b.WriteString(fmt.Sprintf("<html lang=\"%s\">\n", html.EscapeString(lang)))
+		fmt.Fprintf(b, "<html lang=\"%s\">\n", html.EscapeString(lang))
 		b.WriteString("<head>\n<meta charset=\"utf-8\">\n")
 		b.WriteString("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n")
 		if opts.Title != "" {
-			b.WriteString(fmt.Sprintf("<title>%s</title>\n", html.EscapeString(opts.Title)))
+			fmt.Fprintf(b, "<title>%s</title>\n", html.EscapeString(opts.Title))
 		}
 		// Built-in theme first, so CustomCSS can override it.
 		if css := themeCSS(opts.Theme); css != "" {
 			b.WriteString("<style>" + css + "</style>\n")
 		}
 		if opts.CustomCSS != "" {
-			b.WriteString(fmt.Sprintf("<style>%s</style>\n", opts.CustomCSS))
+			fmt.Fprintf(b, "<style>%s</style>\n", opts.CustomCSS)
 		}
 		b.WriteString("</head>\n")
 		if css := styleToCSS(opts.BodyStyle); css != "" {
-			b.WriteString(fmt.Sprintf("<body style=\"%s\">\n", css))
+			fmt.Fprintf(b, "<body style=\"%s\">\n", css)
 		} else {
 			b.WriteString("<body>\n")
 		}
@@ -519,15 +519,15 @@ func writeDocumentOpen(b *strings.Builder, opts HTMLOptions) {
 			b.WriteString("<style>" + css + "</style>\n")
 		}
 		if opts.CustomCSS != "" {
-			b.WriteString(fmt.Sprintf("<style>%s</style>\n", opts.CustomCSS))
+			fmt.Fprintf(b, "<style>%s</style>\n", opts.CustomCSS)
 		}
 	}
 
 	if opts.Title != "" {
-		b.WriteString(fmt.Sprintf("<h1>%s</h1>\n", html.EscapeString(opts.Title)))
+		fmt.Fprintf(b, "<h1>%s</h1>\n", html.EscapeString(opts.Title))
 	}
 	if opts.Description != "" {
-		b.WriteString(fmt.Sprintf("<p>%s</p>\n", html.EscapeString(opts.Description)))
+		fmt.Fprintf(b, "<p>%s</p>\n", html.EscapeString(opts.Description))
 	}
 }
 
@@ -547,10 +547,10 @@ func (h *htmlExport) writeTable(b *strings.Builder) {
 	if css := styleToCSS(opts.TableStyle); css != "" {
 		tableStyle += ";" + css
 	}
-	b.WriteString(fmt.Sprintf("<table style=\"%s\">\n", tableStyle))
+	fmt.Fprintf(b, "<table style=\"%s\">\n", tableStyle)
 
 	if h.caption != "" {
-		b.WriteString(fmt.Sprintf("<caption>%s</caption>\n", html.EscapeString(h.caption)))
+		fmt.Fprintf(b, "<caption>%s</caption>\n", html.EscapeString(h.caption))
 	}
 
 	h.writeColgroup(b)
@@ -618,7 +618,7 @@ func (h *htmlExport) writeColgroup(b *strings.Builder) {
 	b.WriteString("<colgroup>\n")
 	for _, c := range flat {
 		if c.Width > 0 {
-			b.WriteString(fmt.Sprintf("<col style=\"width:%gch\">\n", c.Width))
+			fmt.Fprintf(b, "<col style=\"width:%gch\">\n", c.Width)
 		} else {
 			b.WriteString("<col>\n")
 		}
@@ -664,10 +664,10 @@ func (h *htmlExport) renderCell(b *strings.Builder, c *htmlCell, col, row int, i
 
 	var attrs strings.Builder
 	if colspan > 1 {
-		attrs.WriteString(fmt.Sprintf(" colspan=\"%d\"", colspan))
+		fmt.Fprintf(&attrs, " colspan=\"%d\"", colspan)
 	}
 	if rowspan > 1 {
-		attrs.WriteString(fmt.Sprintf(" rowspan=\"%d\"", rowspan))
+		fmt.Fprintf(&attrs, " rowspan=\"%d\"", rowspan)
 	}
 	if isHeader {
 		attrs.WriteString(" scope=\"col\"")
@@ -687,7 +687,7 @@ func (h *htmlExport) renderCell(b *strings.Builder, c *htmlCell, col, row int, i
 	if css != "" {
 		styleAttr = fmt.Sprintf(" style=\"%s\"", css)
 	}
-	b.WriteString(fmt.Sprintf("<%s%s%s>%s</%s>\n", tag, attrs.String(), styleAttr, content, tag))
+	fmt.Fprintf(b, "<%s%s%s>%s</%s>\n", tag, attrs.String(), styleAttr, content, tag)
 }
 
 // effectiveBorders computes the outer borders of a (possibly spanned) cell by
@@ -780,12 +780,12 @@ func imgTag(img Image) string {
 		return html.EscapeString(img.AltText)
 	}
 	var attrs strings.Builder
-	attrs.WriteString(fmt.Sprintf("<img src=\"%s\" alt=\"%s\"", html.EscapeString(src), html.EscapeString(img.AltText)))
+	fmt.Fprintf(&attrs, "<img src=\"%s\" alt=\"%s\"", html.EscapeString(src), html.EscapeString(img.AltText))
 	if img.Width > 0 {
-		attrs.WriteString(fmt.Sprintf(" width=\"%d\"", img.Width))
+		fmt.Fprintf(&attrs, " width=\"%d\"", img.Width)
 	}
 	if img.Height > 0 {
-		attrs.WriteString(fmt.Sprintf(" height=\"%d\"", img.Height))
+		fmt.Fprintf(&attrs, " height=\"%d\"", img.Height)
 	}
 	attrs.WriteString(">")
 	return attrs.String()
@@ -920,7 +920,7 @@ func cssColor(c string) string {
 // isHex reports whether s consists solely of hexadecimal digits.
 func isHex(s string) bool {
 	for _, r := range s {
-		if !((r >= '0' && r <= '9') || (r >= 'a' && r <= 'f') || (r >= 'A' && r <= 'F')) {
+		if (r < '0' || r > '9') && (r < 'a' || r > 'f') && (r < 'A' || r > 'F') {
 			return false
 		}
 	}
