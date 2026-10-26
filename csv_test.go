@@ -171,6 +171,51 @@ func TestCSV_writeData(t *testing.T) {
 		}
 	})
 
+	t.Run("MissingMiddleKeyKeepsAlignment", func(t *testing.T) {
+		table := &Table{
+			Data: DataSlice{
+				{"name": "John", "age": 30, "city": "New York"},
+				{"name": "Jane", "city": "Los Angeles"}, // Missing middle "age" key
+			},
+			Columns: Columns{
+				{Name: "name", Label: "Name"},
+				{Name: "age", Label: "Age"},
+				{Name: "city", Label: "City"},
+			},
+			WriteHeader: true,
+		}
+		csvInstance, buf := createCSVInstance(table, ",")
+
+		if err := csvInstance.writeData(); err != nil {
+			t.Fatalf("writeData should not return error, got: %v", err)
+		}
+
+		records, err := stdcsv.NewReader(bytes.NewReader(buf.Bytes())).ReadAll()
+		if err != nil {
+			t.Fatalf("Output should be valid CSV with equal-width records, got: %v", err)
+		}
+
+		expected := [][]string{
+			{"Name", "Age", "City"},
+			{"John", "30", "New York"},
+			{"Jane", "", "Los Angeles"},
+		}
+		if len(records) != len(expected) {
+			t.Fatalf("Expected %d records, got %d", len(expected), len(records))
+		}
+		for i, exp := range expected {
+			if len(records[i]) != len(exp) {
+				t.Errorf("Record %d: expected %d fields, got %d (%v)", i, len(exp), len(records[i]), records[i])
+				continue
+			}
+			for j := range exp {
+				if records[i][j] != exp[j] {
+					t.Errorf("Record %d, field %d: expected '%s', got '%s'", i, j, exp[j], records[i][j])
+				}
+			}
+		}
+	})
+
 	t.Run("WithFormats", func(t *testing.T) {
 		table := &Table{
 			Data: DataSlice{{"name": "John", "date": time.Date(2023, 1, 15, 0, 0, 0, 0, time.UTC)}},

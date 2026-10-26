@@ -80,6 +80,8 @@ func (csv *csv) writeData() error {
 			// Lookup the value for this column in the current row
 			value, err, found := item.Lookup(column.Name)
 			if err == nil && !found {
+				// Missing key: write an empty cell so later values stay under their header
+				record = append(record, "")
 				continue
 			}
 			if err != nil {
